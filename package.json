@@ -1,0 +1,11 @@
+{
+  "name": "forest-gunner",
+  "uuid": "f430eb34-5c13-47fd-b653-b5c805114f77",
+  "version": "0.1.0",
+  "creator": { "version": "3.8.8" },
+  "description": "Cat Gunner reference prototype: one cat, a pistol and a forest.",
+  "scripts": {
+    "preview": "node tools/serve.cjs",
+    "test": "node ../AI-Workspace/Work/v1/tests/run-tests.cjs"
+  }
+}

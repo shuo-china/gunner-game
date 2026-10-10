@@ -1,0 +1,82 @@
+// Sprite interface follows Creator 3.8.8 builtin-sprite.effect.
+// The world target stores linear LDR; only its presentation pass encodes sRGB.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: original-vs:vert
+      frag: original-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: one
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+}%
+CCProgram original-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec4 color;
+  out vec2 uv0;
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1.0);
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+    return cc_matViewProj * pos;
+  }
+}%
+CCProgram original-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  in vec4 color;
+  in vec2 uv0;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  vec3 decodeSrgb(vec3 c) {
+    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+  }
+  vec3 encodeSrgb(vec3 c) {
+    c = max(c, vec3(0.0));
+    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+  }
+  vec4 frag () {
+    vec4 o = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+    #if ENCODE_OUTPUT
+      // Opaque world image. HUD continues to use its own UI materials.
+      o = vec4(encodeSrgb(o.rgb), 1.0);
+    #elif ORIGINAL_HEALTH_FILL
+      // Texture143 is stored sRGB. Unity decodes it before Shader232's own
+      // tint/premultiply/cubic sequence; retain both distinct source steps.
+      o.rgb = decodeSrgb(o.rgb) * vec3(0.505999982, 1.0, 0.36500001) * o.a;
+      o.rgb = o.rgb * (o.rgb * (o.rgb * 0.305306011 + 0.682171111) + 0.012522878);
+    #else
+      o.rgb = decodeSrgb(o.rgb) * decodeSrgb(color.rgb);
+      o.a *= color.a;
+      ALPHA_TEST(o);
+    #endif
+    return o;
+  }
+}%

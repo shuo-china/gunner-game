@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "tree": {
+    "projectionScaleY": 0.99658572,
+    "hit": {
+      "duration": 0.20000000298023224,
+      "peakScale": [
+        0.8999999761581421,
+        1.100000023841858
+      ]
+    },
+    "healthBar": {
+      "position": [
+        0.0,
+        9.279990196228027
+      ],
+      "scale": [
+        2.0,
+        2.0
+      ],
+      "background": {
+        "path": "art/effects/original_feedback/health_background",
+        "sizePx": [
+          118,
+          72
+        ],
+        "sizeUnits": [
+          1.18,
+          0.72
+        ],
+        "anchor": [
+          0.5,
+          0.5
+        ],
+        "ppu": 100.0,
+        "source": "sharedassets0.assets:459"
+      },
+      "fill": {
+        "path": "art/effects/original_feedback/health_fill",
+        "sizePx": [
+          88,
+          42
+        ],
+        "sizeUnits": [
+          0.88,
+          0.42
+        ],
+        "anchor": [
+          0.5,
+          0.5
+        ],
+        "ppu": 100.0,
+        "source": "sharedassets0.assets:700"
+      },
+      "fillColor": [
+        129,
+        255,
+        93,
+        255
+      ],
+      "sourceShaderColor": [
+        0.505999982,
+        1,
+        0.36500001
+      ],
+      "source": {
+        "transform": "level0:51765",
+        "backgroundRenderer": "level0:83187",
+        "fillRenderer": "level0:88734",
+        "fillShader": "sharedassets0.assets:232"
+      }
+    },
+    "source": {
+      "bounce": "level0:127440",
+      "skin": "level0:88750",
+      "hitMethod": "Enemy.Damaged -> Bounce_Custom.Bounce_Start",
+      "curve": "Linear to peak in first half; linear to (1,1) in second half.",
+      "retrigger": "Reset elapsed time; do not stack another coroutine.",
+      "death": "Enemy.Die_Reload immediately deactivates the entire tree; no fade or fall.",
+      "healthVisibility": "Spawn hides it; Slider_Reload activates it after damage."
+    }
+  },
+  "reticle": {
+    "sprite": {
+      "path": "art/effects/target/sprite",
+      "sizePx": [
+        146,
+        146
+      ],
+      "sizeUnits": [
+        1.46,
+        1.46
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "ppu": 100.0,
+      "source": {
+        "assetFile": "sharedassets0.assets",
+        "pathId": 642,
+        "name": "target",
+        "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d"
+      },
+      "trim": {
+        "originalSizePx": [
+          148.0,
+          148.0
+        ],
+        "offsetPx": [
+          1,
+          1
+        ],
+        "originalOffsetPx": [
+          1.0761205,
+          1.0761205
+        ],
+        "originalPivot": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    "height": 2.0,
+    "scale": [
+      3.0,
+      3.0
+    ],
+    "planeQuaternion": [
+      -0.3794095516204834,
+      0.12059059739112854,
+      -0.04995028302073479,
+      -0.9159755706787109
+    ],
+    "degreesPerSecond": -60.0,
+    "source": {
+      "root": "level0:39335",
+      "transform": "level0:39293",
+      "renderer": "level0:82855",
+      "dotween": "level0:123889",
+      "sprite": "sharedassets0.assets:642",
+      "duration": 3.0,
+      "endEuler": {
+        "x": 45.0,
+        "y": -15.0,
+        "z": -180.0
+      },
+      "easeType": 1,
+      "loopType": 2,
+      "loops": -1,
+      "position": "Attack collider transform world position + child world Y 2.",
+      "rotation": "Linear incremental local Z rotation in the original 3D plane; not a screen-space rotation.",
+      "disc": "Shapes.Disc level0:125048 is disabled; only the sprite is rendered."
+    }
+  }
+}

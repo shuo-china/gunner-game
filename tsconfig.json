@@ -1,0 +1,14 @@
+{
+  "extends": "./temp/tsconfig.cocos.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "lib": ["ES2017", "DOM"]
+  },
+  "exclude": ["node_modules", "build", "library", "temp"]
+}

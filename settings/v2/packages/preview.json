@@ -1,0 +1,8 @@
+{
+  "__version__": "1.0.1",
+  "current-scene": "db://assets/scenes/main.scene",
+  "simulator_resolution": {
+    "width": 720,
+    "height": 1280
+  }
+}

@@ -1,0 +1,2477 @@
+{
+  "version": 1,
+  "visibleStage": 1,
+  "runtimeStageIndex": 0,
+  "sprites": {
+    "ground": {
+      "path": "art/maps/forest/ground",
+      "sizePx": [
+        512,
+        512
+      ],
+      "sizeUnits": [
+        10.24,
+        10.24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "ppu": 50.0,
+      "source": {
+        "assetFile": "sharedassets0.assets",
+        "pathId": 755,
+        "name": "0",
+        "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d"
+      },
+      "trim": {
+        "originalSizePx": [
+          512.0,
+          512.0
+        ],
+        "offsetPx": [
+          0,
+          0
+        ],
+        "originalOffsetPx": [
+          0.0,
+          0.0
+        ],
+        "originalPivot": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    "borderUp": {
+      "path": "art/maps/forest/border_up",
+      "sizePx": [
+        432,
+        512
+      ],
+      "sizeUnits": [
+        4.99999991,
+        5.92592582
+      ],
+      "anchor": [
+        1.0000701,
+        0.41518158
+      ],
+      "ppu": 86.40000153,
+      "source": {
+        "assetFile": "sharedassets0.assets",
+        "pathId": 870,
+        "name": "0",
+        "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d"
+      },
+      "trim": {
+        "originalSizePx": [
+          432.0,
+          512.0
+        ],
+        "offsetPx": [
+          0,
+          0
+        ],
+        "originalOffsetPx": [
+          0.0,
+          0.0
+        ],
+        "originalPivot": [
+          1.0000701,
+          0.41518158
+        ]
+      }
+    },
+    "borderDown": {
+      "path": "art/maps/forest/border_down",
+      "sizePx": [
+        432,
+        508
+      ],
+      "sizeUnits": [
+        4.99999991,
+        5.87962953
+      ],
+      "anchor": [
+        1.0000701,
+        0.41845072
+      ],
+      "ppu": 86.40000153,
+      "source": {
+        "assetFile": "sharedassets0.assets",
+        "pathId": 727,
+        "name": "0_e",
+        "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d"
+      },
+      "trim": {
+        "originalSizePx": [
+          432.0,
+          512.0
+        ],
+        "offsetPx": [
+          0,
+          0
+        ],
+        "originalOffsetPx": [
+          0.0,
+          0.0
+        ],
+        "originalPivot": [
+          1.0000701,
+          0.41518158
+        ]
+      }
+    }
+  },
+  "ground": {
+    "sourceRenderer": "level0:82858",
+    "sourceMaterial": "sharedassets0.assets:31",
+    "sourceShader": "sharedassets0.assets:229",
+    "shader": "Universal Render Pipeline/Simple Lit",
+    "sortingOrder": -32,
+    "repeat": [
+      18.0,
+      18.0
+    ],
+    "uvOffset": [
+      0.0,
+      0.0
+    ],
+    "wrap": [
+      "repeat",
+      "repeat"
+    ],
+    "color": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "lighting": {
+      "effect": "art/maps/forest/original-floor",
+      "normalWorld": [
+        0,
+        1,
+        0
+      ],
+      "irradiance": [
+        0.90528015,
+        0.98428633,
+        1.14227116
+      ],
+      "ambient": [
+        0.13923575,
+        0.21824192,
+        0.37622675
+      ],
+      "direct": [
+        0.76604441,
+        0.76604441,
+        0.76604441
+      ],
+      "ambientProbe": [
+        0.18028378,
+        -0.00568231,
+        -0.01256068,
+        0.00725202,
+        0.00569997,
+        -0.00987242,
+        0.01033016,
+        -0.01043632,
+        0.02503557,
+        0.22571412,
+        0.04134383,
+        -0.01975326,
+        0.01140326,
+        0.00911197,
+        -0.01578327,
+        0.01437997,
+        -0.0152236,
+        0.03443606,
+        0.30692285,
+        0.12748495,
+        -0.03405339,
+        0.01965664,
+        0.01636519,
+        -0.02834915,
+        0.01771555,
+        -0.02208526,
+        0.0404655
+      ],
+      "directionalNdotL": 0.76604441,
+      "sources": {
+        "renderSettings": "level0:66790",
+        "directionalLight": "level0:66791",
+        "shader": "shader-229-platform-9-0.txt vertex SH evaluation and fragment Lambert + bakedGI"
+      },
+      "notes": "Original flat surface lighting evaluated from serialized SH9 + directional light; sRGB texture is decoded before lighting and encoded after. No sampled screenshot color is used as a tuning input."
+    },
+    "position": [
+      114.5513057,
+      47.35635624
+    ],
+    "axisX": [
+      50.00000288,
+      2.11e-06
+    ],
+    "axisY": [
+      4.58e-06,
+      46.18758311
+    ]
+  },
+  "borders": [
+    {
+      "name": "Map_Grid/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88658",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        -19.26865987,
+        9.28756031
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88488",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        5.55078889,
+        23.61693967
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88677",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        19.19794778,
+        -26.6787731
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:86686",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        44.01739788,
+        -12.34939296
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88483",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        -68.76613816,
+        -19.28955078
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88666",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        -43.94668941,
+        -4.96017141
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88462",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        -30.29953052,
+        -55.25588418
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82899",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        -5.48008042,
+        -40.92650404
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:86649",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        30.22881843,
+        37.86467139
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:83203",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        55.04826719,
+        52.19405075
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:86639",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        68.69542608,
+        1.89833798
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88751",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        93.51487618,
+        16.22771812
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88487",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        79.72629673,
+        66.44178247
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88667",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        104.54574549,
+        80.77116183
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88464",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        118.19290438,
+        30.47544907
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82902",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        143.01235448,
+        44.80482921
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88486",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        277.71620993,
+        180.7502268
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88668",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        302.53565869,
+        195.07960616
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88465",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        316.18281758,
+        144.7838934
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82901",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        341.00226768,
+        159.11327354
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88480",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        327.21368823,
+        209.32733788
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88663",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        352.03313698,
+        223.65671725
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88460",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        365.68029588,
+        173.36100448
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82906",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        390.49974598,
+        187.69038462
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88484",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        376.71116653,
+        237.90444897
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88665",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        401.53061528,
+        252.23382833
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88463",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        415.17777418,
+        201.93811556
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82898",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        439.99722428,
+        216.2674957
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88481",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        426.20864483,
+        266.48156005
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88662",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        451.02809358,
+        280.81093941
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88459",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        464.67525248,
+        230.51522664
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82905",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        489.49470258,
+        244.84460678
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88482",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        475.70612313,
+        295.05867113
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88661",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        500.52557188,
+        309.38805049
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88458",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        514.17273078,
+        259.09233773
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82907",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        538.99218088,
+        273.42171787
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88485",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        129.22377503,
+        95.01889355
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88664",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        154.04322379,
+        109.34827292
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88461",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        167.69038268,
+        59.05256015
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82900",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        192.50983278,
+        73.38194029
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88479",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        178.72125333,
+        123.59600464
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88660",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        203.54070209,
+        137.925384
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88456",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        217.18786098,
+        87.62967123
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82903",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        242.00731108,
+        101.95905137
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Border (1)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88478",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        228.21873163,
+        152.17311572
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Border (2)/Pivot/Skin",
+      "asset": "borderUp",
+      "sourceRenderer": "level0:88659",
+      "sortingOrder": -28,
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "position": [
+        253.03818039,
+        166.50249508
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Border_Low/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:88457",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        266.68533928,
+        116.20678231
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Border_Low (1)/Pivot/Skin",
+      "asset": "borderDown",
+      "sourceRenderer": "level0:82904",
+      "sortingOrder": -28,
+      "color": [
+        154,
+        154,
+        154,
+        255
+      ],
+      "position": [
+        291.50478938,
+        130.53616245
+      ],
+      "axisX": [
+        5.00000038,
+        2.5e-07
+      ],
+      "axisY": [
+        3.1e-07,
+        4.98292886
+      ]
+    }
+  ],
+  "fills": [
+    {
+      "name": "Map_Grid/Under_sprite",
+      "sourceRenderer": "level0:86553",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          -7.00036415,
+          -38.17088304
+        ],
+        [
+          28.35497484,
+          -58.58310365
+        ],
+        [
+          77.85245979,
+          -30.00599641
+        ],
+        [
+          42.4971208,
+          -9.5937758
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid/Upper_Sprite",
+      "sourceRenderer": "level0:89146",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          -79.97378249,
+          32.37375218
+        ],
+        [
+          -44.61844351,
+          11.96153157
+        ],
+        [
+          4.87904144,
+          40.53863882
+        ],
+        [
+          -30.47629754,
+          60.95085942
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Under_sprite",
+      "sourceRenderer": "level0:83308",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          -56.49784245,
+          -66.74799412
+        ],
+        [
+          -21.14250346,
+          -87.16021473
+        ],
+        [
+          28.35498149,
+          -58.58310749
+        ],
+        [
+          -7.0003575,
+          -38.17088688
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (2)/Upper_Sprite",
+      "sourceRenderer": "level0:88250",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          -129.47126079,
+          3.7966411
+        ],
+        [
+          -94.11592181,
+          -16.61557951
+        ],
+        [
+          -44.61843686,
+          11.96152773
+        ],
+        [
+          -79.97377584,
+          32.37374834
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Under_sprite",
+      "sourceRenderer": "level0:88611",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          42.49711415,
+          -9.59377196
+        ],
+        [
+          77.85245313,
+          -30.00599257
+        ],
+        [
+          127.34993808,
+          -1.42888532
+        ],
+        [
+          91.9945991,
+          18.98333529
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (1)/Upper_Sprite",
+      "sourceRenderer": "level0:84313",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          -30.47630419,
+          60.95086326
+        ],
+        [
+          4.87903479,
+          40.53864265
+        ],
+        [
+          54.37651974,
+          69.1157499
+        ],
+        [
+          19.02118076,
+          89.52797051
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Under_sprite",
+      "sourceRenderer": "level0:83306",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          91.99459245,
+          18.98333912
+        ],
+        [
+          127.34993143,
+          -1.42888148
+        ],
+        [
+          176.84741638,
+          27.14822576
+        ],
+        [
+          141.4920774,
+          47.56044637
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (3)/Upper_Sprite",
+      "sourceRenderer": "level0:88253",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          19.0211741,
+          89.52797435
+        ],
+        [
+          54.37651309,
+          69.11575374
+        ],
+        [
+          103.87399804,
+          97.69286098
+        ],
+        [
+          68.51865905,
+          118.10508159
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Under_sprite",
+      "sourceRenderer": "level0:83305",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          289.98450565,
+          133.29178346
+        ],
+        [
+          325.33984463,
+          112.87956285
+        ],
+        [
+          374.83732958,
+          141.45667009
+        ],
+        [
+          339.4819906,
+          161.8688907
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (7)/Upper_Sprite",
+      "sourceRenderer": "level0:88252",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          217.0110873,
+          203.83641868
+        ],
+        [
+          252.36642628,
+          183.42419807
+        ],
+        [
+          301.86391123,
+          212.00130531
+        ],
+        [
+          266.50857225,
+          232.41352592
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Under_sprite",
+      "sourceRenderer": "level0:83301",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          339.48198395,
+          161.86889454
+        ],
+        [
+          374.83732293,
+          141.45667393
+        ],
+        [
+          424.33480788,
+          170.03378117
+        ],
+        [
+          388.9794689,
+          190.44600178
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (8)/Upper_Sprite",
+      "sourceRenderer": "level0:88257",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          266.5085656,
+          232.41352976
+        ],
+        [
+          301.86390458,
+          212.00130915
+        ],
+        [
+          351.36138953,
+          240.57841639
+        ],
+        [
+          316.00605055,
+          260.990637
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Under_sprite",
+      "sourceRenderer": "level0:83307",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          388.97946225,
+          190.44600562
+        ],
+        [
+          424.33480123,
+          170.03378501
+        ],
+        [
+          473.83228618,
+          198.61089225
+        ],
+        [
+          438.4769472,
+          219.02311286
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (9)/Upper_Sprite",
+      "sourceRenderer": "level0:88249",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          316.0060439,
+          260.99064084
+        ],
+        [
+          351.36138288,
+          240.57842023
+        ],
+        [
+          400.85886783,
+          269.15552748
+        ],
+        [
+          365.50352885,
+          289.56774808
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Under_sprite",
+      "sourceRenderer": "level0:83300",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          438.47694055,
+          219.0231167
+        ],
+        [
+          473.83227953,
+          198.61089609
+        ],
+        [
+          523.32976448,
+          227.18800334
+        ],
+        [
+          487.9744255,
+          247.60022395
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (10)/Upper_Sprite",
+      "sourceRenderer": "level0:88256",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          365.5035222,
+          289.56775192
+        ],
+        [
+          400.85886118,
+          269.15553132
+        ],
+        [
+          450.35634613,
+          297.73263856
+        ],
+        [
+          415.00100715,
+          318.14485917
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Under_sprite",
+      "sourceRenderer": "level0:83302",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          487.97441885,
+          247.60022779
+        ],
+        [
+          523.32975783,
+          227.18800718
+        ],
+        [
+          572.82724278,
+          255.76511442
+        ],
+        [
+          537.4719038,
+          276.17733503
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (11)/Upper_Sprite",
+      "sourceRenderer": "level0:88258",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          415.0010005,
+          318.14486301
+        ],
+        [
+          450.35633948,
+          297.7326424
+        ],
+        [
+          499.85382443,
+          326.30974964
+        ],
+        [
+          464.49848545,
+          346.72197025
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Under_sprite",
+      "sourceRenderer": "level0:83309",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          141.49207075,
+          47.56045021
+        ],
+        [
+          176.84740973,
+          27.1482296
+        ],
+        [
+          226.34489468,
+          55.72533684
+        ],
+        [
+          190.9895557,
+          76.13755745
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (4)/Upper_Sprite",
+      "sourceRenderer": "level0:88251",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          68.5186524,
+          118.10508543
+        ],
+        [
+          103.87399139,
+          97.69286482
+        ],
+        [
+          153.37147634,
+          126.26997206
+        ],
+        [
+          118.01613735,
+          146.68219267
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Under_sprite",
+      "sourceRenderer": "level0:83303",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          190.98954905,
+          76.13756129
+        ],
+        [
+          226.34488803,
+          55.72534068
+        ],
+        [
+          275.84237298,
+          84.30244792
+        ],
+        [
+          240.487034,
+          104.71466853
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (5)/Upper_Sprite",
+      "sourceRenderer": "level0:88255",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          118.0161307,
+          146.68219651
+        ],
+        [
+          153.37146969,
+          126.2699759
+        ],
+        [
+          202.86895464,
+          154.84708315
+        ],
+        [
+          167.51361565,
+          175.25930375
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Under_sprite",
+      "sourceRenderer": "level0:83304",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -29,
+      "color": [
+        0,
+        0,
+        0,
+        188
+      ],
+      "points": [
+        [
+          240.48702735,
+          104.71467237
+        ],
+        [
+          275.84236633,
+          84.30245176
+        ],
+        [
+          325.33985128,
+          112.87955901
+        ],
+        [
+          289.9845123,
+          133.29177962
+        ]
+      ]
+    },
+    {
+      "name": "Map_Grid (6)/Upper_Sprite",
+      "sourceRenderer": "level0:88254",
+      "sourceSprite": "sharedassets0.assets:950",
+      "sortingOrder": -27,
+      "color": [
+        129,
+        168,
+        85,
+        255
+      ],
+      "points": [
+        [
+          167.513609,
+          175.25930759
+        ],
+        [
+          202.86894799,
+          154.84708699
+        ],
+        [
+          252.36643293,
+          183.42419423
+        ],
+        [
+          217.01109395,
+          203.83641484
+        ]
+      ]
+    }
+  ],
+  "chunks": [
+    {
+      "sourceKey": "level0:148206",
+      "transform": {
+        "sourceKey": "level0:53034",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid",
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140434",
+      "transform": {
+        "sourceKey": "level0:42522",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (2)",
+        "position": [
+          0.0,
+          0.0,
+          -70.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:132970",
+      "transform": {
+        "sourceKey": "level0:59919",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (1)",
+        "position": [
+          0.0,
+          0.0,
+          70.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140433",
+      "transform": {
+        "sourceKey": "level0:42520",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (3)",
+        "position": [
+          0.0,
+          0.0,
+          140.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140432",
+      "transform": {
+        "sourceKey": "level0:42519",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (7)",
+        "position": [
+          0.0,
+          0.0,
+          420.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140438",
+      "transform": {
+        "sourceKey": "level0:42515",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (8)",
+        "position": [
+          0.0,
+          0.0,
+          490.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140435",
+      "transform": {
+        "sourceKey": "level0:42521",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (9)",
+        "position": [
+          0.0,
+          0.0,
+          560.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140437",
+      "transform": {
+        "sourceKey": "level0:42514",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (10)",
+        "position": [
+          0.0,
+          0.0,
+          630.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140439",
+      "transform": {
+        "sourceKey": "level0:42516",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (11)",
+        "position": [
+          0.0,
+          0.0,
+          700.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140436",
+      "transform": {
+        "sourceKey": "level0:42523",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (4)",
+        "position": [
+          0.0,
+          0.0,
+          210.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140440",
+      "transform": {
+        "sourceKey": "level0:42518",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (5)",
+        "position": [
+          0.0,
+          0.0,
+          280.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "sourceKey": "level0:140441",
+      "transform": {
+        "sourceKey": "level0:42517",
+        "hierarchy": "Tree_manager/Map_obj/Map_Grid/Map_Grid (6)",
+        "position": [
+          0.0,
+          0.0,
+          350.0
+        ],
+        "rotationQuaternion": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "camera": {
+    "halfHeight": 40,
+    "right": [
+      0.70710678,
+      1e-08,
+      0.70710683
+    ],
+    "up": [
+      -0.40824441,
+      0.81650047,
+      0.40824444
+    ],
+    "followMode": "direct position copy every Update",
+    "followSource": "level0:123273",
+    "target": "level0:44677",
+    "projectedOffset": [
+      0.07070615,
+      -1.09325769
+    ],
+    "sourceTransform": {
+      "sourceKey": "level0:39276",
+      "hierarchy": "Camera_manager/Main Camera",
+      "position": [
+        73.5,
+        72.11000061,
+        -73.40000153
+      ],
+      "rotationQuaternion": [
+        0.27984518,
+        -0.36470559,
+        0.11591566,
+        0.88047725
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "treeLayout": {
+    "sourceGrid": "level0:147577",
+    "gridTransform": {
+      "sourceKey": "level0:59288",
+      "hierarchy": "Tree_manager/Map_obj/Tree_Grid/Tree_Grid",
+      "position": [
+        0.0,
+        0.0,
+        50.0
+      ],
+      "rotationQuaternion": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "listTransform": {
+      "sourceKey": "level0:63949",
+      "hierarchy": "Tree_manager/Map_obj/Tree_Grid/Tree_Grid/Tree_List",
+      "position": [
+        -22.5,
+        0.0,
+        -22.5
+      ],
+      "rotationQuaternion": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "columns": 10,
+    "rows": 10,
+    "spacing": 5,
+    "jitter": 1.5,
+    "firstWaveCount": 30,
+    "selection": "Morton-order slots[floor(i*100/30)]",
+    "originXZ": [
+      -22.5,
+      27.5
+    ]
+  },
+  "evidence": {
+    "grass": "Baked in sprite sharedassets0.assets:755 / texture154; no independent grass generator in this map.",
+    "stage": "GameSlider__t7568.c Stage_Reload lines31/34 adds1; Tree_manager__t7671.c Map_Batch stage%10.",
+    "uv": "shader-229-platform-9-0.txt line101 applies _BaseMap_ST; line342 samples _BaseMap. Floor material repeats18x18; texture154 WrapU/WrapV=0 Repeat.",
+    "boundaries": "All 12 serialized Map_Grid components: 48 border sprites plus24 solid filling planes; runtime Map_Grid.Reload sets stage sprites and Upper_sprite color.",
+    "coordinateSpace": "Tree_manager local coordinates; original scene root worldX=-100 is removed consistently from map/player."
+  }
+}

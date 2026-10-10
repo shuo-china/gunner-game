@@ -1,0 +1,75 @@
+// 2D sprite interface follows Creator 3.8.8 builtin-sprite.effect.
+// Lighting is Unity Simple Lit's original flat-surface Lambert + SH9 irradiance.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: floor-vs:vert
+      frag: floor-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+        irradiance: { value: [1, 1, 1, 1] }
+        uvTransform: { value: [18, 18, 0, 0] }
+}%
+
+CCProgram floor-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  uniform OriginalFloorUV { vec4 uvTransform; };
+  out vec4 color;
+  out vec2 uv0;
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+    pos = cc_matViewProj * pos;
+    uv0 = a_texCoord * uvTransform.xy + uvTransform.zw;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+    return pos;
+  }
+}%
+
+CCProgram floor-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  in vec4 color;
+  in vec2 uv0;
+  uniform OriginalFloorLighting { vec4 irradiance; };
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  vec3 floorSrgbToLinear(vec3 value) {
+    return mix(value / 12.92, pow((value + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), value));
+  }
+  vec4 frag () {
+    vec4 o = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+    // The world is blended into a linear RenderTexture, then encoded once.
+    o.rgb = floorSrgbToLinear(o.rgb) * irradiance.rgb * floorSrgbToLinear(color.rgb);
+    o.a *= color.a;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

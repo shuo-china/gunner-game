@@ -1,0 +1,37 @@
+{
+  "name": "Forest Gunner",
+  "buildPath": "project://build",
+  "startScene": "f32619ca-738d-48a0-9472-158449dc6999",
+  "scenes": [
+    {
+      "url": "db://assets/scenes/main.scene",
+      "uuid": "f32619ca-738d-48a0-9472-158449dc6999"
+    }
+  ],
+  "debug": true,
+  "sourceMaps": true,
+  "md5Cache": true,
+  "replaceSplashScreen": true,
+  "resolution": {
+    "width": 720,
+    "height": 1280,
+    "policy": 4
+  },
+  "designResolution": {
+    "width": 720,
+    "height": 1280,
+    "fitWidth": true,
+    "fitHeight": false,
+    "policy": 4
+  },
+  "platform": "web-mobile",
+  "outputName": "web-mobile",
+  "packages": {
+    "web-mobile": {
+      "orientation": "portrait",
+      "polyfills": {
+        "asyncFunctions": false
+      }
+    }
+  }
+}

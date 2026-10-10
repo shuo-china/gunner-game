@@ -1,0 +1,39 @@
+{
+  "name": "Forest Gunner",
+  "buildPath": "project://build",
+  "startScene": "f32619ca-738d-48a0-9472-158449dc6999",
+  "scenes": [
+    {
+      "url": "db://assets/scenes/main.scene",
+      "uuid": "f32619ca-738d-48a0-9472-158449dc6999"
+    }
+  ],
+  "debug": false,
+  "sourceMaps": false,
+  "md5Cache": true,
+  "replaceSplashScreen": true,
+  "resolution": {
+    "width": 720,
+    "height": 1280,
+    "policy": 4
+  },
+  "designResolution": {
+    "width": 720,
+    "height": 1280,
+    "fitWidth": true,
+    "fitHeight": false,
+    "policy": 4
+  },
+  "platform": "wechatgame",
+  "outputName": "wechatgame",
+  "packages": {
+    "wechatgame": {
+      "appid": "wx2af23eaa33e48d81",
+      "orientation": "portrait",
+      "separateEngine": false,
+      "buildOpenDataContextTemplate": false,
+      "highPerformanceMode": false,
+      "wasmSubpackage": false
+    }
+  }
+}
