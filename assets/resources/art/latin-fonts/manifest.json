@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "characters": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~×÷−",
+  "fonts": [
+    {
+      "id": "39b273cc882c3eab",
+      "source": {
+        "font": "sharedassets0.assets:1010",
+        "material": "sharedassets0.assets:77",
+        "fontFile": "sharedassets0.assets:318"
+      },
+      "pages": [
+        "art/latin-fonts/latin-39b273cc882c3eab-0"
+      ],
+      "pngBytes": 239311,
+      "rgbaBytes": 5166864,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "4789f477b173f691",
+      "source": {
+        "font": "sharedassets0.assets:1011",
+        "material": "sharedassets0.assets:78",
+        "fontFile": "sharedassets0.assets:318"
+      },
+      "pages": [
+        "art/latin-fonts/latin-4789f477b173f691-0",
+        "art/latin-fonts/latin-4789f477b173f691-1"
+      ],
+      "pngBytes": 233243,
+      "rgbaBytes": 5080040,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "545d90d09b40545f",
+      "source": {
+        "font": "sharedassets0.assets:1009",
+        "material": "sharedassets0.assets:72",
+        "fontFile": "sharedassets0.assets:317"
+      },
+      "pages": [
+        "art/latin-fonts/latin-545d90d09b40545f-0",
+        "art/latin-fonts/latin-545d90d09b40545f-1"
+      ],
+      "pngBytes": 171166,
+      "rgbaBytes": 2949168,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "691f5a4194147d98",
+      "source": {
+        "font": "sharedassets0.assets:1006",
+        "material": "sharedassets0.assets:75",
+        "fontFile": "sharedassets0.assets:320"
+      },
+      "pages": [
+        "art/latin-fonts/latin-691f5a4194147d98-0",
+        "art/latin-fonts/latin-691f5a4194147d98-1",
+        "art/latin-fonts/latin-691f5a4194147d98-2",
+        "art/latin-fonts/latin-691f5a4194147d98-3",
+        "art/latin-fonts/latin-691f5a4194147d98-4",
+        "art/latin-fonts/latin-691f5a4194147d98-5",
+        "art/latin-fonts/latin-691f5a4194147d98-6",
+        "art/latin-fonts/latin-691f5a4194147d98-7",
+        "art/latin-fonts/latin-691f5a4194147d98-8",
+        "art/latin-fonts/latin-691f5a4194147d98-9",
+        "art/latin-fonts/latin-691f5a4194147d98-10",
+        "art/latin-fonts/latin-691f5a4194147d98-11",
+        "art/latin-fonts/latin-691f5a4194147d98-12",
+        "art/latin-fonts/latin-691f5a4194147d98-13",
+        "art/latin-fonts/latin-691f5a4194147d98-14",
+        "art/latin-fonts/latin-691f5a4194147d98-15",
+        "art/latin-fonts/latin-691f5a4194147d98-16",
+        "art/latin-fonts/latin-691f5a4194147d98-17",
+        "art/latin-fonts/latin-691f5a4194147d98-18",
+        "art/latin-fonts/latin-691f5a4194147d98-19",
+        "art/latin-fonts/latin-691f5a4194147d98-20",
+        "art/latin-fonts/latin-691f5a4194147d98-21",
+        "art/latin-fonts/latin-691f5a4194147d98-22",
+        "art/latin-fonts/latin-691f5a4194147d98-23",
+        "art/latin-fonts/latin-691f5a4194147d98-24",
+        "art/latin-fonts/latin-691f5a4194147d98-25",
+        "art/latin-fonts/latin-691f5a4194147d98-26",
+        "art/latin-fonts/latin-691f5a4194147d98-27",
+        "art/latin-fonts/latin-691f5a4194147d98-28",
+        "art/latin-fonts/latin-691f5a4194147d98-29",
+        "art/latin-fonts/latin-691f5a4194147d98-30",
+        "art/latin-fonts/latin-691f5a4194147d98-31",
+        "art/latin-fonts/latin-691f5a4194147d98-32",
+        "art/latin-fonts/latin-691f5a4194147d98-33",
+        "art/latin-fonts/latin-691f5a4194147d98-34",
+        "art/latin-fonts/latin-691f5a4194147d98-35",
+        "art/latin-fonts/latin-691f5a4194147d98-36",
+        "art/latin-fonts/latin-691f5a4194147d98-37",
+        "art/latin-fonts/latin-691f5a4194147d98-38",
+        "art/latin-fonts/latin-691f5a4194147d98-39",
+        "art/latin-fonts/latin-691f5a4194147d98-40",
+        "art/latin-fonts/latin-691f5a4194147d98-41",
+        "art/latin-fonts/latin-691f5a4194147d98-42"
+      ],
+      "pngBytes": 2942335,
+      "rgbaBytes": 66456060,
+      "maxDisplaySize": 72,
+      "rasterScale": 1.25
+    },
+    {
+      "id": "733fa31b243a3733",
+      "source": {
+        "font": "sharedassets0.assets:1003",
+        "material": "sharedassets0.assets:4",
+        "fontFile": "sharedassets0.assets:321"
+      },
+      "pages": [
+        "art/latin-fonts/latin-733fa31b243a3733-0",
+        "art/latin-fonts/latin-733fa31b243a3733-1",
+        "art/latin-fonts/latin-733fa31b243a3733-2"
+      ],
+      "pngBytes": 135491,
+      "rgbaBytes": 4127508,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "83c27f60758bbcf4",
+      "source": {
+        "font": "sharedassets0.assets:1007",
+        "material": "sharedassets0.assets:76",
+        "fontFile": "sharedassets0.assets:320"
+      },
+      "pages": [
+        "art/latin-fonts/latin-83c27f60758bbcf4-0",
+        "art/latin-fonts/latin-83c27f60758bbcf4-1"
+      ],
+      "pngBytes": 184843,
+      "rgbaBytes": 9763776,
+      "maxDisplaySize": 72,
+      "rasterScale": 1.25
+    },
+    {
+      "id": "bfb9ae8c750ca839",
+      "source": {
+        "font": "sharedassets0.assets:1008",
+        "material": "sharedassets0.assets:71",
+        "fontFile": "sharedassets0.assets:317"
+      },
+      "pages": [
+        "art/latin-fonts/latin-bfb9ae8c750ca839-0",
+        "art/latin-fonts/latin-bfb9ae8c750ca839-1",
+        "art/latin-fonts/latin-bfb9ae8c750ca839-2"
+      ],
+      "pngBytes": 102628,
+      "rgbaBytes": 2077536,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "df26a46edeb4603e",
+      "source": {
+        "font": "sharedassets0.assets:1002",
+        "material": "sharedassets0.assets:3",
+        "fontFile": "sharedassets0.assets:321"
+      },
+      "pages": [
+        "art/latin-fonts/latin-df26a46edeb4603e-0",
+        "art/latin-fonts/latin-df26a46edeb4603e-1",
+        "art/latin-fonts/latin-df26a46edeb4603e-2",
+        "art/latin-fonts/latin-df26a46edeb4603e-3",
+        "art/latin-fonts/latin-df26a46edeb4603e-4"
+      ],
+      "pngBytes": 284070,
+      "rgbaBytes": 6245652,
+      "maxDisplaySize": 60,
+      "rasterScale": 1
+    },
+    {
+      "id": "hud",
+      "source": {
+        "font": "sharedassets0.assets:1006",
+        "material": "sharedassets0.assets:75",
+        "fontFile": "sharedassets0.assets:320"
+      },
+      "pages": [
+        "art/latin-fonts/hud-latin-0"
+      ],
+      "pngBytes": 177645,
+      "rgbaBytes": 4900800
+    },
+    {
+      "id": "latin-extra-ab3cb5290082874a",
+      "source": {
+        "font": "sharedassets0.assets:1006",
+        "material": "sharedassets0.assets:75",
+        "fontFile": "sharedassets0.assets:320"
+      },
+      "pages": [
+        "art/latin-fonts/latin-extra-ab3cb5290082874a-0",
+        "art/latin-fonts/latin-extra-ab3cb5290082874a-1"
+      ],
+      "pngBytes": 734787,
+      "rgbaBytes": 21638376,
+      "rasterScale": 1.25,
+      "maxDisplaySize": 45,
+      "incrementalSystem": "adventure-system"
+    },
+    {
+      "id": "latin-extra-705142db6612d85b",
+      "source": {
+        "font": "sharedassets0.assets:1003",
+        "material": "sharedassets0.assets:4",
+        "fontFile": "sharedassets0.assets:321"
+      },
+      "pages": [
+        "art/latin-fonts/latin-extra-705142db6612d85b-0"
+      ],
+      "pngBytes": 54226,
+      "rgbaBytes": 764400,
+      "rasterScale": 1,
+      "maxDisplaySize": 32.00000047683716,
+      "incrementalSystem": "adventure-system"
+    },
+    {
+      "id": "latin-extra-246522746cda5262",
+      "source": {
+        "font": "sharedassets0.assets:1008",
+        "material": "sharedassets0.assets:71",
+        "fontFile": "sharedassets0.assets:317"
+      },
+      "pages": [
+        "art/latin-fonts/latin-extra-246522746cda5262-0"
+      ],
+      "pngBytes": 21194,
+      "rgbaBytes": 218880,
+      "rasterScale": 1,
+      "maxDisplaySize": 36,
+      "incrementalSystem": "adventure-system"
+    },
+    {
+      "id": "latin-extra-42c5c1b70d10f551",
+      "source": {
+        "font": "sharedassets0.assets:1002",
+        "material": "sharedassets0.assets:3",
+        "fontFile": "sharedassets0.assets:321"
+      },
+      "pages": [
+        "art/latin-fonts/latin-extra-42c5c1b70d10f551-0"
+      ],
+      "pngBytes": 220826,
+      "rgbaBytes": 3185132,
+      "rasterScale": 1,
+      "maxDisplaySize": 57.600000858306885,
+      "incrementalSystem": "adventure-system"
+    }
+  ],
+  "pngBytes": 5501765,
+  "rgbaBytes": 132574192
+}

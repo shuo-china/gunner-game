@@ -1,0 +1,56 @@
+最终选定音效来源与署名
+导弹 C 为 CC BY 3.0，采用时保留作者、来源、许可及修改说明；其余五类为 CC0。
+原版枪声仅作项目内部对照，其授权独立于上述新增素材。
+
+弓箭 B
+Ben Jaszczak & Brian Nelson — https://opengameart.org/content/medieval-sound-effects-weapon-textures — CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+https://opengameart.org/content/medieval-sound-effects-weapon-textures
+https://opengameart.org/sites/default/files/medieval_sfx_textures_1_of_2.7z
+修改说明：从多次发射录音中选取一发。原录音 1.245–1.545 秒；末尾 12 ms 淡出，起点 1 ms 淡入；增益 -6.3 dB。
+
+
+弩 B
+Ben Jaszczak & Brian Nelson — https://opengameart.org/content/medieval-sound-effects-weapon-textures — CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+https://opengameart.org/content/medieval-sound-effects-weapon-textures
+https://opengameart.org/sites/default/files/medieval_sfx_textures_1_of_2.7z
+修改说明：从多次发射录音中选取一发。原录音 2.485–2.735 秒；末尾 12 ms 淡出，起点 1 ms 淡入；增益 -9.2 dB。
+
+
+法杖 G
+"JM_FX_Fireball 01" by Julien Matthey | https://opengameart.org/content/fireball-1 | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). Audition modification: excerpt/trim, level adjustment and fades. Additional audition edit: short transient crop, mild high-pass, fast attack/exponential decay envelope and event-peak matching.
+https://creativecommons.org/publicdomain/zero/1.0/
+https://opengameart.org/content/fireball-1
+https://opengameart.org/sites/default/files/105016__julien-matthey__jm-fx-fireball-01.wav
+修改说明：沿用 E 的同一来源，取原素材 0.448-0.520 秒；90 Hz 双极高通（12 dB/倍频程）；总长 72 ms。2 ms 正弦平方起音，主体保留至 20 ms，随后按 9 ms 时间常数指数衰减，最后 10 ms 余弦平方淡出；首尾样本归零。单发峰值对齐旧 E（-15.06 dBFS）。不变速、不变调、不加合成层，不降低连发频率或跳发。；按对应旧版单发峰值匹配，播放总音量沿用上一轮。
+同 E 的 CC0 原始 WAV；本轮只重做短包络，不是新来源。
+
+扇子 C
+qubodup / Iwan Gabovitch — https://opengameart.org/content/swish-bamboo-stick-weapon-swhoshes — CC0
+https://creativecommons.org/publicdomain/zero/1.0/
+https://opengameart.org/content/swish-bamboo-stick-weapon-swhoshes
+https://opengameart.org/sites/default/files/swoshes.7z
+修改说明：原素材 0.030–0.240 秒；2 ms 淡入，20 ms 淡出；增益 -12.0 dB。不改音高。
+
+
+飞镖拳套 B
+artisticdude — https://opengameart.org/content/swishes-sound-pack — CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+https://opengameart.org/content/swishes-sound-pack
+https://opengameart.org/sites/default/files/swishes.zip
+修改说明：原录音 0.007–0.071 秒；末尾 4 ms 淡出，起点 1 ms 淡入；增益 -15.3 dB。
+
+
+导弹 C
+4 projectile launches — Michel Baradari (apollo-music.de) — https://opengameart.org/content/4-projectile-launches — CC BY 3.0. Changes: trimmed, faded, gain adjusted.
+https://creativecommons.org/licenses/by/3.0/
+https://opengameart.org/content/4-projectile-launches
+https://opengameart.org/sites/default/files/launches.7z
+修改说明：原素材 0.000–0.300 秒；2 ms 淡入，80 ms 淡出；增益 -22.2 dB。不改音高。
+
+
+游戏接入：弓 B=17，弩 B=18，法杖 G=19，扇子 C=20，飞镖 B=21，导弹 C=22；火铳保留 ID 8。
+每类各档品质共用所选基础音效。新文件增益已处理，运行时 volume=1；原枪音量仍为0.3。
+每轮齐射仅 pelletIndex=0 触发声音。各音效 ID 独立沿用同帧及50毫秒去重。
+构建前自动运行 tools/sync-weapon-audio.cjs，根据 tools/weapon-audio-selected-sources.json 恢复分类映射，避免资源重导后回到统一枪声。来源记录仅供构建与溯源，不进入 assets/resources。

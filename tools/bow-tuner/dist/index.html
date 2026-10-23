@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>弓箭动作调试 · Forest Gunner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="identity"><span class="brandmark" aria-hidden="true">↗</span><div><span class="eyebrow">FOREST GUNNER / MOTION LAB</span><h1>弓箭动作调试</h1></div></div>
+    <div class="header-actions"><span id="save-status" class="save-status">本地调试</span><button id="import-open" class="quiet">导入参数</button><button id="copy" class="primary" disabled>复制参数 ↗</button></div>
+  </header>
+  <main>
+    <section class="preview-column" aria-label="动作预览">
+      <div class="preview-toolbar">
+        <div class="selects"><label>弓 <select id="weapon"><option value="0">D 级 · 木弓</option><option value="2">C 级弓</option><option value="5">B 级弓</option><option value="9">A 级弓</option></select></label><label>皮肤 <select id="skin"></select></label></div>
+        <div class="view-buttons"><button id="facing" title="切换左右朝向">朝向左 ←</button><button id="compare" aria-pressed="false">对比默认</button></div>
+      </div>
+      <div id="stage" class="stage">
+        <iframe id="runtime" src="runtime/index.html" title="游戏角色实时预览" tabindex="-1"></iframe>
+        <svg id="guides" aria-label="可拖动的圆心和拉弦起点" xmlns="http://www.w3.org/2000/svg">
+          <path id="orbit" class="orbit"/><path id="pull-line" class="pull-line"/>
+          <circle id="holding-point" r="5" class="holding-point"/><circle id="drawing-point" r="5" class="drawing-point"/>
+          <g id="center-handle" class="handle amber" data-drag="pivot"><circle class="hit-area" r="21"/><circle r="11"/><path d="M-16 0H16M0-16V16"/><text x="20" y="-12">圆心</text></g>
+          <g id="start-handle" class="handle teal" data-drag="start"><circle class="hit-area" r="11"/><path d="M0-9L9 0 0 9-9 0Z"/><text x="18" y="23">起点</text></g>
+          <g id="radius-handle" class="handle neutral" data-drag="radius"><circle class="hit-area" r="16"/><circle r="7"/><text x="13" y="5">半径</text></g>
+        </svg>
+        <div class="stage-corner"><span id="phase-badge" class="badge">载入角色</span><span id="compare-badge" class="badge compare-badge" hidden>正在显示默认参数</span></div>
+        <div class="stage-footnote"><span>拖动画面中的圆心、起点或半径手柄</span><label><input id="show-guides" type="checkbox" checked> 显示辅助线</label></div>
+        <div id="loading" class="loading"><span class="spinner"></span><strong>正在载入实际游戏角色</strong><span>预览与你的游戏使用相同素材与动作代码</span><button id="reload" hidden>重新载入</button></div>
+      </div>
+      <section class="transport" aria-label="播放控制">
+        <div class="transport-top"><button id="play" class="play-button" disabled>Ⅱ 暂停</button><div class="phase-buttons"><button data-phase="0">开始</button><button data-phase="0.45">半拉</button><button data-phase="0.70">拉满</button><button data-phase="0.74">松弦</button><button data-phase="1">回位</button></div><output id="timeline-value">0%</output></div>
+        <label class="sr-only" for="timeline">动作进度</label><input id="timeline" class="timeline" type="range" min="0" max="1" step="0.001" value="0">
+        <div class="preview-options"><label>瞄准角度 <input id="aim" type="range" min="-180" max="180" step="1" value="0"><output id="aim-value">0°</output></label><label>周期 <input id="duration" type="number" min="0.4" max="6" step="0.1" value="2"> 秒</label><label><input id="walk" type="checkbox"> 行走</label><label>缩放 <input id="zoom" type="range" min="0.45" max="1.5" step="0.05" value="1"></label></div>
+      </section>
+      <div class="readouts"><div><span>实际持弓半径</span><strong id="radius-readout">—</strong></div><div><span>满拉距离</span><strong id="distance-readout">—</strong></div><div><span>当前手部后移</span><strong id="pull-readout">—</strong></div><p>位置单位为骨骼单位。参数只影响这个调试角色，调好后复制给我即可。</p></div>
+    </section>
+    <aside class="settings" aria-label="动作参数">
+      <div class="settings-heading"><div><span class="eyebrow">POSE PARAMETERS</span><h2>调整动作</h2></div><button id="reset" class="text-button">恢复默认</button></div>
+      <div id="parameters"></div>
+      <details class="export-details"><summary>查看参数 JSON <span>↗</span></summary><textarea id="json-output" readonly spellcheck="false" aria-label="可复制的参数 JSON"></textarea><button id="download">下载参数文件</button></details>
+      <p class="settings-note">橙色是转向圆心，绿色是拉弦起点。调整起点不会改变圆心，转向时起点随角色保持固定。</p>
+    </aside>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="import-dialog"><form method="dialog"><h2>导入动作参数</h2><p>粘贴从这个调试页复制的 JSON，也可以选择之前下载的文件。</p><label class="file-picker">选择参数文件<input id="import-file" type="file" accept=".json,application/json"></label><textarea id="import-text" spellcheck="false" placeholder="在这里粘贴参数 JSON" aria-label="待导入参数"></textarea><p id="import-error" role="alert"></p><div class="dialog-actions"><button value="cancel">取消</button><button id="import-apply" type="button" class="primary">应用参数</button></div></form></dialog>
+  <script src="app.js" defer></script>
+</body>
+</html>

@@ -1,108 +1,133 @@
-import { BlockInputEvents, Color, Graphics, Label, Mask, Node, Sprite, UITransform, Vec2 } from 'cc';
+import { Color, EventTouch, Graphics, Label, Mask, Node, Sprite, UITransform, Vec2 } from 'cc';
 import type { BattleHudState } from '../session/BattleSession';
 import type { UpgradeType } from '../session/UpgradeEconomy';
 import { ArtLibrary, makeNode } from './ArtLibrary';
 import { completionRatio, formatDiamonds, formatGold, stageLabel, stageWaveIndex, timeRatio, usesStageHud } from './HudMath';
 import type { HudColor, HudImageName, OriginalHudAssets } from './OriginalHudAssets';
 import { UpgradeHud } from './UpgradeHud';
+import { OriginalStageTransition } from './OriginalStageTransition';
+import type { OriginalSfx } from './OriginalSfx';
+import { FloatingJoystick } from './FloatingJoystick';
+import { attachFontPolicyLabel } from './FontPolicyLabel';
+import type { FontPolicyLabelOptions } from './FontPolicyLabel';
+import type { MovementInputHandler } from './FloatingJoystick';
 
 type Pair = [number, number];
-const ink = new Color(85, 60, 40);
-const cream = new Color(255, 245, 206);
-
-/** Hosts mutually exclusive battle HUD roots. Results belong to the host so
- * Main_UI can be detached without leaking stage widgets into other modes. */
+/** Original Main_UI overlays stay below its HUD bars; session owns progression. */
 export class GameHud {
   readonly node: Node;
   private stage?: StageHud;
   private upgrades?: UpgradeHud;
-  private readonly complete: Node;
-  private readonly completeCard: Node;
-  private readonly completeStats: Label;
-  private readonly backdrop: Node;
-  private lastComplete = false;
-  private lastResult = '';
+  private readonly transition: OriginalStageTransition;
+  private readonly joystick?: FloatingJoystick;
   private width = 720;
   private height = 1280;
   private topInset = 0;
   private bottomInset = 0;
   private destroyed = false;
+  private modalOpen = false;
+  private loadingElapsed: number | null = null;
 
   constructor(parent: Node, private readonly art: ArtLibrary, private readonly assets: OriginalHudAssets,
-    onRestart: () => void, private readonly onUpgrade: (type: UpgradeType) => boolean = () => false) {
+    _onRestart: () => void, private readonly onUpgrade: (type: UpgradeType) => boolean = () => false,
+    sfx?: Pick<OriginalSfx, 'play'>, private readonly onSettings: () => void = () => {}, onMovement?: MovementInputHandler) {
     this.node = makeNode('BattleHud', parent);
-    this.complete = makeNode('CompleteOverlay', this.node);
-    this.complete.active = false;
-    this.backdrop = makeNode('Shade', this.complete);
-    box(this.backdrop, 2400, 3000, 0, new Color(37, 39, 26, 145));
-    this.backdrop.addComponent(BlockInputEvents);
-    this.backdrop.on(Node.EventType.TOUCH_END, () => {});
-    this.completeCard = makeNode('Results', this.complete);
-    box(this.completeCard, 570, 382, 34, cream, ink, 7);
-    resultText(this.completeCard, '森林清理完成', 39, 0, 104, ink);
-    resultText(this.completeCard, '每一棵树，都已清除。', 22, 0, 48, new Color(131, 103, 67));
-    this.completeStats = resultText(this.completeCard, '', 25, 0, -4, new Color(93, 128, 57));
-    const again = makeNode('PlayAgain', this.completeCard);
-    again.setPosition(0, -100, 0);
-    box(again, 300, 79, 23, new Color(139, 171, 76), ink, 5);
-    resultText(again, '再来一次', 28, 0, 0, cream);
-    again.on(Node.EventType.TOUCH_END, onRestart);
+    this.transition = new OriginalStageTransition(this.node, art, assets.stageTransition, sfx);
+    // Build asset-heavy overlays before registering joystick's global listeners.
+    // A failed overlay constructor is cleaned up by Bootstrap's owned HUD root.
+    if (onMovement) {
+      this.joystick = new FloatingJoystick(this.node, art, assets.config, onMovement);
+      this.joystick.node.setSiblingIndex(0);
+    }
     this.resize(this.width, this.height);
   }
 
   resize(width: number, height: number, topInset = 0, bottomInset = 0): void {
     if (this.destroyed) return;
     this.width = width; this.height = height; this.topInset = topInset; this.bottomInset = bottomInset;
+    this.joystick?.resize(width, height, topInset, bottomInset);
     this.stage?.resize(width, height, topInset);
     this.upgrades?.resize(width, height, bottomInset);
-    const scale = Math.max(.1, Math.min(1, (width - 30) / 640));
-    this.completeCard.setScale(scale, scale, 1);
-    this.completeCard.setPosition(0, (bottomInset - topInset) / 2, 0);
-    this.backdrop.setScale(Math.max(1, width / 2400), Math.max(1, height / 3000), 1);
+    this.transition.resize(width, height, topInset, bottomInset);
   }
 
   update(state: BattleHudState, dt = 0): void {
     if (this.destroyed) return;
+    const covered = state.mode === 'Main' && (state.phase === 'loading' || state.phase === 'reveal' || !!state.stageTransition || !!state.stageSkip);
+    this.joystick?.setEnabled(!this.modalOpen && !state.paused && this.loadingElapsed === null && !covered &&
+      ['Main', 'SpeedRun', 'Raid', 'Boss', 'Monster', 'Mine'].includes(state.mode));
     if (usesStageHud(state.mode)) {
       if (!this.stage) {
-        this.stage = new StageHud(this.node, this.art, this.assets);
-        this.stage.node.setSiblingIndex(0);
+        this.stage = new StageHud(this.node, this.art, this.assets, this.onSettings);
+        this.stage.node.setSiblingIndex(this.joystick ? 2 : 1);
         this.stage.resize(this.width, this.height, this.topInset);
       }
-      this.stage.update(state);
-      if (!this.upgrades) {
-        this.upgrades = new UpgradeHud(this.node, this.art, this.assets, this.onUpgrade);
-        this.upgrades.node.setSiblingIndex(1);
-        this.upgrades.resize(this.width, this.height, this.bottomInset);
-      }
-      this.upgrades.update(state, dt);
+      this.stage.setSettingsBlocked(this.modalOpen || state.paused || this.loadingElapsed !== null);
+      this.stage.update(state, dt);
     } else if (this.stage) {
       this.stage.destroy(); this.stage = undefined;
+    }
+    if (state.mode === 'Main' || state.mode === 'SpeedRun' || state.mode === 'Mine') {
+      if (!this.upgrades) {
+        this.upgrades = new UpgradeHud(this.node, this.art, this.assets, this.onUpgrade);
+        this.upgrades.node.setSiblingIndex(this.joystick ? 3 : 2);
+        this.upgrades.resize(this.width, this.height, this.bottomInset);
+      }
+      this.upgrades.update(this.modalOpen ? { ...state, paused: true } : state, dt);
+    } else {
       this.upgrades?.destroy(); this.upgrades = undefined;
     }
-    const showResult = usesStageHud(state.mode) && state.complete && state.resultsReady;
-    if (showResult !== this.lastComplete) this.complete.active = showResult;
-    if (showResult) {
-      const seconds = Math.max(0, Math.floor(state.elapsed));
-      const value = `${state.totalTrees} 棵树   ·   ${Math.floor(seconds / 60)}分${String(seconds % 60).padStart(2, '0')}秒`;
-      if (value !== this.lastResult) { this.completeStats.string = value; this.lastResult = value; }
+    this.transition.update(state, dt);
+    if (this.loadingElapsed !== null) {
+      this.transition.showExternalLoading(this.loadingElapsed);
+      this.transition.node.setSiblingIndex(this.node.children.length - 1);
     }
-    this.lastComplete = showResult;
   }
 
-  cancelInteractions(): void { this.upgrades?.cancelInteractions(); }
+  /** Mode transitions share the original global Loading canvas, above menus. */
+  setLoadingOverlay(elapsed: number | null): void {
+    if (this.destroyed) return;
+    const wasVisible = this.loadingElapsed !== null;
+    this.loadingElapsed = elapsed;
+    if (elapsed !== null) this.joystick?.setEnabled(false);
+    if ((elapsed !== null) !== wasVisible && this.node.parent) {
+      this.node.setSiblingIndex(elapsed === null ? 0 : this.node.parent.children.length - 1);
+      if (elapsed === null) this.transition.node.setSiblingIndex(this.joystick ? 1 : 0);
+    }
+  }
+
+  cancelInteractions(): void { this.joystick?.cancelInteractions(); this.upgrades?.cancelInteractions(); this.stage?.cancelInteractions(); }
+
+  getTutorialUpgradeTarget(): Node | null {
+    return this.destroyed || this.modalOpen || this.loadingElapsed !== null ? null : this.upgrades?.getTutorialPowerTarget() ?? null;
+  }
+
+  /** The original diamond attraction switches back here when a currency panel closes. */
+  getDiamondTarget(): Node | null {
+    return this.destroyed || this.loadingElapsed !== null ? null : this.stage?.diamondTarget ?? null;
+  }
+
+  setModalOpen(open: boolean): void {
+    this.modalOpen = open;
+    if (open) this.joystick?.setEnabled(false);
+    this.stage?.setSettingsBlocked(open || this.loadingElapsed !== null);
+    if (open) this.cancelInteractions();
+  }
 
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
+    this.joystick?.destroy();
     this.stage?.destroy(); this.stage = undefined;
     this.upgrades?.destroy(); this.upgrades = undefined;
+    this.transition.destroy();
     if (this.node.isValid) { this.node.active = false; this.node.destroy(); }
   }
 }
 
 /** Source geometry stays in the original 1080-wide Canvas coordinates. */
 class StageHud {
+  private readonly textViews: ReturnType<typeof attachFontPolicyLabel>[] = [];
   readonly node: Node;
   private readonly progress: ClippedFill;
   private readonly timer: ClippedFill;
@@ -111,6 +136,7 @@ class StageHud {
   private readonly valueText: Label;
   private readonly moneyText: Label;
   private readonly diamondText: Label;
+  readonly diamondTarget: Node;
   private readonly dots: Sprite[] = [];
   private readonly cat: Node;
   private readonly hatch: Node;
@@ -120,8 +146,18 @@ class StageHud {
   private lastMoney = '';
   private lastDiamonds = NaN;
   private lastHatchOffset = NaN;
+  private readonly settings: Node;
+  private settingsBlocked = false;
+  private settingsTouch: number | null = null;
+  private settingsScale = 1;
+  private settingsFrom = 1;
+  private settingsTarget = 1;
+  private settingsElapsed = .1;
+  private settingsTint = 255;
+  private settingsTintFrom = 255;
+  private settingsTintTarget = 255;
 
-  constructor(parent: Node, private readonly art: ArtLibrary, private readonly assets: OriginalHudAssets) {
+  constructor(parent: Node, private readonly art: ArtLibrary, private readonly assets: OriginalHudAssets, onSettings: () => void) {
     const { layout: l, palette: p, referenceWidth: w } = assets.config;
     this.node = makeNode('Main_UI', parent);
     // Unity serializes Time before Value; the bars overlap by 22 reference px.
@@ -150,16 +186,29 @@ class StageHud {
     }
     this.cat = this.image('Player_Icon', 'cat_icon', row, l.catSize, l.catOffset);
     this.stageText = this.label('Stage_txt', row, l.stageFontSize, l.stageTextPosition, l.stageTextSize);
-    // Deliberately no handler: settings is the requested visual placeholder.
-    this.image('Setting_Btn', 'settings', this.node, l.settingsSize, [-w / 2 + l.settingsPosition[0], l.settingsPosition[1]]);
+    this.settings = this.image('Setting_Btn', 'settings', this.node, l.settingsSize, [-w / 2 + l.settingsPosition[0], l.settingsPosition[1]]);
+    const inside = (event: EventTouch): boolean => this.settings.getComponent(UITransform)!.hitTest(event.getLocation());
+    this.settings.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+      event.propagationStopped = true;
+      if (this.settingsBlocked || this.settingsTouch !== null || !inside(event)) return;
+      this.settingsTouch = event.getID() ?? -1; this.animateSettings(.9);
+    });
+    const finish = (event: EventTouch, click: boolean): void => {
+      event.propagationStopped = true;
+      if (this.settingsTouch !== (event.getID() ?? -1)) return;
+      this.settingsTouch = null; this.animateSettings(1);
+      if (click && !this.settingsBlocked && inside(event)) onSettings();
+    };
+    this.settings.on(Node.EventType.TOUCH_END, (event: EventTouch) => finish(event, true));
+    this.settings.on(Node.EventType.TOUCH_CANCEL, (event: EventTouch) => finish(event, false));
     const money = this.image('Money', 'currency_background', this.node, l.moneySize,
       [w / 2 + l.moneyPosition[0], l.moneyPosition[1]], p.currencyBackground, true);
     this.image('Image', 'money_icon', money, l.moneyIconSize, l.moneyIconPosition);
-    this.moneyText = this.label('Price_txt', money, l.currencyFontSize, l.moneyTextPosition, l.moneyTextSize);
+    this.moneyText = this.currencyLabel(money, l.moneyTextPosition, l.moneyTextSize, l.moneyIconPosition, l.moneyIconSize, l.moneySize);
     const diamond = this.image('Dia', 'currency_background', this.node, l.diamondSize,
       [w / 2 + l.diamondPosition[0], l.diamondPosition[1]], p.currencyBackground, true);
-    this.image('Image', 'diamond_icon', diamond, l.diamondIconSize, l.diamondIconPosition);
-    this.diamondText = this.label('Price_txt', diamond, l.currencyFontSize, l.diamondTextPosition, l.diamondTextSize);
+    this.diamondTarget = this.image('Image', 'diamond_icon', diamond, l.diamondIconSize, l.diamondIconPosition);
+    this.diamondText = this.currencyLabel(diamond, l.diamondTextPosition, l.diamondTextSize, l.diamondIconPosition, l.diamondIconSize, l.diamondSize);
   }
 
   resize(width: number, height: number, topInset: number): void {
@@ -168,7 +217,32 @@ class StageHud {
     this.node.setPosition(0, height / 2 - topInset, 0);
   }
 
-  update(state: BattleHudState): void {
+  setSettingsBlocked(blocked: boolean): void {
+    this.settingsBlocked = blocked;
+    if (blocked) this.cancelInteractions();
+  }
+
+  cancelInteractions(): void {
+    this.settingsTouch = null; this.settingsScale = this.settingsFrom = this.settingsTarget = 1;
+    this.settingsElapsed = .1; this.settings.setScale(1, 1, 1);
+    this.settingsTint = this.settingsTintFrom = this.settingsTintTarget = 255;
+    this.settings.getComponent(Sprite)!.color = new Color(255, 255, 255, 255);
+  }
+
+  private animateSettings(target: number): void {
+    this.settingsFrom = this.settingsScale; this.settingsTarget = target; this.settingsElapsed = 0;
+    this.settingsTintFrom = this.settingsTint;
+    // Original Setting_Btn uses a .1s ColorTint alongside its BounceBtn.
+    this.settingsTintTarget = target < 1 ? 200 : 245;
+  }
+
+  update(state: BattleHudState, dt = 0): void {
+    this.settingsElapsed = Math.min(.1, this.settingsElapsed + (Number.isFinite(dt) ? Math.max(0, dt) : 0));
+    this.settingsScale = this.settingsFrom + (this.settingsTarget - this.settingsFrom) * this.settingsElapsed / .1;
+    this.settings.setScale(this.settingsScale, this.settingsScale, 1);
+    this.settingsTint = this.settingsTintFrom + (this.settingsTintTarget - this.settingsTintFrom) * this.settingsElapsed / .1;
+    const settingTone = Math.round(this.settingsTint);
+    this.settings.getComponent(Sprite)!.color = new Color(settingTone, settingTone, settingTone, 255);
     const { layout: l, palette: p, format } = this.assets.config;
     const wave = stageWaveIndex(state.waveIndex);
     if (wave !== this.lastWave) {
@@ -195,10 +269,12 @@ class StageHud {
     if (ratio > 0 && hatchOffset !== this.lastHatchOffset) {
       this.hatch.setPosition(hatchOffset, 0, 0); this.lastHatchOffset = hatchOffset;
     }
+    this.textViews.forEach(view => view.sync());
   }
 
   destroy(): void {
     if (!this.node.isValid) return;
+    this.textViews.forEach(view => view.destroy());
     this.node.active = false; this.node.removeFromParent(); this.node.destroy();
   }
 
@@ -223,7 +299,16 @@ class StageHud {
     return new ClippedFill(clip, size[0], size[1]);
   }
 
-  private label(name: string, parent: Node, size: number, position: Pair, bounds: Pair): Label {
+  private currencyLabel(parent: Node, position: Pair, bounds: Pair, iconPosition: Pair, iconSize: Pair, backgroundSize: Pair): Label {
+    // The original text rect overlaps its icon. Keep a small gap on that side
+    // and an inset from the rounded border, including the baked glyph effects.
+    const left = Math.max(position[0] - bounds[0] / 2, iconPosition[0] + iconSize[0] / 2 + 4);
+    const right = Math.min(position[0] + bounds[0] / 2, backgroundSize[0] / 2 - 8);
+    return this.label('Price_txt', parent, this.assets.config.layout.currencyFontSize,
+      [(left + right) / 2, position[1]], [right - left, bounds[1]], { fitGlyphBounds: true, characterSpacing: 9 });
+  }
+
+  private label(name: string, parent: Node, size: number, position: Pair, bounds: Pair, options: FontPolicyLabelOptions = {}): Label {
     const node = makeNode(name, parent); node.setPosition(position[0], position[1], 0);
     const label = node.addComponent(Label);
     label.font = this.assets.font; label.useSystemFont = false;
@@ -238,6 +323,7 @@ class StageHud {
     // Restore source bounds last; otherwise every label retains 102.4px width
     // and SHRINK silently reduces the 37px stage title to 18px.
     node.getComponent(UITransform)!.setContentSize(bounds[0], bounds[1]);
+    this.textViews.push(attachFontPolicyLabel(label, this.art, this.assets.config.bitmapFont, options));
     return label;
   }
 }
@@ -255,13 +341,6 @@ class ClippedFill {
   }
 }
 function color(value: HudColor): Color { return new Color(...value); }
-// The existing Chinese result card is independent from the restored ASCII HUD.
-function resultText(parent: Node, value: string, size: number, x: number, y: number, tint: Color): Label {
-  const node = makeNode(value || 'Stats', parent); node.setPosition(x, y, 0);
-  const label = node.addComponent(Label); label.string = value; label.fontSize = size; label.lineHeight = size * 1.25;
-  label.fontFamily = 'sans-serif'; label.isBold = true; label.color = tint; label.overflow = Label.Overflow.NONE;
-  return label;
-}
 function box(node: Node, w: number, h: number, radius: number, fill: Color, stroke?: Color, line = 0): void {
   node.getComponent(UITransform)!.setContentSize(w, h);
   const graphics = node.addComponent(Graphics);

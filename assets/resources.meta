@@ -7,7 +7,7 @@
   "subMetas": {},
   "userData": {
     "isBundle": true,
-    "bundleConfigID": "default",
+    "bundleConfigID": "wechat-resources",
     "bundleName": "resources",
     "priority": 8
   }

@@ -1,0 +1,21 @@
+{
+  "source": "Original Cat Gunner sharedassets0.assets:620, base skin rigid body/foot groups; captured before fox reskin",
+  "parts": {
+    "body": {
+      "width": 149,
+      "height": 99,
+      "alphaSha256": "8134b3122564b6a6d44314ad7f1470de56b1b76136eaeb66dc3be53b5896b1d0",
+      "pngSha256": "26ea320785905de95827a8018c768c1863906eb530c276493c76db9e49ec70e5"
+    },
+    "foot_left": {
+      "width": 56,
+      "height": 31,
+      "alphaSha256": "84fd1f83076558057b76fb25d01fdfe12237a6c7c174b80d4beea3b6f5536dc9"
+    },
+    "foot_right": {
+      "width": 52,
+      "height": 35,
+      "alphaSha256": "c37debc80cf8197ef2efc8851e0898aec7152a82e612b9ce537c64737f863aa8"
+    }
+  }
+}

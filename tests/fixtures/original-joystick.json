@@ -1,0 +1,48 @@
+{
+  "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d",
+  "canvas": { "referenceWidth": 1080, "referenceHeight": 1920, "match": "width" },
+  "hierarchy": {
+    "safeArea": "level0:103034",
+    "gameObject": "level0:34879",
+    "siblingIndex": 0,
+    "rootRect": "level0:115956",
+    "rootAnchors": [0, 0, 1, 1],
+    "rootImage": "level0:147192",
+    "rootImageAlpha": 0,
+    "backgroundRect": "level0:115955",
+    "backgroundImage": "level0:147191",
+    "backgroundSize": [256, 256],
+    "handleRect": "level0:115957",
+    "handleImage": "level0:147194",
+    "handleSize": [128, 128],
+    "visibleImageColor": [1, 1, 1, 1]
+  },
+  "component": {
+    "source": "level0:147193",
+    "handleRange": 1, "deadZone": 0, "axisOptions": 0, "snapX": false, "snapY": false,
+    "serializedByteOffsets": { "handleRange": 32, "deadZone": 36, "axisOptions": 40, "snapX": 44, "snapY": 45 }
+  },
+  "sprites": {
+    "background": "sharedassets0.assets:570 AllAxis_Outline (512x512)",
+    "handle": "sharedassets0.assets:392 Handle_Plain (257x256)",
+    "hashes": "assets/resources/art/hud/config.json images.joystick_background/joystick_handle.sourceSha256"
+  },
+  "code": {
+    "root": "CatGunner-Original/Decompiled/native/Assembly-CSharp",
+    "joystick": "Joystick__t7211.c",
+    "floatingJoystick": "FloatingJoystick__t7215.c",
+    "cat": "Cat__t7445.c",
+    "elf": "AI-Workspace/Work/cat-gunner/code-analysis/libil2cpp.so",
+    "manualMovementVirtualAddresses": ["0x2b3add8", "0x2b3ae3c"],
+    "thresholdConstantVirtualAddress": "0x106c200",
+    "screenSpeedK": 1.2000000476837158,
+    "manualBranchSquaredThreshold": 0.00009999999747378752,
+    "branchComparison": ">=",
+    "walkComparison": ">",
+    "velocity": "rotateY(-45 degrees, Horizontal / K, 0, Vertical * K) * currentMoveSpeed",
+    "faceFallback": "rotateY(-45 degrees, Horizontal, 0, Vertical)",
+    "order": ["resolve attack target and spread", "manual or automatic movement", "hand and face pose", "attack"],
+    "clearAutoTarget": ["automatic movement target", "automatic search timer", "automatic smoothed velocity"],
+    "preserved": ["independent attack lock", "attack cooldown", "followers AI"]
+  }
+}

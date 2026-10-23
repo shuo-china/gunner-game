@@ -3,9 +3,21 @@
   "uuid": "f430eb34-5c13-47fd-b653-b5c805114f77",
   "version": "0.1.0",
   "creator": { "version": "3.8.8" },
-  "description": "Cat Gunner reference prototype: one cat, a pistol and a forest.",
+  "description": "Cat Gunner reference prototype with forest combat, a three-cat squad and weapon progression.",
   "scripts": {
     "preview": "node tools/serve.cjs",
-    "test": "node ../AI-Workspace/Work/v1/tests/run-tests.cjs"
-  }
+    "weapons:effects:check": "node tools/sync-weapon-effect-colors.cjs --check",
+    "weapons:effects:sync": "node tools/sync-weapon-effect-colors.cjs --write",
+    "weapons:sizes:check": "node tools/sync-weapon-battle-sizes.cjs --check",
+    "weapons:sizes:sync": "node tools/sync-weapon-battle-sizes.cjs --write",
+    "weapons:collection-sizes:check": "node tools/sync-weapon-collection-sizes.cjs --check",
+    "weapons:collection-sizes:sync": "node tools/sync-weapon-collection-sizes.cjs --write",
+    "weapons:inventory-sizes:check": "node tools/sync-weapon-inventory-sizes.cjs --check",
+    "weapons:inventory-sizes:sync": "node tools/sync-weapon-inventory-sizes.cjs --write",
+    "test": "node tests/run-tests.cjs",
+    "typecheck": "node tools/typecheck.cjs",
+    "check": "npm test && npm run typecheck"
+  },
+  "engines": { "node": ">=20" },
+  "devDependencies": { "typescript": "5.8.2" }
 }

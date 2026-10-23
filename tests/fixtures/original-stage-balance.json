@@ -1,0 +1,121 @@
+{
+  "source": "level0:124872",
+  "fields": [
+    "Stage_Health_Balance",
+    "Stage_Money_Balance"
+  ],
+  "count": 5000,
+  "sha256": "80daea937091a89fa2a6079ffca924bf50d4dadefbd27f31db1747553c4fa690",
+  "samples": [
+    {
+      "stage": 0,
+      "health": {
+        "digits": "25",
+        "exponent": 1
+      },
+      "money": {
+        "digits": "2",
+        "exponent": 1
+      }
+    },
+    {
+      "stage": 1,
+      "health": {
+        "digits": "75",
+        "exponent": 1
+      },
+      "money": {
+        "digits": "6",
+        "exponent": 1
+      }
+    },
+    {
+      "stage": 2,
+      "health": {
+        "digits": "22",
+        "exponent": 2
+      },
+      "money": {
+        "digits": "18",
+        "exponent": 1
+      }
+    },
+    {
+      "stage": 3,
+      "health": {
+        "digits": "66",
+        "exponent": 2
+      },
+      "money": {
+        "digits": "54",
+        "exponent": 1
+      }
+    },
+    {
+      "stage": 4,
+      "health": {
+        "digits": "19",
+        "exponent": 3
+      },
+      "money": {
+        "digits": "16",
+        "exponent": 2
+      }
+    },
+    {
+      "stage": 7,
+      "health": {
+        "digits": "51",
+        "exponent": 4
+      },
+      "money": {
+        "digits": "42",
+        "exponent": 3
+      }
+    },
+    {
+      "stage": 99,
+      "health": {
+        "digits": "1",
+        "exponent": 49
+      },
+      "money": {
+        "digits": "81",
+        "exponent": 46
+      }
+    },
+    {
+      "stage": 999,
+      "health": {
+        "digits": "36",
+        "exponent": 471
+      },
+      "money": {
+        "digits": "27",
+        "exponent": 470
+      }
+    },
+    {
+      "stage": 4998,
+      "health": {
+        "digits": "27",
+        "exponent": 2353
+      },
+      "money": {
+        "digits": "21",
+        "exponent": 2352
+      }
+    },
+    {
+      "stage": 4999,
+      "health": {
+        "digits": "81",
+        "exponent": 2353
+      },
+      "money": {
+        "digits": "63",
+        "exponent": 2352
+      }
+    }
+  ]
+}

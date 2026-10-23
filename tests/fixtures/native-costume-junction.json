@@ -1,0 +1,1781 @@
+{
+  "source": "Original cat skin archive, before fox installation on 2026-10-17; body and foot PNG bytes and registration",
+  "skins": [
+    {
+      "id": 1,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 19,
+          "sizePx": [
+            152,
+            102
+          ],
+          "localPosition": [
+            1.98865637348931,
+            -0.15306290896156405
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "2480fa4e7da7858a3143dd4f1f5569a4ce0199df4fdccd8b0cb85211d3ac32fd"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 183,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "5e18a2a5bf68a48ed8b22dd78a70ae7f843e5951c43fde658d5963ef83c835c2"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 182,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "87758e9133c241adf9e8caf6f27796e2d70d8eef583084488236912114f555cd"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 21,
+          "sizePx": [
+            153,
+            99
+          ],
+          "localPosition": [
+            1.875695587657824,
+            -0.1747655421254941
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "33c52a5d487bd4c1ca468d320981ea4e8b88262b507f91f18193e116f0740603"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 194,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "8071f149f956015f4a84af1df0aa17e3ac704dce3a655717fceab1e458a05979"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 193,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "64365781fb6a81f13ed07b934f4483cef959008bfd35d3471adef1b98dfbc5ae"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 21,
+          "sizePx": [
+            152,
+            96
+          ],
+          "localPosition": [
+            1.8533087052613042,
+            -0.1520365351126789
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d860fdbc9ee2775c84abbc087f705f71cf737c84a2d311f59146fa417a2ca7cc"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 226,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "fcba70f1143c82a5d1f3d3344c40e8b54fda98a289e8f329a335719858f5b05d"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 210,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "41062805143fae9535ea0b03edfd43caff1ea71176d77520e9e646d611eda69e"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 18,
+          "sizePx": [
+            151,
+            101
+          ],
+          "localPosition": [
+            1.9662694910927896,
+            -0.13033390194874905
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "e7fd616304a983f0ba8b80ab4b6fa9be3c1afcada899b4a350e76ec4fb3ad6c9"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 188,
+          "sizePx": [
+            52,
+            33
+          ],
+          "localPosition": [
+            0.6701708148534973,
+            0.00556745243167267
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "4fea9d0bf47d742b72b0a741017cb8e57e478cab0ec2fd829f9ce75fb8a2a52b"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 181,
+          "sizePx": [
+            50,
+            34
+          ],
+          "localPosition": [
+            0.703637941590102,
+            0.04704342477527668
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "092e33b8133bc5e28ee5601c32abbca33f894fafe606cf97ce4e6551218b44ed"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 20,
+          "sizePx": [
+            152,
+            98
+          ],
+          "localPosition": [
+            1.852624456028714,
+            -0.2422683139313493
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "9cd1bec115716009d633d5f12119ad584a16f47fec3a1976fef203c9f1b5d15c"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 185,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d60b2a3c4b8d6e66ffd7ffff1b84aaf659575c8343f9303b191b581e13521695"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 222,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d0af7a68e6bee2a4c9a60821e8793201444df457452d1ea1d077cb713d116d6c"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 19,
+          "sizePx": [
+            152,
+            101
+          ],
+          "localPosition": [
+            1.9199561655264215,
+            -0.28789739026512695
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "47210dad318eafbd0179114fe8771021aff4c9f0318e50f35445e3d2535f603d"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 184,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "0888d759dfe4adaea7a93f2ae1740c48ebbd165d09e93176b6b130ecd2002c4b"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 220,
+          "sizePx": [
+            52,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "983260ede12a44f049d305f4b87bf795774d1d41d0c52d5b256870083763b2de"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            160,
+            99
+          ],
+          "localPosition": [
+            1.9209825393753066,
+            -0.15254972203712147
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "8e871efaa7e2d85b942c8201575f9171632207cca0b26d22697bdd517e681c30"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 151,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "1988ca58e3d95da5ec49e695c98851dd85eb0e517f548daea1e515fb1d97bcb8"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 147,
+          "sizePx": [
+            52,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "01829502e02dc300dfb66cc43af0e3b0b32a20b1d0d545ded0b092f0dbd396da"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            152,
+            100
+          ],
+          "localPosition": [
+            1.9435404840799744,
+            -0.15272078434526892
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "2ff21c59b5a9d533b53b87bc864e0a08fdc730f804ba0ed2c23c79e34348fdf7"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 129,
+          "sizePx": [
+            56,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "68fd711ab6a398483b676a6bd1b70e7656b8451e2c408f364bea7e0ef7a8a6b1"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 130,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "6396d392040a1a78fa0ab16850da75bf0e3ef7757b560be0bfb1b4d9772b7dc7"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            158,
+            99
+          ],
+          "localPosition": [
+            1.515623783923881,
+            -0.059238821671795616
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "dafe19ba587f09a1502ebbc0e7ffcd8ca49125acf56ea8c9d1f1dedb8dbd6b2e"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 137,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d584ec4cec4a9b51435a9b0b0bb35d4c5f01ccd6f11a08b23b393ba5141da8c6"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 130,
+          "sizePx": [
+            52,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "e609b5199d96d7f5a9697636e83a26d3873ce06bcbfbd296e830d2b1c2ef35a6"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            160,
+            99
+          ],
+          "localPosition": [
+            1.9209825393753066,
+            -0.15254972203712147
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "310c1f011197181a37b4e1eae55f6fa6f68c00d74e022bc307d1ddd2b98f3c64"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 131,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "df15e0971677555c817562eb489b7170bb97c526d833f484bae167ac7610ce38"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 137,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "a3af9460933665823b79ce2488da89588bd95c0408a5f2516e39c2bc4516ad9e"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            153,
+            98
+          ],
+          "localPosition": [
+            1.8527955183368618,
+            -0.21971036922668175
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "28d98f090272b2d5f6cafc9e7469300a618107dbe9175de2fc722be4419eeb04"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 146,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "612e969cd92a1425f2cff6d31c33deb079d487d9ad55a63a9a6d49674437d999"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 152,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "c6769570cb44592514420546b1f7a59575e886a80494f7af9026a06a8af4cc12"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            161,
+            98
+          ],
+          "localPosition": [
+            1.8531376429531567,
+            -0.17459447981734666
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "517059f67d7e93288f4fb13be055c46d169a28e3ad51c23d20fd9bdf55e574a8"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 152,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "8728e03d20bcf2874e3e56fe8ff4149e33bf8fd2a4e2386b804b67044cc52612"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 148,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "25207dc3ee9a92ebf2a4f49f3ec962b788180a6c3fdf0468b64713add33614b3"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            158,
+            98
+          ],
+          "localPosition": [
+            1.852624456028714,
+            -0.2422683139313493
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "706963c4eadda61b3f06a314dbc541a9f1e77f4fcab70ec988633e8349e2b973"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 134,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "77dce5b4f63d44c768c5338210186bb061ad458eaffacf0d2bf0f2e66e59e235"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 140,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "096489fef69c8e5a44a67fb1f1e0bb0d5c6500069b4f0985600a733036273b65"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            185,
+            95
+          ],
+          "localPosition": [
+            1.830237573632194,
+            -0.2195393069185343
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "c207bed4f2e6cc15a6f05c405f8fd036ef24c3ca26743b8a3166202964af375b"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 159,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "9cae4b9460084e5faf7a7cf113138dc2d65c25416e3fcdc7687585eeb3a17c0c"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 165,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "fb3c8da573e086d90ffa6247de8b1f471c197ae1701d49fd20e625d032213dc0"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 19,
+          "sizePx": [
+            153,
+            98
+          ],
+          "localPosition": [
+            1.8524533937205665,
+            -0.26482625863601683
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "cbff952283ddf4de1c40c1f6e77c473d85e31971337358ee31908480f35a3f44"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 169,
+          "sizePx": [
+            56,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "957c0832855905c595b7f819e857516bb147161e949636c843329318ac24d939"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 182,
+          "sizePx": [
+            52,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "da7291fd7a42b2af35ec08de0a86e9d313e56cd41c6b3ba1dbf52c24a4c759d3"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            154,
+            97
+          ],
+          "localPosition": [
+            1.8307507605566364,
+            -0.15186547280453144
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "814b84101ceb43a72784dd358685b5db7fc829dc18bd0988dc214455f13c80ca"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 124,
+          "sizePx": [
+            56,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "2fd8b5210348839109f12a3ed776652fc44e946047d9754c49f498f0933be52c"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 126,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "a9004e8e4deac4e5448f68af300aa98db0431100c821f2ea08cc1c73503aa371"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            160,
+            100
+          ],
+          "localPosition": [
+            1.8984245946706393,
+            -0.15237865972897402
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "98b2d33bac29671535ccb511bb016d9c12d196a1a6e3fca53465e987b7fda979"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 146,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "6a5f1e0e78368b5f842256db761ed5f9679ce1eb1397f5746c56709fdd874592"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 154,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "855b0495bc671b3309a99b1ce5248d47d92488e3f112f9a708b88f19914295cc"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            160,
+            96
+          ],
+          "localPosition": [
+            1.8533087052613042,
+            -0.1520365351126789
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "030dd7158a8fc10b9a79f310c2e5a145ee89d8c61200b503e424e6ac5f98b8df"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 128,
+          "sizePx": [
+            56,
+            31
+          ],
+          "localPosition": [
+            0.7560886373500111,
+            0.09992110383625352
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "b13ae31b71c61ef7bc17d7124873128dc015504735028f5388e839e461e567ca"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 131,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "00c5fbacf89e65fcf719394434c1a695cce56455f59a4bee21b492aab5158ab6"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 12,
+          "sizePx": [
+            153,
+            98
+          ],
+          "localPosition": [
+            1.8531376429531567,
+            -0.17459447981734666
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "7f42a3bd79814679d6fb0b159307d1a49db66ea87674445c7ebee7a6aa4cd251"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 127,
+          "sizePx": [
+            56,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "30f080674e3a1e010db38b1321624eed080b0611b19583de520c3d625467894b"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 128,
+          "sizePx": [
+            51,
+            34
+          ],
+          "localPosition": [
+            0.7411510659316263,
+            0.013320793077280513
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "31b8809aa2341adc2bf4dd3cf4f01982d64bdd63e261c3736415321edee5d3a2"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 13,
+          "sizePx": [
+            165,
+            109
+          ],
+          "localPosition": [
+            1.7858059334554488,
+            -0.12896540348356877
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "a3c12ce920b372f6fa15208ff6d5ed0daee9880beeb399f87f580bbd3b60e8b0"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 95,
+          "sizePx": [
+            54,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "b5e609c8a440f214e0d2ff493d3aaeaf459c19953d9524d7998c72614e06e53c"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 122,
+          "sizePx": [
+            51,
+            35
+          ],
+          "localPosition": [
+            0.719401289855417,
+            0.019307220888174825
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "5f77ae16dacfbaddfe290d316d16cf6587db6b37399aa09753071910c25d79d4"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 13,
+          "sizePx": [
+            168,
+            102
+          ],
+          "localPosition": [
+            1.807166442003084,
+            -0.28704207872438925
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "dc02ea68841819af16eebc3118f8ab00d49d9a994f84fc7dfeda1933aa9caac8"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 95,
+          "sizePx": [
+            54,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "f854f46f4f791f7486d07c28ab1daf5bb5e5949add2e77e37932105f2cc6f38c"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 122,
+          "sizePx": [
+            50,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "39883bf4a9d3d25cfeb1f01f19bdc93108df2168e2b8d5404d704b5d5e971849"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 13,
+          "sizePx": [
+            175,
+            108
+          ],
+          "localPosition": [
+            1.7629058641344866,
+            -0.1739102305847564
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "6e80fb72d70521fea196a8fc001449a17b69e9d978fd8e6c542490710b407e8d"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 95,
+          "sizePx": [
+            54,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "a594f4a673842ba3925b74e4fb882302f7577f523a8d136090cb507c9d911da8"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 122,
+          "sizePx": [
+            50,
+            34
+          ],
+          "localPosition": [
+            0.735164638120732,
+            -0.008428982998928802
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "48d36b34e0133784b65a4d685eadc677e6ed316c333063f4d8af9765024cad7c"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 13,
+          "sizePx": [
+            162,
+            102
+          ],
+          "localPosition": [
+            1.8515980821798288,
+            -0.37761598215935477
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "6cd07de2f9c7fab78a825f918113ea4714b828c7d0f0e68e0b5aff46a2dcee7c"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 95,
+          "sizePx": [
+            54,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "0edb96bfbeb37b3481298235cf3a15765dd9cd04fb6d7d1a1923da7bd49c6b4e"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 122,
+          "sizePx": [
+            50,
+            35
+          ],
+          "localPosition": [
+            0.7134148620445226,
+            -0.00244255518803449
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "844fad5f2ce33fc3f4fb2818323648a8028b332e9dc7546810cb3be9fce13dea"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "parts": [
+        {
+          "id": "body",
+          "bone": 0,
+          "drawOrder": 13,
+          "sizePx": [
+            171,
+            106
+          ],
+          "localPosition": [
+            1.7177899747251515,
+            -0.1735681059684615
+          ],
+          "localRotationDeg": -90.43447931768668,
+          "localScale": [
+            1.0000000220861265,
+            1.0000000220861265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d41a1096185afdccb9addf8d21e5d4428b6e88042cd0046d430a06a4e910bba5"
+        },
+        {
+          "id": "foot_left",
+          "bone": 3,
+          "drawOrder": 95,
+          "sizePx": [
+            54,
+            32
+          ],
+          "localPosition": [
+            0.7335547031123735,
+            0.0988666252227457
+          ],
+          "localRotationDeg": 92.67920954882415,
+          "localScale": [
+            1.000000008095265,
+            1.000000008095265
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "510d1baac5c6aa25f21cd4670610087584de6ea53425823538b3b2a928a7b046"
+        },
+        {
+          "id": "foot_right",
+          "bone": 4,
+          "drawOrder": 122,
+          "sizePx": [
+            50,
+            36
+          ],
+          "localPosition": [
+            0.735164638120732,
+            -0.008428982998928802
+          ],
+          "localRotationDeg": 74.61091773884121,
+          "localScale": [
+            0.9999999687230967,
+            0.9999999687230967
+          ],
+          "anchor": [
+            0.5,
+            0.5
+          ],
+          "sha256": "d41934459bfcd2603ac75f4d1f3b6ef9be2161f2ea18abef40184cce9e4a68ef"
+        }
+      ]
+    }
+  ]
+}

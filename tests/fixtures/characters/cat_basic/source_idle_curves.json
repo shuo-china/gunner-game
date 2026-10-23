@@ -1,0 +1,471 @@
+{
+  "source": {
+    "assetFile": "sharedassets0.assets",
+    "pathId": 263,
+    "name": "Idle",
+    "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d"
+  },
+  "streamFrames": [
+    {
+      "time": "pre-roll",
+      "keys": 12
+    },
+    {
+      "time": 0.0,
+      "keys": 12
+    },
+    {
+      "time": 1.0,
+      "keys": 12
+    },
+    {
+      "time": 1.5,
+      "keys": 6
+    },
+    {
+      "time": 2.0,
+      "keys": 12
+    },
+    {
+      "time": "end",
+      "keys": 0
+    }
+  ],
+  "bindings": [
+    {
+      "bone": 7,
+      "property": "euler",
+      "firstChannel": 0,
+      "channels": 3,
+      "pathHash": 227672806
+    },
+    {
+      "bone": 8,
+      "property": "euler",
+      "firstChannel": 3,
+      "channels": 3,
+      "pathHash": 2056598128
+    },
+    {
+      "bone": 1,
+      "property": "euler",
+      "firstChannel": 6,
+      "channels": 3,
+      "pathHash": 3980913656
+    },
+    {
+      "bone": 0,
+      "property": "scale",
+      "firstChannel": 9,
+      "channels": 3,
+      "pathHash": 377759540
+    }
+  ],
+  "channels": {
+    "0": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "1": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "2": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          10.3380003
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          -195.16798401,
+          146.37599182,
+          0.0,
+          10.3380003
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          195.16798401,
+          -146.37599182,
+          0.0,
+          22.5359993
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          10.3380003
+        ]
+      }
+    ],
+    "3": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "4": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "5": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          -20.46999931
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          245.24801636,
+          -183.93600464,
+          0.0,
+          -20.46999931
+        ]
+      },
+      {
+        "time": 1.5,
+        "coefficients": [
+          -245.24801636,
+          183.93600464,
+          0.0,
+          -35.79800034
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          -20.46999931
+        ]
+      }
+    ],
+    "6": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "7": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "8": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          -69.42599487,
+          104.13899231,
+          0.0,
+          -125.83999634
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          69.42599487,
+          -104.13899231,
+          0.0,
+          -91.1269989
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          -125.83999634
+        ]
+      }
+    ],
+    "9": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.10000002,
+          -0.15000004,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          -0.10000002,
+          0.15000004,
+          0.0,
+          0.94999999
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ],
+    "10": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ],
+    "11": [
+      {
+        "time": 0.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "time": 1.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "time": 2.0,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "coefficientMeaning": "value(t) = ((a*dt+b)*dt+c)*dt+d, dt=t-key.time",
+  "originalLoopTime": true,
+  "originalLoopBlend": false
+}

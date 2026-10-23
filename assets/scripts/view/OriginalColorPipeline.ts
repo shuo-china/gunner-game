@@ -1,4 +1,4 @@
-import { Camera, Color, EffectAsset, Material, Node, RenderTexture, resources, screen, Sprite, SpriteFrame, UITransform } from 'cc';
+import { Camera, Color, EffectAsset, Material, Node, RenderTexture, screen, Sprite, SpriteFrame, Texture2D, UITransform } from 'cc';
 import { ArtLibrary, makeNode } from './ArtLibrary';
 import { ORIGINAL_CAMERA_CLEAR, ORIGINAL_WORLD_LAYER, originalRenderExtent, srgbToLinear } from './OriginalColorMath';
 
@@ -18,10 +18,9 @@ export class OriginalColorPipeline {
   private readonly originalVisibility: number;
   private destroyed = false;
 
-  static async load(): Promise<EffectAsset[]> {
-    return Promise.all(['original-sprite', 'original-graphics'].map(name =>
-      new Promise<EffectAsset>((resolve, reject) => resources.load(`art/rendering/${name}`, EffectAsset,
-        (error, effect) => error ? reject(error) : resolve(effect)))));
+  static async load(art: ArtLibrary): Promise<EffectAsset[]> {
+    return Promise.all(['original-sprite', 'original-graphics', 'original-skin-composite'].map(name =>
+      art.resourceLoader.load(`art/rendering/${name}`, 'effect')));
   }
 
   constructor(parent: Node, private readonly mainCamera: Camera, art: ArtLibrary, effects: EffectAsset[]) {
@@ -38,6 +37,9 @@ export class OriginalColorPipeline {
       this.world = makeNode('OriginalLinearWorld', parent);
       this.world.layer = ORIGINAL_WORLD_LAYER;
       this.texture.initialize({name: 'OriginalLinearLDR', width: 1, height: 1});
+      // Creator 3.8.8 WebGL1 keeps the initial 1x1 power-of-two flag after
+      // resize. Explicit clamp keeps this NPOT render target sampleable.
+      this.texture.setWrapMode(Texture2D.WrapMode.CLAMP_TO_EDGE, Texture2D.WrapMode.CLAMP_TO_EDGE);
       this.cameraNode = new Node('OriginalWorldCamera'); parent.addChild(this.cameraNode);
       this.camera = this.cameraNode.addComponent(Camera);
       this.camera.projection = Camera.ProjectionType.ORTHO;

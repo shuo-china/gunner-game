@@ -1,5 +1,5 @@
 import { Node } from 'cc';
-import { projectWorld, TreeState } from '../core';
+import { projectWorld, Damageable } from '../core';
 import { ArtLibrary, makeNode } from './ArtLibrary';
 import { TargetReticleConfig } from './OriginalFeedbackAssets';
 import { decomposeProjectedPlane, projectedSpritePlane } from './OriginalFeedbackMath';
@@ -27,7 +27,7 @@ export class TargetReticle {
     this.node.active = false;
   }
 
-  update(dt: number, target?: TreeState): void {
+  update(dt: number, target?: Damageable): void {
     // Target is initially inactive, so its child's Awake creates the tween on
     // first activation. Thereafter DOTween has no OnDisable pause.
     if (target) this.started = true;
@@ -38,7 +38,7 @@ export class TargetReticle {
     // The original tracks the attack Collider's Transform, whose local XZ is (-2,+2),
     // then applies Triangle's local world-Y offset, not the collider's height center.
     const p = projectWorld({x: (target.collider.minX + target.collider.maxX) / 2,
-      z: (target.collider.minZ + target.collider.maxZ) / 2}, this.config.height);
+      z: (target.collider.minZ + target.collider.maxZ) / 2}, this.config.height + (target.sphereCollider?.transformY ?? 0));
     this.node.setPosition(p.x, p.y, 0);
   }
 

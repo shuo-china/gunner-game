@@ -1,0 +1,197 @@
+// Frozen original loops from the pre-optimization working tree on 2026-10-15.
+// Only the superclass changes; all four method bodies are verbatim.
+import { PetFollowers } from './PetFollowers';
+import { COMBAT_CONFIG as C } from './config';
+import { createStageDefinition, StageDefinition } from './map';
+import { clamp, clamp01, closestPoint, circleOverlapsBox, distance, length, normalize, Random, rayAABB, sweepCircleAABB } from './math';
+import { CAMERA_BASIS, screenSpeedMultiplier } from './projection';
+import { clampMovementInput, manualLookDirection, manualVelocity, MANUAL_INPUT_SQUARED_THRESHOLD } from './ManualMovement';
+import type { OreState, ScreenPoint } from './types';
+import { DecimalAmount } from './DecimalAmount';
+import { OriginalInfVal, subtractOriginalHealth } from './OriginalInfVal';
+import { ActorLoadout, BulletState, CollisionWall, CombatEvent, CombatModifiers, CombatStats, Damageable, MuzzleProvider, PlayerState, TreeState, Vec2, WeaponEventMetadata } from './types';
+import { getWeapon, isWeaponId } from './WeaponCatalog';
+import { FollowerAI, LeaderSample } from './FollowerAI';
+import { sweepSphereBox } from './WeaponBallistics';
+import { closestPointOnSphere, sphereCenter, sweepSphereSphere } from './RaidCollision';
+import { closestPointOnOrientedBox, insideOrientedBox, separateCircleOrientedBox, sweepBoxOrientedBox,
+  sweepCircleOrientedBox, sweepSphereOrientedBox } from './BossCollision';
+import { HUNT_RULES } from './HuntBalance';
+import { HUNT_CENTER } from './HuntCombat';
+import { closestPointOnHuntCapsule, insideHuntCapsule, sweepSphereHuntCapsule } from './HuntCollision';
+
+const copy = (p: Vec2): Vec2 => ({ x: p.x, z: p.z });
+const ATTACK_RAYS: readonly Vec2[] = Array.from({ length: C.rayCount }, (_, ray) => {
+  const angle = ray * Math.PI * 2 / C.rayCount;
+  return { x: Math.sin(angle), z: Math.cos(angle) };
+});
+const HUNT_ATTACK_RAYS: readonly Vec2[] = Array.from({ length: HUNT_RULES.rayCount }, (_, ray) => {
+  const angle = ray * Math.PI * 2 / HUNT_RULES.rayCount;
+  return { x: Math.sin(angle), z: Math.cos(angle) };
+});
+const BASE_DAMAGE = DecimalAmount.from(C.damage);
+const DEFAULT_WEAPON = getWeapon(0);
+function maximumSpread(interval: number): number {
+  const blend = 1 - clamp01((Math.log(Math.max(0.05, interval)) + Math.log(20)) / Math.log(40));
+  return C.spreadMinimum + (C.spreadMaximum - C.spreadMinimum) * blend;
+}
+import { CombatWorld as OptimizedWorld } from './CombatWorld';
+export class BruteForceWorld extends OptimizedWorld {
+
+
+  private findRayTarget(player = this.player, hitPoint?: Vec2): Damageable | undefined {
+    let best: Damageable | undefined;
+    let bestDistance = Infinity;
+    let offscreenDistance = Infinity;
+    if (this.hunt) this.huntOffscreenTargets.delete(player.actorId);
+    for (const direction of this.hunt ? HUNT_ATTACK_RAYS : ATTACK_RAYS) {
+      let firstTree: Damageable | undefined;
+      let firstDistance = Infinity;
+      for (const tree of this.damageTargets) {
+        if (!tree.alive) continue;
+        // Physics.Raycast ignores colliders containing its origin. Ray.y=2
+        // lies within the source tree box's height range [0,6].
+        const p = player.position, box = tree.collider;
+        const sphere = tree.sphereCollider, center = sphere ? sphereCenter(tree) : null;
+        const oriented = tree.orientedBoxCollider;
+        const capsule = tree.capsuleCollider;
+        if (capsule ? insideHuntCapsule(p, C.rayHeight, tree) : oriented ? insideOrientedBox(p, C.rayHeight, oriented) : sphere ? Math.hypot(p.x - center!.x, C.rayHeight - center!.y, p.z - center!.z) < sphere.radius
+          : p.x > box.minX && p.x < box.maxX && p.z > box.minZ && p.z < box.maxZ) continue;
+        const end = { x: p.x + direction.x * this.attackRange, z: p.z + direction.z * this.attackRange, y: C.rayHeight };
+        const fraction = capsule ? sweepSphereHuntCapsule({ ...p, y: C.rayHeight }, end, 0, tree)
+          : oriented ? sweepSphereOrientedBox({ ...p, y: C.rayHeight }, end, 0, oriented)
+          : sphere ? sweepSphereSphere({ ...p, y: C.rayHeight }, end, 0, center!, sphere.radius) : null;
+        const hit = sphere || oriented || capsule ? fraction === null ? null : fraction * this.attackRange : rayAABB(player.position, direction, this.attackRange, tree.collider);
+        if (hit !== null && hit < firstDistance) { firstDistance = hit; firstTree = tree; }
+      }
+      // A ray cannot select a farther target through an off-screen foreground collider.
+      if (firstTree && this.isVisible(firstTree) && firstDistance < bestDistance) {
+        bestDistance = firstDistance; best = firstTree;
+        if (hitPoint) { hitPoint.x = player.position.x + direction.x * firstDistance; hitPoint.z = player.position.z + direction.z * firstDistance; }
+      } else if (this.hunt && firstTree && !this.isVisible(firstTree) && firstDistance < offscreenDistance) {
+        offscreenDistance = firstDistance;
+        this.huntOffscreenTargets.set(player.actorId, { id: firstTree.id,
+          point: this.colliderCenter(firstTree) });
+      }
+    }
+    return best;
+  }
+
+
+  private updateBullets(dt: number): void {
+    for (const bullet of this.bullets) {
+      if (!bullet.active || !bullet.damaging || bullet.weaponType === 'MISSILE') continue;
+      bullet.age += dt;
+      bullet.previousPosition = copy(bullet.position);
+      const travel = bullet.speed * dt;
+      const end = { x: bullet.position.x + bullet.direction.x * travel, z: bullet.position.z + bullet.direction.z * travel };
+      const contacts: { time: number; tree?: Damageable; wall?: CollisionWall }[] = [];
+      for (const tree of this.damageTargets) {
+        if (!this.colliderActive(tree) || bullet.hitIds.includes(tree.id)) continue;
+        if (tree.capsuleCollider) {
+          const time = sweepSphereHuntCapsule({ ...bullet.position, y: C.bulletHeight }, { ...end, y: C.bulletHeight }, C.bulletRadius, tree);
+          if (time !== null) contacts.push({ time, tree });
+        } else if (tree.sphereCollider) {
+          const time = sweepSphereSphere({ ...bullet.position, y: C.bulletHeight }, { ...end, y: C.bulletHeight },
+            C.bulletRadius, sphereCenter(tree), tree.sphereCollider.radius);
+          if (time !== null) contacts.push({ time, tree });
+        } else if (tree.orientedBoxCollider) {
+          const time = sweepSphereOrientedBox({ ...bullet.position, y: C.bulletHeight }, { ...end, y: C.bulletHeight },
+            C.bulletRadius, tree.orientedBoxCollider);
+          if (time !== null) contacts.push({ time, tree });
+        } else {
+          const hit = sweepCircleAABB(bullet.position, end, C.bulletRadius, tree.collider);
+          if (hit) contacts.push({ time: hit.time, tree });
+        }
+      }
+      for (const wall of this.bulletWalls) {
+        const hit = sweepCircleAABB(bullet.position, end, C.bulletRadius, wall);
+        if (hit) contacts.push({ time: hit.time, wall });
+      }
+      contacts.sort((a, b) => a.time - b.time);
+      let traveledFraction = 1;
+      for (const contact of contacts) {
+        if (contact.tree && (!this.colliderActive(contact.tree) || bullet.hitIds.includes(contact.tree.id))) continue;
+        bullet.position = { x: bullet.previousPosition.x + (end.x - bullet.previousPosition.x) * contact.time,
+          z: bullet.previousPosition.z + (end.z - bullet.previousPosition.z) * contact.time };
+        // OnTriggerEnter projects the previous physics position onto the hit
+        // collider (current - velocity * fixedDeltaTime), not the swept TOI.
+        const impact = contact.tree?.orientedBoxCollider ? closestPointOnOrientedBox(bullet.previousPosition, C.bulletHeight, contact.tree.orientedBoxCollider)
+          : contact.tree?.capsuleCollider ? closestPointOnHuntCapsule(bullet.previousPosition, C.bulletHeight, contact.tree)
+          : contact.tree?.sphereCollider ? closestPointOnSphere(bullet.previousPosition, C.bulletHeight, contact.tree)
+          : { ...closestPoint(bullet.previousPosition, contact.tree?.collider ?? contact.wall!), y: C.bulletHeight };
+        this.collideBullet(bullet, impact, contact.tree, impact.y);
+        if (!bullet.damaging) { traveledFraction = contact.time; break; }
+      }
+      if (bullet.damaging) bullet.position = end;
+      bullet.traveled += travel * traveledFraction;
+    }
+  }
+
+
+  private explode(bullet: BulletState, point: Vec2, height: number = C.bulletHeight): void {
+    if (bullet.hasExploded) return;
+    bullet.hasExploded = true;
+    this.impact(bullet, point, bullet.explosionRadius, height);
+    if (bullet.explosionRadius <= 0) return;
+    for (const tree of this.damageTargets) {
+      if (!this.colliderActive(tree) || bullet.hitIds.includes(tree.id)) continue;
+      const shaped = !!(tree.sphereCollider || tree.orientedBoxCollider || tree.capsuleCollider);
+      const onBox = tree.orientedBoxCollider ? closestPointOnOrientedBox(point, height, tree.orientedBoxCollider)
+        : tree.capsuleCollider ? closestPointOnHuntCapsule(point, height, tree)
+        : tree.sphereCollider ? closestPointOnSphere(point, height, tree) : closestPoint(point, tree.collider);
+      const vertical = height - (shaped ? (onBox as typeof onBox & { y: number }).y : clamp(height, tree.colliderMinY ?? 0, tree.colliderMaxY ?? 6));
+      if (Math.hypot(point.x - onBox.x, point.z - onBox.z, vertical) > bullet.explosionRadius) continue;
+      bullet.hitIds.push(tree.id);
+      this.hitTree(tree, onBox, bullet.damage, bullet, shaped ? height - vertical : undefined);
+    }
+  }
+
+
+  /** Source missiles move in Update and snapshot the target's full transform.
+   * Substeps preserve curved contact with both tree boxes and the Raid sphere. */
+  private updateMissiles(dt: number): void {
+    for (const bullet of this.bullets) {
+      if (!bullet.active || !bullet.damaging || !bullet.missileStart || !bullet.missileTarget) continue;
+      const steps = Math.max(1, Math.ceil(dt / 0.01)), slice = dt / steps;
+      for (let step = 0; step < steps && bullet.damaging; step++) {
+        const from = { x: bullet.position.x, y: bullet.height, z: bullet.position.z };
+        bullet.previousPosition = copy(bullet.position);
+        bullet.age += slice;
+        const t = clamp01(bullet.age / bullet.missileDuration);
+        const to = { x: bullet.missileStart.x + (bullet.missileTarget.x - bullet.missileStart.x) * t,
+          z: bullet.missileStart.z + (bullet.missileTarget.z - bullet.missileStart.z) * t,
+          y: C.bulletHeight * (1 - t) + (bullet.missileTargetHeight ?? 0) * t + 4 * t * (1 - t) * bullet.missileArcHeight };
+        let earliest = Infinity, hitTree: Damageable | undefined, hitWall: CollisionWall | undefined;
+        for (const tree of this.damageTargets) {
+          if (!this.colliderActive(tree)) continue;
+          const hit = tree.orientedBoxCollider ? sweepSphereOrientedBox(from, to, C.bulletRadius, tree.orientedBoxCollider)
+            : tree.capsuleCollider ? sweepSphereHuntCapsule(from, to, C.bulletRadius, tree)
+            : tree.sphereCollider ? sweepSphereSphere(from, to, C.bulletRadius, sphereCenter(tree), tree.sphereCollider.radius)
+            : sweepSphereBox(from, to, C.bulletRadius, tree.collider, tree.colliderMinY ?? 0, tree.colliderMaxY ?? 6);
+          if (hit !== null && hit < earliest) { earliest = hit; hitTree = tree; }
+        }
+        // The map's Default walls surround the playable ground plane.
+        for (const wall of this.bulletWalls) {
+          const hit = sweepSphereBox(from, to, C.bulletRadius, wall, wall.minY, wall.maxY);
+          if (hit !== null && hit < earliest) { earliest = hit; hitTree = undefined; hitWall = wall; }
+        }
+        const fraction = Number.isFinite(earliest) ? earliest : 1;
+        bullet.position = { x: from.x + (to.x - from.x) * fraction, z: from.z + (to.z - from.z) * fraction };
+        bullet.height = from.y + (to.y - from.y) * fraction;
+        bullet.traveled += distance(from, bullet.position);
+        if (hitTree || hitWall) {
+          const point = hitTree?.orientedBoxCollider ? closestPointOnOrientedBox(bullet.previousPosition, from.y, hitTree.orientedBoxCollider)
+            : hitTree?.capsuleCollider ? closestPointOnHuntCapsule(bullet.previousPosition, from.y, hitTree)
+            : hitTree?.sphereCollider ? closestPointOnSphere(bullet.previousPosition, from.y, hitTree)
+            : { ...closestPoint(bullet.previousPosition, hitTree?.collider ?? hitWall!),
+              y: clamp(from.y, hitTree ? hitTree.colliderMinY ?? 0 : hitWall!.minY, hitTree ? hitTree.colliderMaxY ?? 6 : hitWall!.maxY) };
+          this.collideBullet(bullet, point, hitTree, point.y);
+        } else if (t >= 1) {
+          this.explode(bullet, bullet.position, bullet.height);
+          this.stopBullet(bullet);
+        }
+      }
+    }
+  }
+}

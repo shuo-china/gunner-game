@@ -1,13 +1,18 @@
-import { Font, resources } from 'cc';
+import { Font } from 'cc';
 import { ArtLibrary, ImageSpec } from './ArtLibrary';
+import type { OriginalBitmapFont } from './OriginalBitmapText';
+import type { OriginalStageTransitionAssets, OriginalStageTransitionConfig } from './OriginalStageTransition';
 
 export type HudImageName = 'stage_background' | 'stage_fill' | 'stage_hole' | 'stage_dot' |
-  'cat_icon' | 'bar' | 'bar_outline' | 'settings' | 'money_icon' | 'diamond_icon' | 'currency_background' | 'hatch';
+  'cat_icon' | 'bar' | 'bar_outline' | 'settings' | 'money_icon' | 'diamond_icon' | 'currency_background' | 'hatch' |
+  'joystick_background' | 'joystick_handle';
 export type HudColor = [number, number, number, number];
 type Pair = [number, number];
 export interface OriginalHudConfig {
   version: number;
   referenceWidth: number;
+  bitmapFont: OriginalBitmapFont;
+  joystick: { backgroundSize: number; handleSize: number; handleRange: number; deadZone: number; axisOptions: number; snapX: boolean; snapY: boolean };
   images: Record<HudImageName, ImageSpec & { border: [number, number, number, number]; source: string }>;
   font: { path: string; sourceSha256: string; outlineColor: HudColor; outlineWidth: number;
     shadowColor: HudColor; shadowOffset: Pair };
@@ -51,12 +56,13 @@ export interface OriginalUpgradeConfig {
   animation: { duration: number; peakTime: number; grow: [number, number, number, number]; shrink: [number, number, number, number] };
 }
 export interface OriginalHudAssets { config: OriginalHudConfig; font: Font;
-  upgrades: OriginalUpgradeConfig; upgradeFont: Font }
+  upgrades: OriginalUpgradeConfig; upgradeFont: Font; stageTransition: OriginalStageTransitionAssets }
 
 /** Cocos/ArtLibrary own resources; each HUD only destroys its view nodes. */
 export async function loadOriginalHudAssets(art: ArtLibrary): Promise<OriginalHudAssets> {
-  const [config, upgrades] = await Promise.all([
+  const [config, upgrades, stage] = await Promise.all([
     art.json<OriginalHudConfig>('art/hud/config'), art.json<OriginalUpgradeConfig>('art/upgrades/config'),
+    art.json<OriginalStageTransitionConfig>('art/stage-transition/config'),
   ]);
   if (config.version !== 1 || config.referenceWidth <= 0 || config.layout.dotPositions.length !== 5) {
     throw new Error('Unsupported original HUD configuration');
@@ -64,9 +70,15 @@ export async function loadOriginalHudAssets(art: ArtLibrary): Promise<OriginalHu
   if (upgrades.version !== 1 || upgrades.referenceWidth !== config.referenceWidth || upgrades.layout.centers.length !== 3) {
     throw new Error('Unsupported original upgrade configuration');
   }
-  const loadFont = (path: string): Promise<Font> => new Promise((resolve, reject) => resources.load(path, Font,
-    (error, font) => error ? reject(error) : resolve(font)));
-  const [font, upgradeFont] = await Promise.all([loadFont(config.font.path), loadFont(upgrades.font.path),
-    Promise.all([...Object.values(config.images), ...Object.values(upgrades.images)].map(spec => art.loadFrame(spec.path)))]);
-  return { config, font, upgrades, upgradeFont };
+  if (stage.version !== 1 || !stage.bitmapFonts || stage.referenceWidth !== config.referenceWidth || stage.confetti.length !== 3) {
+    throw new Error('Unsupported original stage transition configuration');
+  }
+  const paths = [...Object.values(config.images), ...Object.values(upgrades.images), ...Object.values(stage.images)].map(spec => spec.path);
+  paths.push(...config.bitmapFont.pages);
+  for (const bitmap of Object.values(stage.bitmapFonts)) paths.push(...bitmap.pages);
+  await Promise.all(Array.from(new Set(paths), path => art.loadFrame(path)));
+  // Font objects preserve the legacy asset interface; all drawn Latin glyphs
+  // come from the preloaded atlases and Chinese uses the platform system font.
+  const font = new Font();
+  return { config, font, upgrades, upgradeFont: font, stageTransition: { config: stage, font } };
 }

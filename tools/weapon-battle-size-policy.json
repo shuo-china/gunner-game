@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "alphaThreshold": 16,
+  "gradeStep": 0.03,
+  "scalePrecision": 12,
+  "categories": {
+    "bow": {
+      "referenceWeaponId": 0,
+      "baseGrade": 0,
+      "metric": "height",
+      "referenceVisibleSize": [
+        3.497529411764706,
+        7.672000000000001
+      ],
+      "referenceLocalScale": [
+        0.42,
+        -0.42
+      ]
+    },
+    "crossbow": {
+      "referenceWeaponId": 1,
+      "baseGrade": 0,
+      "metric": "width",
+      "referenceVisibleSize": [
+        6.492255,
+        6.474069411764706
+      ],
+      "referenceLocalScale": [
+        0.4032,
+        -0.4608
+      ]
+    },
+    "glove": {
+      "referenceWeaponId": 4,
+      "baseGrade": 1,
+      "metric": "sqrtArea",
+      "referenceVisibleSize": [
+        5.4735062719192715,
+        3.3002023110101493
+      ],
+      "referenceLocalScale": [
+        0.4,
+        -0.4
+      ]
+    },
+    "staff": {
+      "referenceWeaponId": 8,
+      "baseGrade": 2,
+      "metric": "height",
+      "referenceVisibleSize": [
+        2.7463616178253885,
+        8.619350308251988
+      ],
+      "referenceLocalScale": [
+        0.38,
+        -0.38
+      ]
+    },
+    "fan": {
+      "referenceWeaponId": 13,
+      "baseGrade": 3,
+      "metric": "height",
+      "referenceVisibleSize": [
+        5.087392199954028,
+        6.87303317079882
+      ],
+      "referenceLocalScale": [
+        0.62073,
+        -0.62073
+      ]
+    },
+    "handgun": {
+      "referenceWeaponId": 18,
+      "baseGrade": 4,
+      "metric": "width",
+      "referenceVisibleSize": [
+        7.7732822779942365,
+        3.6961195145364747
+      ],
+      "referenceLocalScale": [
+        0.4356,
+        -0.4356
+      ]
+    },
+    "cannon": {
+      "referenceWeaponId": 23,
+      "baseGrade": 5,
+      "metric": "width",
+      "referenceVisibleSize": [
+        8.010900286492118,
+        3.809104547988899
+      ],
+      "referenceLocalScale": [
+        0.552,
+        -0.552
+      ]
+    }
+  }
+}

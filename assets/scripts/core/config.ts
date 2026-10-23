@@ -8,7 +8,17 @@ export const SIMULATION_CONFIG = {
 } as const;
 
 export const CHARACTER_CONFIG = {
-  playerSpeed: 13,
+  // Cat.Balance_Reload replaces Inspector 13/14 at Start, before combat.
+  playerSpeed: 15,
+  followerSpeed: 17,
+  followerIdealDistance: 15,
+  followerMaximumDistance: 20,
+  followerHysteresis: 0.12,
+  followerMinimumStateDuration: 0.3,
+  followerMinimumSpeedRatio: 0.15,
+  formationRadius: 2.5,
+  separationRadius: 1.8,
+  separationStrength: 3,
   playerRadius: 1.5,
   attackRange: 40,
   rayCount: 36,
@@ -73,6 +83,10 @@ export const MAP_CONFIG = {
   treeCount: 30,
   treeGridColumns: 10,
   treeGridRows: 10,
+  treeGridOriginZ: 50,
+  treeGridStride: 50,
+  // Cat.FindNearestTreeByGrid uses [grid.transform.z, grid.transform.z + 45].
+  treeGridSearchDepth: 45,
   treeOriginX: -22.5,
   treeOriginZ: 27.5,
   treeSpacing: 5,
@@ -87,10 +101,10 @@ export const MAP_CONFIG = {
   // Source Default-layer walls contain bullet Y=2. The north wall moves to
   // local (0,0,110); the twelve overlapping side tiles span z[-115,745].
   bulletWalls: [
-    { minX: -35, maxX: 35, minZ: -32.5, maxZ: -27.5 },
-    { minX: -35, maxX: 35, minZ: 107.5, maxZ: 112.5 },
-    { minX: -59.7486515045166, maxX: -27.500150680541992, minZ: -115, maxZ: 745 },
-    { minX: 27.499900817871094, maxX: 63.03990173339844, minZ: -115, maxZ: 745 },
+    { minX: -35, maxX: 35, minZ: -32.5, maxZ: -27.5, minY: -1, maxY: 9 },
+    { minX: -35, maxX: 35, minZ: 107.5, maxZ: 112.5, minY: -5, maxY: 5 },
+    { minX: -59.7486515045166, maxX: -27.500150680541992, minZ: -115, maxZ: 745, minY: -1, maxY: 9 },
+    { minX: 27.499900817871094, maxX: 63.03990173339844, minZ: -115, maxZ: 745, minY: -1, maxY: 9 },
   ],
 } as const;
 

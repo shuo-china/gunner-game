@@ -5,11 +5,12 @@ import type { UpgradeType } from '../session/UpgradeEconomy';
 import { ArtLibrary, makeNode } from './ArtLibrary';
 import type { HudColor, OriginalHudAssets, UpgradeImageName } from './OriginalHudAssets';
 import { UpgradeInput } from './UpgradeInput';
+import { attachFontPolicyLabel } from './FontPolicyLabel';
 
 type Pair = [number, number];
 interface Card {
   type: UpgradeType; node: Node; level: Label; value: Label; price: Label;
-  available: Node; fill: Node; flash: Sprite; flashTime: number; scale: number; progress: number;
+  available: Node; fill: Node; flash: Sprite; flashInput: Node; flashTime: number; scale: number; progress: number;
 }
 
 /** Original Ingame/Upgrade_List, in the same 1080-wide coordinates as Main_UI. */
@@ -18,6 +19,7 @@ export class UpgradeHud {
   private readonly input: UpgradeInput;
   private readonly cards: Card[];
   private destroyed = false;
+  private readonly textViews: ReturnType<typeof attachFontPolicyLabel>[] = [];
 
   constructor(parent: Node, private readonly art: ArtLibrary, private readonly assets: OriginalHudAssets,
     onUpgrade: (type: UpgradeType) => boolean) {
@@ -29,6 +31,7 @@ export class UpgradeHud {
       if (success && card) {
         card.flashTime = this.assets.upgrades.animation.duration;
         card.flash.node.getComponent(UITransform)!.setContentSize(...this.assets.upgrades.layout.size);
+        card.flashInput.getComponent(UITransform)!.setContentSize(...this.assets.upgrades.layout.size);
         card.flash.node.active = true;
       }
       return success;
@@ -64,6 +67,7 @@ export class UpgradeHud {
       }
     }
     this.input.update(dt);
+    this.syncText();
     const elapsed = Number.isFinite(dt) ? Math.max(0, dt) : 0;
     for (const card of this.cards) {
       const target = this.input.pressedType === card.type ? interaction.pressedScale : 1;
@@ -80,9 +84,16 @@ export class UpgradeHud {
         const t = time < animation.peakTime ? time : time - animation.peakTime;
         const delta = Math.max(0, ((coefficients[0] * t + coefficients[1]) * t + coefficients[2]) * t + coefficients[3]);
         card.flash.node.getComponent(UITransform)!.setContentSize(l.size[0] + delta, l.size[1] + delta);
+        // Keep the gesture owner enabled when the visual ends. Cocos discards
+        // releases captured by disabled nodes; a zero-sized active proxy still
+        // receives its END/CANCEL without claiming new touches off the panel.
+        card.flashInput.getComponent(UITransform)!.setContentSize(
+          card.flashTime > 0 ? l.size[0] + delta : 0, card.flashTime > 0 ? l.size[1] + delta : 0);
       }
     }
   }
+
+  private syncText(): void { this.textViews.forEach(view => view.sync()); }
 
   cancelInteractions(): void {
     this.input.cancel();
@@ -91,9 +102,15 @@ export class UpgradeHud {
     }
   }
 
+  getTutorialPowerTarget(): Node | null {
+    const power = this.cards.find(card => card.type === 'power')?.node;
+    return !this.destroyed && this.node.active && power?.active ? power : null;
+  }
+
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true; this.input.setEnabled(false); this.cancelInteractions();
+    this.textViews.forEach(view => view.destroy());
     if (this.node.isValid) { this.node.active = false; this.node.removeFromParent(); this.node.destroy(); }
   }
 
@@ -113,30 +130,45 @@ export class UpgradeHud {
     this.image('Outline', 'outline', node, l.size, [0, 0], undefined, true);
     const value = this.label('Value_txt', node, l.valueFontSize, l.valuePosition, l.valueSize);
     const level = this.label('Lv_txt', node, l.levelFontSize, l.levelPosition, l.levelSize);
+    // Original TMP Lv_txt uses HorizontalAlignment.Right (4). Its wide
+    // RectTransform is intentionally offset by +34; the text hugs its right edge.
+    level.horizontalAlign = Label.HorizontalAlign.RIGHT;
     const priceNode = this.image('Price', 'price', node, l.priceSize, l.pricePosition, p.price, true);
     this.image('Icon', 'cash', priceNode, l.priceIconSize, l.priceIconPosition);
     const price = this.label('Price_txt', priceNode, l.priceFontSize, l.priceTextPosition, l.priceTextSize);
     const title = this.label('Title_txt', node, l.titleFontSize * font.sourceScale, l.titlePosition, l.titleSize, true);
     title.string = titles[index];
     this.image('Icon', type, node, l.iconSize, l.iconPosition);
-    node.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
-      event.propagationStopped = true;
-      const pointer = event.getID(); if (pointer !== null) this.input.press(type, pointer);
+    const flashInput = makeNode('UpgradeFlashInput', node);
+    flashInput.setPosition(...l.flashPosition, 0);
+    flashInput.getComponent(UITransform)!.setContentSize(0, 0);
+    // Source TMP title/level and the expanding flash raycast beyond the panel.
+    // Cocos only hit-tests nodes with listeners, so bind the extended graphics
+    // to one gesture owner and accept releases on any graphic of that button.
+    const hitRegions = [node, title.node, level.node, flashInput];
+    const contains = (event: EventTouch): boolean => hitRegions.some(region => {
+      for (let ancestor: Node | null = region; ancestor; ancestor = ancestor.parent) if (!ancestor.active) return false;
+      return region.getComponent(UITransform)!.hitTest(event.getLocation());
     });
-    node.on(Node.EventType.TOUCH_MOVE, (event: EventTouch) => {
+    const finish = (event: EventTouch, click: boolean): void => {
       event.propagationStopped = true;
       const pointer = event.getID();
-      if (pointer !== null && !node.getComponent(UITransform)!.hitTest(event.getLocation())) this.input.cancel(pointer);
-    });
-    node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
-      event.propagationStopped = true;
-      const pointer = event.getID(); if (pointer !== null) this.input.release(pointer);
-    });
-    node.on(Node.EventType.TOUCH_CANCEL, (event: EventTouch) => {
-      event.propagationStopped = true;
-      const pointer = event.getID(); if (pointer !== null) this.input.cancel(pointer);
-    });
-    return { type, node, level, value, price, available, fill, flash, flashTime: 0, scale: 1, progress: -1 };
+      if (pointer === null) return;
+      if (click && contains(event)) this.input.release(pointer); else this.input.cancel(pointer);
+    };
+    for (const region of hitRegions) {
+      region.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+        event.propagationStopped = true;
+        const pointer = event.getID(); if (pointer !== null) this.input.press(type, pointer);
+      });
+      // Upgrade_Ingame implements Down/Up, but no PointerExit handler: its
+      // repeat coroutine survives moving outside until release or cancellation.
+      region.on(Node.EventType.TOUCH_MOVE, (event: EventTouch) => { event.propagationStopped = true; });
+      region.on(Node.EventType.TOUCH_END, (event: EventTouch) => finish(event, true));
+      region.on(Node.EventType.TOUCH_CANCEL, (event: EventTouch) => finish(event,
+        event.getEventCode?.() === Node.EventType.TOUCH_END));
+    }
+    return { type, node, level, value, price, available, fill, flash, flashInput, flashTime: 0, scale: 1, progress: -1 };
   }
 
   private image(name: string, key: UpgradeImageName, parent: Node, size: Pair, position: Pair,
@@ -153,8 +185,14 @@ export class UpgradeHud {
     const node = makeNode(name, parent); node.setPosition(...position, 0);
     const label = node.addComponent(Label);
     const style = chinese ? this.assets.upgrades.font : this.assets.config.font;
-    label.font = chinese ? this.assets.upgradeFont : this.assets.font; label.useSystemFont = false;
-    label.fontSize = size; label.lineHeight = size * 1.25; label.color = Color.WHITE;
+    label.font = null; label.useSystemFont = true; label.fontFamily = 'sans-serif';
+    label.fontSize = size; label.color = Color.WHITE;
+    // TMP Value_txt has auto-size disabled and a 45px font in a 44.2822px
+    // rectangle. Cocos SHRINK measures lineHeight, not glyph height: the old
+    // 56.25px line reduced the real font to 35px. These are single-line labels;
+    // fit only the line advance to the source box so the original font remains
+    // 45px, while exceptionally long formatted amounts can still fit in width.
+    label.lineHeight = Math.min(size * 1.25, bounds[1]);
     label.horizontalAlign = Label.HorizontalAlign.CENTER; label.verticalAlign = Label.VerticalAlign.CENTER;
     label.overflow = Label.Overflow.SHRINK; label.enableWrapText = false;
     label.enableOutline = true; label.outlineColor = color(style.outlineColor); label.outlineWidth = style.outlineWidth;
@@ -163,6 +201,7 @@ export class UpgradeHud {
       label.shadowOffset = new Vec2(...this.assets.config.font.shadowOffset); label.shadowBlur = 0;
     }
     node.getComponent(UITransform)!.setContentSize(...bounds);
+    if (!chinese) this.textViews.push(attachFontPolicyLabel(label, this.art, this.assets.config.bitmapFont));
     return label;
   }
 }

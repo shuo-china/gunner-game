@@ -2,17 +2,30 @@ import { BulletState, WEAPON_CONFIG } from '../core';
 import { CAMERA_BASIS } from '../core/projection';
 import { sampleParticleStops } from './OriginalFeedbackMath';
 import { particleVelocityKeep } from './OriginalParticleMotion';
+import { advanceParticleExtra, ParticleCollisionBox, ParticleCollisionIndex } from './OriginalParticleExtraMotion';
 export { sampleParticleStops } from './OriginalFeedbackMath';
 
 interface CurveKey {time:number;value:number;inSlope:number;outSlope:number}
 export interface ParticleCurve {mode:number;value:number;min:number;keys:CurveKey[];minKeys:CurveKey[]}
 interface Gradient {colors:number[][];alpha:number[][]}
+export type ParticleVector=[number,number,number];
+export type ParticleQuaternion=[number,number,number,number];
+export interface ParticleMeshSpec {source:string;name:string;positions:number[][];uv:number[][];indices:number[];colors?:number[][];builtinId?:number;reconstructed?:string}
+export interface ParticleMeshPose {position:ParticleVector;rotation:ParticleQuaternion;scale:ParticleVector}
+interface ParticleShape {type:number;radius:number;thickness:number;angle:number;length:number;position:ParticleVector;rotation:ParticleVector;scale:ParticleVector;arc?:{degrees:number;mode:number;speed:ParticleCurve}}
 export interface ParticleSpec {
   id:string;kind:'bullet'|'hit';name:string;scale:number;sortingOrder:number;sortingLayer:number;
   image:{path:string;sizePx:[number,number];sizeUnits:[number,number];anchor:[number,number]};
   blend:{source:number;destination:number};materialColor:number[];startColor:number[];
   lifetime:ParticleCurve;size:ParticleCurve;speed:ParticleCurve;rotation:ParticleCurve;gravity:ParticleCurve;
   emissionRate:number;bursts:{time:number;count:number}[];sphereRadius:number;sphereThickness:number;
+  timeEmissionRate?:number;duration?:number;looping?:boolean;prewarm?:boolean;stopOnDeath?:boolean;
+  sourceTransform?:{position:ParticleVector;rotation:ParticleQuaternion};shape?:ParticleShape|null;
+  startSizeY?:ParticleCurve;startSizeZ?:ParticleCurve;sizeCurveY?:ParticleCurve;sizeCurveZ?:ParticleCurve;
+  startRotationX?:ParticleCurve;startRotationY?:ParticleCurve;startColorMin?:number[];
+  rotationCurveX?:ParticleCurve;rotationCurveY?:ParticleCurve;
+  textureSheet?:{tilesX:number;tilesY:number;cycles:number;frame:ParticleCurve;startFrame:ParticleCurve};
+  mesh?:ParticleMeshSpec;renderAlignment?:number;noise?:unknown;collision?:unknown;
   sizeCurve:ParticleCurve|null;gradient:Gradient|null;rotationCurve:ParticleCurve|null;
   inheritVelocity:ParticleCurve|null;limitVelocity:{magnitude:ParticleCurve;dampen:number}|null;
   renderMode:number;lengthScale:number;velocityScale:number;simulationSpace:number;maxParticles:number;
@@ -21,32 +34,44 @@ export interface OriginalParticle {
   index:number;spec:ParticleSpec;active:boolean;age:number;life:number;size:number;
   x:number;y:number;z:number;vx:number;vy:number;vz:number;rotation:number;random:number;
   emitterId?:number;
+  sizeY?:number;sizeZ?:number;rotationX?:number;rotationY?:number;
+  baseRotation?:ParticleQuaternion;tint?:number[];sheetRandom?:number;sheetStart?:number;
 }
-export interface ParticlePose {x:number;y:number;width:number;height:number;angle:number;color:number[]}
+export interface ParticlePose {x:number;y:number;width:number;height:number;angle:number;color:number[];frame?:number;mesh?:ParticleMeshPose}
 interface ParticleGroup {spec:ParticleSpec;particles:OriginalParticle[]}
-interface BulletEmission {previousTravel:number;counts:number[]}
+interface EmitterFrame {position:ParticleVector;rotation:ParticleQuaternion;verticalVelocity?:number}
+interface BulletEmission {previousTravel:number;counts:number[];timeCounts:number[];burstAges:number[];frame?:EmitterFrame}
+interface HitEmission {group:ParticleGroup;x:number;z:number;height:number;age:number;count:number}
 
-/** Engine-independent projection and lifetime simulation of the six source systems.
- * Only the modules actually enabled in the initial pistol prefabs are supported.
+/** Engine-independent simulation of the enabled source particle modules.
  * This is visual simulation: its random stream never changes combat outcomes.
  * Unity InitialModuleUI binds moveWithTransform to Local/World/Custom in that
- * order. Bullets use World (1); hit emitters use Local (0) at an unmoving origin,
- * whose sphere emission is equivalent to the cached world coordinates here.
+ * order. Source skins contain both Local (0) and World (1) bullet particles.
+ * Enhanced specs preserve the authored hierarchy transform and emitter frame.
  */
 export class OriginalParticleSimulation {
   readonly particles:OriginalParticle[]=[];
   private readonly emissions=new Map<number,BulletEmission>();
+  // Keep every owned slot, including inactive ones, in global render-slot order.
+  // Reusing a slot moves it between owners; the total index size stays <= pool size.
+  private readonly emitterParticles=new Map<number,OriginalParticle[]>();
+  private readonly unusedEmitterParticles:OriginalParticle[][]=[];
   private readonly bulletGroups:ParticleGroup[];
   private readonly hitGroups:ParticleGroup[];
   private readonly alpha=[1];
+  private readonly hitEmissions:HitEmission[]=[];
+  private colliders:readonly ParticleCollisionBox[]=[];
+  private readonly collisionIndex?:ParticleCollisionIndex;
   constructor(specs:readonly ParticleSpec[],private readonly random:()=>number=Math.random) {
+    if(specs.some(spec=>!!spec.collision))this.collisionIndex=new ParticleCollisionIndex();
     const groups=new Map<ParticleSpec,ParticleGroup>();
     for(const spec of specs.slice().sort((a,b)=>a.sortingOrder-b.sortingOrder)) {
       const group:ParticleGroup={spec,particles:[]};groups.set(spec,group);
       // Reserve several simultaneous effects; source maxParticles is an upper limit.
       const maxLife=spec.lifetime.mode===3?Math.max(spec.lifetime.value,spec.lifetime.min):spec.lifetime.value;
-      const capacity=spec.kind==='bullet'?Math.ceil(spec.emissionRate*WEAPON_CONFIG.bulletSpeed*maxLife*4)+16:
-        Math.max(8,spec.bursts.reduce((n,b)=>n+b.count,0)*8);
+      const timed=Math.ceil((spec.timeEmissionRate??0)*maxLife*4);
+      const capacity=spec.kind==='bullet'?Math.ceil(spec.emissionRate*WEAPON_CONFIG.bulletSpeed*maxLife*4)+timed+16:
+        Math.max(8,spec.bursts.reduce((n,b)=>n+b.count,0)*8+timed);
       for(let i=0;i<Math.min(spec.maxParticles,capacity);i++) {
         const particle:OriginalParticle={index:this.particles.length,spec,active:false,age:0,life:0,size:0,
           x:0,y:0,z:0,vx:0,vy:0,vz:0,rotation:0,random:0};
@@ -61,27 +86,84 @@ export class OriginalParticleSimulation {
   shot(bulletId:number):void {
     // Bullet.SetupLinear calls Stop(WithChildren, StopEmittingAndClear) and
     // Clear(WithChildren) before reusing its own ParticleSystem hierarchy.
-    for(const p of this.particles)if(p.spec.kind==='bullet'&&p.emitterId===bulletId)p.active=false;
+    const particles=this.emitterParticles.get(bulletId);
+    if(particles)for(const p of particles)if(p.spec.kind==='bullet')p.active=false;
     const emission=this.emissionFor(bulletId);
-    emission.previousTravel=0;emission.counts.fill(0);
+    emission.previousTravel=0;emission.counts.fill(0);emission.timeCounts.fill(0);emission.burstAges.fill(-1);
+    emission.frame=undefined;
   }
-  hit(position:{x:number;z:number}):void {
-    for(const group of this.hitGroups)for(const burst of group.spec.bursts) {
-      // Both selected hit systems have one burst at time zero.
-      if(burst.time!==0)throw new Error(`Unsupported delayed original burst: ${group.spec.id}`);
-      for(let i=0;i<burst.count;i++)this.spawn(group,position.x,position.z,0,0,0);
+  clearEmitter(bulletId:number):void {
+    const particles=this.emitterParticles.get(bulletId);
+    if(particles)for(const particle of particles)particle.active=false;
+    this.emissions.delete(bulletId);
+  }
+  get hasActiveParticles():boolean {return this.hitEmissions.length>0||this.particles.some(particle=>particle.active);}
+  setColliders(colliders:readonly ParticleCollisionBox[]):void {
+    this.colliders=colliders;this.collisionIndex?.setColliders(colliders);
+  }
+  hit(position:{x:number;z:number},_radius=0,height:number=WEAPON_CONFIG.bulletHeight):void {
+    for(const group of this.hitGroups) {
+      // Source FX selects its authored gun skin; damage radius does not rescale it.
+      for(const burst of group.spec.bursts)if(burst.time===0)for(let i=0;i<burst.count;i++)this.spawn(group,position.x,position.z,0,0,0,undefined,height);
+      if(group.spec.bursts.some(b=>b.time>0)||(group.spec.timeEmissionRate??0)>0)
+        this.hitEmissions.push({group,x:position.x,z:position.z,height,age:0,count:0});
     }
   }
   update(dt:number,bullets:readonly BulletState[]):void {
     if(!(dt>0)||!Number.isFinite(dt))return;
+    // Local-space particles retain their coordinates relative to the moving
+    // emitter. World-space smoke/trails remain at their emission positions.
+    for(const b of bullets)if(b.active) {
+      const emission=this.emissionFor(b.id);
+      if(b.traveled<emission.previousTravel)this.shot(b.id);
+      const frame=bulletFrame(b,b.age);
+      const particles=this.emitterParticles.get(b.id);
+      if(emission.frame&&particles)for(const p of particles)if(p.active&&p.spec.sourceTransform&&p.spec.simulationSpace===0)
+        this.moveLocal(p,emission.frame,frame);
+      emission.frame=frame;
+      if(b.damaging===false&&particles)for(const p of particles)if(p.active&&p.spec.stopOnDeath)p.active=false;
+    }
     for(const p of this.particles)if(p.active)this.advance(p,dt);
+    for(let i=this.hitEmissions.length-1;i>=0;i--) {
+      const hit=this.hitEmissions[i],s=hit.group.spec,previous=hit.age;hit.age+=dt;
+      for(const burst of s.bursts)if(burst.time>previous&&burst.time<=hit.age)
+        for(let n=0;n<burst.count;n++)this.spawn(hit.group,hit.x,hit.z,0,0,hit.age-burst.time,undefined,hit.height);
+      const rate=s.timeEmissionRate??0,wanted=Math.floor(Math.min(hit.age,s.duration??1)*rate+1e-9);
+      for(let n=hit.count+1;n<=wanted;n++)this.spawn(hit.group,hit.x,hit.z,0,0,hit.age-n/rate,undefined,hit.height);
+      hit.count=wanted;
+      const end=Math.max(rate>0?(s.duration??1):0,...s.bursts.map(b=>b.time));
+      if(hit.age>=end)this.hitEmissions.splice(i,1);
+    }
     for(const b of bullets) {
       if(!b.active)continue;
       const emission=this.emissionFor(b.id);
-      if(b.traveled<emission.previousTravel)this.shot(b.id);
       emission.previousTravel=b.traveled;
       for(let si=0;si<this.bulletGroups.length;si++) {
         const group=this.bulletGroups[si],spec=group.spec;
+        const speed=b.speed??WEAPON_CONFIG.bulletSpeed,height=b.height??WEAPON_CONFIG.bulletHeight;
+        const duration=Math.max(.0001,spec.duration??1),prewarm=spec.prewarm&&spec.looping?duration:0;
+        const age=b.age+(b.damaging===false?(b.trailTime??0):0)+prewarm;
+        const current=spec.looping?age:Math.min(age,duration),previous=emission.burstAges[si];
+        if(b.damaging===false&&spec.stopOnDeath)continue;
+        const spawnAt=(time:number):void=>{
+          const birth=Math.max(0,time-prewarm),frame=spec.simulationSpace===0?emission.frame!:bulletFrame(b,birth);
+          this.spawn(group,frame.position[0],frame.position[2],b.direction.x*speed,b.direction.z*speed,
+            Math.max(0,age-time),b.id,frame.position[1],frame,time);
+        };
+        for(const burst of spec.bursts) {
+          const first=spec.looping?Math.max(0,Math.floor((previous-burst.time)/duration)+1):0;
+          const last=spec.looping?Math.floor((current-burst.time+1e-9)/duration):0;
+          for(let cycle=first;cycle<=last;cycle++) {
+            const time=burst.time+cycle*duration;
+            if(time>previous&&time<=current+1e-9)for(let n=0;n<burst.count;n++)spawnAt(time);
+          }
+        }
+        emission.burstAges[si]=current;
+        if((spec.timeEmissionRate??0)>0) {
+          const wanted=Math.floor(current*spec.timeEmissionRate!+1e-9);
+          for(let i=emission.timeCounts[si]+1;i<=wanted;i++)spawnAt(i/spec.timeEmissionRate!);
+          emission.timeCounts[si]=wanted;
+        }
         if(spec.emissionRate<=0)continue;
         const count=emission.counts[si];
         const wanted=Math.floor(b.traveled*spec.emissionRate+1e-9);
@@ -90,9 +172,10 @@ export class OriginalParticleSimulation {
           // A rendered frame can contain several physics steps. The selected
           // pistol travels in a straight line, so recover the entire distance
           // interval instead of clamping older emissions to the last step.
-          this.spawn(group,b.position.x-b.direction.x*behind,b.position.z-b.direction.z*behind,
-            b.direction.x*WEAPON_CONFIG.bulletSpeed,b.direction.z*WEAPON_CONFIG.bulletSpeed,
-            behind/WEAPON_CONFIG.bulletSpeed,b.id);
+          const frame=spec.sourceTransform?(spec.simulationSpace===0?emission.frame!:bulletFrame(b,b.age-behind/Math.max(.1,speed))):undefined;
+          this.spawn(group,frame?frame.position[0]:b.position.x-b.direction.x*behind,frame?frame.position[2]:b.position.z-b.direction.z*behind,
+            b.direction.x*speed,b.direction.z*speed,
+            behind/Math.max(.1,speed),b.id,frame?frame.position[1]:height,frame);
         }
         emission.counts[si]=wanted;
       }
@@ -100,62 +183,145 @@ export class OriginalParticleSimulation {
   }
   reset():void {
     this.emissions.clear();
+    this.hitEmissions.length=0;
+    // Reset preserves each slot's emitterId, so preserve its bounded owner index
+    // too. This also keeps direct active toggles on existing pool slots compatible.
     for(const p of this.particles){p.active=false;p.age=p.life=0;p.vx=p.vy=p.vz=0;}
   }
   /** Pass an output buffer in the render loop; omitted output remains an independent snapshot. */
   pose(p:OriginalParticle,out:ParticlePose={x:0,y:0,width:0,height:0,angle:0,color:[]}):ParticlePose {
     const t=Math.max(0,Math.min(1,p.age/p.life)),s=p.spec;
     const size=p.size*(s.sizeCurve?evaluateParticleCurve(s.sizeCurve,t,p.random):1);
+    const sizeY=(p.sizeY??p.size)*(s.sizeCurveY?evaluateParticleCurve(s.sizeCurveY,t,p.random):s.sizeCurve?evaluateParticleCurve(s.sizeCurve,t,p.random):1);
+    const sizeZ=(p.sizeZ??p.size)*(s.sizeCurveZ?evaluateParticleCurve(s.sizeCurveZ,t,p.random):s.sizeCurve?evaluateParticleCurve(s.sizeCurve,t,p.random):1);
     const camera=CAMERA_BASIS;
     out.x=camera.rightX*p.x+camera.rightZ*p.z;
     out.y=camera.upX*p.x+camera.upZ*p.z+camera.upY*p.y;
-    let angle=-p.rotation*180/Math.PI,height=size;
+    let angle=-p.rotation*180/Math.PI,height=sizeY;
     if(s.renderMode===1) {
       const vx=camera.rightX*p.vx+camera.rightZ*p.vz;
       const vy=camera.upX*p.vx+camera.upZ*p.vz+camera.upY*p.vy;
-      height=size*s.lengthScale+Math.hypot(vx,vy)*s.velocityScale;
+      height=sizeY*s.lengthScale+Math.hypot(vx,vy)*s.velocityScale;
       angle=Math.atan2(vy,vx)*180/Math.PI-90;
     }
     const color=out.color;
     if(s.gradient)sampleParticleStops(s.gradient.colors,t,color);
     else {color[0]=color[1]=color[2]=1;}
     const alpha=s.gradient?sampleParticleStops(s.gradient.alpha,t,this.alpha)[0]:1;
-    for(let i=0;i<3;i++)color[i]=color[i]*s.startColor[i]*s.materialColor[i];
-    color[3]=alpha*s.startColor[3]*s.materialColor[3];
+    const tint=p.tint??s.startColor;
+    for(let i=0;i<3;i++)color[i]=color[i]*tint[i]*s.materialColor[i];
+    color[3]=alpha*tint[3]*s.materialColor[3];
     out.width=Math.max(.0001,size);out.height=Math.max(.0001,height);out.angle=angle;
+    if(s.textureSheet) {
+      const sheet=s.textureSheet,count=sheet.tilesX*sheet.tilesY;
+      const progress=evaluateParticleCurve(sheet.frame,t,p.sheetRandom??p.random)*sheet.cycles;
+      const frame=Math.floor((p.sheetStart??0)+progress*count);
+      out.frame=((frame%count)+count)%count;
+    } else delete out.frame;
+    if(s.mesh) {
+      const pose=out.mesh??(out.mesh={position:[0,0,0],rotation:[0,0,0,1],scale:[1,1,1]});
+      pose.position[0]=p.x;pose.position[1]=p.y;pose.position[2]=p.z;
+      const rotation=particleQuaternionMultiply(p.baseRotation??IDENTITY,particleEulerQuaternion(p.rotationX??0,p.rotationY??0,p.rotation));
+      for(let i=0;i<4;i++)pose.rotation[i]=rotation[i];
+      pose.scale[0]=size;pose.scale[1]=sizeY;pose.scale[2]=sizeZ;
+    } else delete out.mesh;
     return out;
   }
   private emissionFor(bulletId:number):BulletEmission {
     let emission=this.emissions.get(bulletId);
     if(!emission) {
-      emission={previousTravel:0,counts:this.bulletGroups.map(()=>0)};
+      emission={previousTravel:0,counts:this.bulletGroups.map(()=>0),timeCounts:this.bulletGroups.map(()=>0),burstAges:this.bulletGroups.map(()=>-1)};
       this.emissions.set(bulletId,emission);
     }
     return emission;
   }
-  private spawn(group:ParticleGroup,x:number,z:number,emitterVX:number,emitterVZ:number,age:number,emitterId?:number):void {
+  private spawn(group:ParticleGroup,x:number,z:number,emitterVX:number,emitterVZ:number,age:number,emitterId?:number,height:number=WEAPON_CONFIG.bulletHeight,frame?:EmitterFrame,emissionTime=0):void {
     let p:OriginalParticle|undefined;
     for(const candidate of group.particles)if(!candidate.active){p=candidate;break;}
     if(!p)return;
     const spec=group.spec;
-    p.emitterId=emitterId;
+    this.setEmitter(p,emitterId);
     p.random=this.random();p.life=evaluateParticleCurve(spec.lifetime,0,this.random());
     p.age=0;p.active=true;p.size=evaluateParticleCurve(spec.size,0,this.random())*spec.scale;
     p.rotation=evaluateParticleCurve(spec.rotation,0,this.random());
+    p.sizeY=spec.startSizeY?evaluateParticleCurve(spec.startSizeY,0,this.random())*spec.scale:undefined;
+    p.sizeZ=spec.startSizeZ?evaluateParticleCurve(spec.startSizeZ,0,this.random())*spec.scale:undefined;
+    p.rotationX=spec.startRotationX?evaluateParticleCurve(spec.startRotationX,0,this.random()):0;
+    p.rotationY=spec.startRotationY?evaluateParticleCurve(spec.startRotationY,0,this.random()):0;
+    p.tint=spec.startColorMin?spec.startColor.map((value,i)=>spec.startColorMin![i]+(value-spec.startColorMin![i])*p!.random):undefined;
+    p.sheetRandom=spec.textureSheet?this.random():undefined;
+    p.sheetStart=spec.textureSheet?evaluateParticleCurve(spec.textureSheet.startFrame,0,this.random()):undefined;
     // A sphere shell is rotation-invariant, including the hit parent's X=-90.
     const az=this.random()*Math.PI*2,up=this.random()*2-1,r=Math.sqrt(Math.max(0,1-up*up));
-    const nx=r*Math.cos(az),ny=up,nz=r*Math.sin(az);
+    let nx=r*Math.cos(az),ny=up,nz=r*Math.sin(az);
     const radius=spec.sphereRadius*spec.scale*(spec.sphereThickness>0?
       Math.cbrt((1-spec.sphereThickness)**3+this.random()*(1-(1-spec.sphereThickness)**3)):1);
-    p.x=x+nx*radius;p.y=WEAPON_CONFIG.bulletHeight+ny*radius;p.z=z+nz*radius;
+    let sx=nx*radius,sy=ny*radius,sz=nz*radius;
+    if(spec.shape!==undefined) {
+      const shape=spec.shape;
+      if(!shape) {sx=sy=sz=0;nx=ny=0;nz=1;}
+      else {
+        if(shape.type===2){sz=Math.abs(sz);nz=Math.abs(nz);}
+        else if(shape.type===4) {
+          const inner=1-shape.thickness,radial=Math.sqrt(inner*inner+this.random()*(1-inner*inner))*shape.radius*spec.scale;
+          const arc=shape.arc,coneAz=arc?.mode===1?(emissionTime*evaluateParticleCurve(arc.speed,0,p.random)%1)*arc.degrees*Math.PI/180:az;
+          sx=Math.cos(coneAz)*radial;sy=Math.sin(coneAz)*radial;sz=0;
+          const spread=Math.atan(Math.tan(shape.angle*Math.PI/180)*radial/Math.max(.0001,shape.radius*spec.scale));
+          nx=Math.sin(spread)*Math.cos(coneAz);ny=Math.sin(spread)*Math.sin(coneAz);nz=Math.cos(spread);
+        } else if(shape.type===5) {
+          sx=(this.random()-.5)*shape.scale[0]*spec.scale;sy=(this.random()-.5)*shape.scale[1]*spec.scale;sz=(this.random()-.5)*shape.scale[2]*spec.scale;
+          nx=ny=0;nz=1;
+        }
+        const q=particleEulerQuaternion(...shape.rotation.map(v=>v*Math.PI/180) as ParticleVector);
+        const at=particleRotate(q,[sx,sy,sz]),dir=particleRotate(q,[nx,ny,nz]);
+        sx=at[0]+shape.position[0]*spec.scale;sy=at[1]+shape.position[1]*spec.scale;sz=at[2]+shape.position[2]*spec.scale;
+        [nx,ny,nz]=dir;
+      }
+    }
+    const dynamic=frame?.rotation??IDENTITY;
+    const transform=spec.sourceTransform;
+    p.baseRotation=transform?particleQuaternionMultiply(dynamic,transform.rotation):undefined;
+    if(transform) {
+      const at=particleRotate(p.baseRotation!,[sx,sy,sz]),dir=particleRotate(p.baseRotation!,[nx,ny,nz]);
+      const origin=particleRotate(dynamic,transform.position);
+      sx=at[0]+origin[0];sy=at[1]+origin[1];sz=at[2]+origin[2];[nx,ny,nz]=dir;
+    }
+    p.x=x+sx;p.y=height+sy;p.z=z+sz;
     const speed=evaluateParticleCurve(spec.speed,0,this.random())*spec.scale;
     const inherit=spec.inheritVelocity?evaluateParticleCurve(spec.inheritVelocity,0,p.random):0;
-    p.vx=nx*speed+emitterVX*inherit;p.vy=ny*speed;p.vz=nz*speed+emitterVZ*inherit;
+    p.vx=nx*speed+emitterVX*inherit;p.vy=ny*speed+(frame?.verticalVelocity??0)*inherit;p.vz=nz*speed+emitterVZ*inherit;
     if(age>0)this.advance(p,age);
+  }
+  private setEmitter(p:OriginalParticle,emitterId:number|undefined):void {
+    const previous=p.emitterId;p.emitterId=emitterId;
+    if(previous===emitterId)return;
+    if(previous!==undefined) {
+      const owned=this.emitterParticles.get(previous);
+      if(owned) {
+        const index=owned.indexOf(p);if(index>=0)owned.splice(index,1);
+        if(!owned.length){this.emitterParticles.delete(previous);this.unusedEmitterParticles.push(owned);}
+      }
+    }
+    // Legacy comparisons use ===, so NaN can never identify a particle owner.
+    if(emitterId===undefined||Number.isNaN(emitterId))return;
+    let owned=this.emitterParticles.get(emitterId);
+    if(!owned){owned=this.unusedEmitterParticles.pop()??[];this.emitterParticles.set(emitterId,owned);}
+    let low=0,high=owned.length;
+    while(low<high){const middle=(low+high)>>>1;if(owned[middle].index<p.index)low=middle+1;else high=middle;}
+    owned.splice(low,0,p);
+  }
+  private moveLocal(p:OriginalParticle,from:EmitterFrame,to:EmitterFrame):void {
+    const delta=particleQuaternionMultiply(to.rotation,[-from.rotation[0],-from.rotation[1],-from.rotation[2],from.rotation[3]]);
+    const at=particleRotate(delta,[p.x-from.position[0],p.y-from.position[1],p.z-from.position[2]]);
+    p.x=to.position[0]+at[0];p.y=to.position[1]+at[1];p.z=to.position[2]+at[2];
+    [p.vx,p.vy,p.vz]=particleRotate(delta,[p.vx,p.vy,p.vz]);
+    if(p.baseRotation)p.baseRotation=particleQuaternionMultiply(delta,p.baseRotation);
   }
   private advance(p:OriginalParticle,dt:number):void {
     const used=Math.min(dt,p.life-p.age),s=p.spec,t=Math.min(1,(p.age+used*.5)/p.life);
     if(s.rotationCurve)p.rotation+=evaluateParticleCurve(s.rotationCurve,t,p.random)*used;
+    if(s.rotationCurveX)p.rotationX=(p.rotationX??0)+evaluateParticleCurve(s.rotationCurveX,t,p.random)*used;
+    if(s.rotationCurveY)p.rotationY=(p.rotationY??0)+evaluateParticleCurve(s.rotationCurveY,t,p.random)*used;
     p.vy-=9.81*evaluateParticleCurve(s.gravity,t,p.random)*used;
     if(s.limitVelocity) {
       const speed=Math.hypot(p.vx,p.vy,p.vz);
@@ -165,9 +331,38 @@ export class OriginalParticleSimulation {
         p.vx*=keep;p.vy*=keep;p.vz*=keep;
       }
     }
+    const from=s.noise||s.collision?{x:p.x,y:p.y,z:p.z}:undefined;
     p.x+=p.vx*used;p.y+=p.vy*used;p.z+=p.vz*used;
+    if(from)advanceParticleExtra(p,used,from,this.colliders,this.collisionIndex);
     p.age+=dt;if(p.age>=p.life)p.active=false;
   }
+}
+const IDENTITY:ParticleQuaternion=[0,0,0,1];
+export function particleQuaternionMultiply(a:ParticleQuaternion,b:ParticleQuaternion):ParticleQuaternion {
+  const [x,y,z,w]=a,[X,Y,Z,W]=b;
+  const result:ParticleQuaternion=[w*X+x*W+y*Z-z*Y,w*Y-x*Z+y*W+z*X,w*Z+x*Y-y*X+z*W,w*W-x*X-y*Y-z*Z];
+  const magnitude=Math.hypot(...result)||1;return result.map(v=>v/magnitude) as ParticleQuaternion;
+}
+export function particleRotate(q:ParticleQuaternion,v:ParticleVector):ParticleVector {
+  const [x,y,z,w]=q,[vx,vy,vz]=v;
+  const tx=2*(y*vz-z*vy),ty=2*(z*vx-x*vz),tz=2*(x*vy-y*vx);
+  return [vx+w*tx+y*tz-z*ty,vy+w*ty+z*tx-x*tz,vz+w*tz+x*ty-y*tx];
+}
+/** Unity applies Euler rotation in Z, X, Y order. Arguments are radians. */
+export function particleEulerQuaternion(x:number,y:number,z:number):ParticleQuaternion {
+  return particleQuaternionMultiply(particleQuaternionMultiply([0,Math.sin(y/2),0,Math.cos(y/2)],
+    [Math.sin(x/2),0,0,Math.cos(x/2)]),[0,0,Math.sin(z/2),Math.cos(z/2)]);
+}
+function bulletFrame(b:BulletState,age:number):EmitterFrame {
+  const height=b.height??WEAPON_CONFIG.bulletHeight,speed=b.speed??WEAPON_CONFIG.bulletSpeed;
+  let position:ParticleVector=[b.position.x-b.direction.x*speed*Math.max(0,b.age-age),height,b.position.z-b.direction.z*speed*Math.max(0,b.age-age)],vertical=0;
+  if(b.missileStart&&b.missileTarget&&b.missileDuration>0) {
+    const t=Math.max(0,Math.min(1,age/b.missileDuration)),arc=b.missileArcHeight,targetHeight=b.missileTargetHeight??0;
+    position=[b.missileStart.x+(b.missileTarget.x-b.missileStart.x)*t,WEAPON_CONFIG.bulletHeight*(1-t)+targetHeight*t+4*t*(1-t)*arc,
+      b.missileStart.z+(b.missileTarget.z-b.missileStart.z)*t];
+    vertical=(targetHeight-WEAPON_CONFIG.bulletHeight+4*(1-2*t)*arc)/b.missileDuration;
+  }
+  return {position,rotation:particleEulerQuaternion(-Math.atan2(vertical,speed),Math.atan2(b.direction.x,b.direction.z),0),verticalVelocity:vertical};
 }
 export function evaluateParticleCurve(c:ParticleCurve,t:number,random=.5):number {
   if(c.mode===0)return c.value;

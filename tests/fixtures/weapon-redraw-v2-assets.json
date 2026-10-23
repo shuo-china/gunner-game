@@ -1,0 +1,7468 @@
+{
+  "source": "Approved weapon-redraw-cohesive-v2-by-grade-20261014 final512 PNGs; manually reviewed bow-crossbow-registration.json and other-registration.json; runtime UUIDs captured before replacement. Independent of generated runtime configs.",
+  "weapons": [
+    {
+      "id": 0,
+      "key": "bow_D_1452001",
+      "previousRuntimePath": "art/weapons/redesigned/bow_D_1452001",
+      "category": "bow",
+      "sourceFile": "final512/01-D/bow_D_1452001.png",
+      "sha256": "3ad27b7e0cdb44d165b288f3dbc2d2aab4c7b78abb9159cf8954b96101eda462",
+      "uuid": "4d5483af-494f-5b72-94a1-3af367df6e65",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        77.43776824034335,
+        104.3984375
+      ],
+      "muzzlePx": [
+        89.35017699946744,
+        104.3984375
+      ],
+      "localScale": [
+        0.42,
+        -0.42
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "3e0636db5391bc8c51c474ad72ac86d9a7aa725fbef8f856c2e8abeda332202a",
+        "sourceSizePx": [
+          239,
+          518
+        ],
+        "sourceBytes": 78072,
+        "sourceAppearance": {
+          "id": 0,
+          "image": {
+            "path": "art/weapons/redesigned/bow_D_1452001",
+            "sizePx": [
+              239,
+              518
+            ],
+            "sizeUnits": [
+              8.526822916666667,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.803347280334728,
+              0.4980694980694981
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.42,
+              -0.42
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-D",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              38,
+              47
+            ],
+            "lowerPx": [
+              37,
+              475
+            ],
+            "bracePx": [
+              37.50233644859813,
+              260
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          236,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        97,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        95,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        95,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 1,
+      "key": "crossbow_D_1462001",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_D_1462001",
+      "category": "crossbow",
+      "sourceFile": "final512/01-D/crossbow_D_1462001.png",
+      "sha256": "a8e2e7c3cedb1f97ad569ad33e3592d3a8cd8b7a7df16247f78ba4aed8d57d8b",
+      "uuid": "abe2b525-9efd-542b-9989-5c1de06c6602",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.101822916666666,
+      "gripPx": [
+        25.5078125,
+        92.78794642857142
+      ],
+      "muzzlePx": [
+        206.35321367416827,
+        92.78794642857142
+      ],
+      "localScale": [
+        0.4032,
+        -0.4608
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "e9b5ab724ae50a71ba06bfb1758ffff53f44528a5d7368f1e7fbf0434ca22b07",
+        "sourceSizePx": [
+          518,
+          454
+        ],
+        "sourceBytes": 144299,
+        "sourceAppearance": {
+          "id": 1,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_D_1462001",
+            "sizePx": [
+              518,
+              454
+            ],
+            "sizeUnits": [
+              16.32239583333333,
+              14.305729166666666
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.4900881057268722
+            ],
+            "ppu": 31.735537190082646,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.4032,
+              -0.4608
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.27421875,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-D",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            252,
+            231.5
+          ]
+        },
+        "sourceAlphaBounds16": [
+          4,
+          3,
+          515,
+          450
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        182
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        180
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        180
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        101.2109375,
+        92.78794642857142
+      ]
+    },
+    {
+      "id": 2,
+      "key": "bow_C_1452134",
+      "previousRuntimePath": "art/weapons/redesigned/bow_C_1452134",
+      "category": "bow",
+      "sourceFile": "final512/02-C/bow_C_1452134.png",
+      "sha256": "21006236455414c680935a68f4c4ea20696eef9df0e6d5ac68c9a9afe7d01bcd",
+      "uuid": "f3411415-006e-5c7f-87fc-6a4e399c3c12",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        80.46610169491525,
+        106.7890625
+      ],
+      "muzzlePx": [
+        92.37851045403934,
+        106.7890625
+      ],
+      "localScale": [
+        0.4326,
+        -0.4326
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "c7043c3a7e9f388ac426f7c724b5e851bd0c313c80ecebd7788c7804937f1ea4",
+        "sourceSizePx": [
+          242,
+          518
+        ],
+        "sourceBytes": 85259,
+        "sourceAppearance": {
+          "id": 2,
+          "image": {
+            "path": "art/weapons/redesigned/bow_C_1452134",
+            "sizePx": [
+              242,
+              518
+            ],
+            "sizeUnits": [
+              8.633854166666667,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.8264462809917356,
+              0.4864864864864865
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4326,
+              -0.4326
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-C",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              46,
+              45
+            ],
+            "lowerPx": [
+              47,
+              473
+            ],
+            "bracePx": [
+              46.51635514018692,
+              266
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          239,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        98,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        96,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        96,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 3,
+      "key": "crossbow_C_1462028",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_C_1462028",
+      "category": "crossbow",
+      "sourceFile": "final512/02-C/crossbow_C_1462028.png",
+      "sha256": "0d3c72d1ba06a5dedfb442b6045fc37d05fb9e2efe4035edbfa98e25359f903b",
+      "uuid": "d75e3e44-c611-5cb7-8304-8834270dc04a",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.1328125,
+      "gripPx": [
+        25.5078125,
+        87.6985815602837
+      ],
+      "muzzlePx": [
+        167.5078125,
+        87.6985815602837
+      ],
+      "localScale": [
+        0.390305015595,
+        -0.446062874966
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "fab83b4131c809697e00435ec7f8bb7420d923769b0529e008be0125cb2711fd",
+        "sourceSizePx": [
+          518,
+          429
+        ],
+        "sourceBytes": 135709,
+        "sourceAppearance": {
+          "id": 3,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_C_1462028",
+            "sizePx": [
+              518,
+              429
+            ],
+            "sizeUnits": [
+              17.4015625,
+              14.41171875
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.493006993006993
+            ],
+            "ppu": 29.767441860465116,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.390305015595,
+              -0.446062874966
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              11.92578125,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-C",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            265,
+            217.5
+          ]
+        },
+        "sourceAlphaBounds16": [
+          4,
+          4,
+          514,
+          425
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        173
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        171
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        171
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        106.390625,
+        87.6985815602837
+      ]
+    },
+    {
+      "id": 4,
+      "key": "claw_C_1472000",
+      "previousRuntimePath": "art/weapons/redesigned/claw_C_1472000",
+      "category": "glove",
+      "sourceFile": "final512/02-C/claw_C_1472000.png",
+      "sha256": "ed344a36bc5b1b4c1cafb5dd8fba03938932ed92959df04a8d9b5cda9750c711",
+      "uuid": "d3ebf56b-c1b9-5233-9e4c-8dd9787f2920",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 13.683765679798178,
+      "gripPx": [
+        10.3671875,
+        63.10064935064935
+      ],
+      "muzzlePx": [
+        206.2240498682328,
+        63.10064935064935
+      ],
+      "localScale": [
+        0.4,
+        -0.4
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "9eee0e4d33739bf7dccae28a5b546a990c4c237990468d3b457af003912b7edb",
+        "sourceSizePx": [
+          518,
+          314
+        ],
+        "sourceBytes": 150516,
+        "sourceAppearance": {
+          "id": 4,
+          "image": {
+            "path": "art/weapons/redesigned/claw_C_1472000",
+            "sizePx": [
+              518,
+              314
+            ],
+            "sizeUnits": [
+              13.859977388277052,
+              8.401607914901534
+            ],
+            "anchor": [
+              0.04633204633204633,
+              0.5031847133757962
+            ],
+            "ppu": 37.37379834675135,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4,
+              -0.4
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.13754613444794,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-C",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          311
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        127
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        125
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        125
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 5,
+      "key": "bow_B_1452124",
+      "previousRuntimePath": "art/weapons/redesigned/bow_B_1452124",
+      "category": "bow",
+      "sourceFile": "final512/03-B/bow_B_1452124.png",
+      "sha256": "b82d09b562309f2fb238e748e57298c178e17de177ae86d2be7b0b001778f019",
+      "uuid": "c9b78db8-709b-57c4-977a-defffd6a22c7",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        80.70292887029288,
+        104.0
+      ],
+      "muzzlePx": [
+        92.61533762941696,
+        104.0
+      ],
+      "localScale": [
+        0.4452,
+        -0.4452
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "038a98674b23c7f70bd8f060726acdca52278239873a57d71c7eae450af8b4eb",
+        "sourceSizePx": [
+          245,
+          518
+        ],
+        "sourceBytes": 97140,
+        "sourceAppearance": {
+          "id": 5,
+          "image": {
+            "path": "art/weapons/redesigned/bow_B_1452124",
+            "sizePx": [
+              245,
+              518
+            ],
+            "sizeUnits": [
+              8.740885416666668,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.8204081632653061,
+              0.5
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4452,
+              -0.4452
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-B",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              45,
+              58
+            ],
+            "lowerPx": [
+              47,
+              475
+            ],
+            "bracePx": [
+              45.96402877697842,
+              259
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          242,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        99,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 6,
+      "key": "crossbow_B_1462029",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_B_1462029",
+      "category": "crossbow",
+      "sourceFile": "final512/03-B/crossbow_B_1462029.png",
+      "sha256": "f1910943468337a31717ea5dc2833e62b9505f5df6995e88b3c4c0ca5af668d8",
+      "uuid": "3abd4735-895d-58a9-b9a1-46adc87a0e11",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.133333333333333,
+      "gripPx": [
+        25.5078125,
+        90.79638009049773
+      ],
+      "muzzlePx": [
+        205.6015625,
+        90.79638009049773
+      ],
+      "localScale": [
+        0.42655725,
+        -0.487494
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "9da85d3e9dd7c2776fcfaefcf2dc31ef6ef6f0e6c56dcd2544454f9027dd07da",
+        "sourceSizePx": [
+          518,
+          448
+        ],
+        "sourceBytes": 161139,
+        "sourceAppearance": {
+          "id": 6,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_B_1462029",
+            "sizePx": [
+              518,
+              448
+            ],
+            "sizeUnits": [
+              16.32239583333333,
+              14.116666666666667
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.4955357142857143
+            ],
+            "ppu": 31.735537190082646,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.42655725,
+              -0.487494
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.242708333333333,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-B",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            251,
+            226
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          444
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        180
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        178
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        178
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        100.8125,
+        90.79638009049773
+      ]
+    },
+    {
+      "id": 7,
+      "key": "claw_B_1472007",
+      "previousRuntimePath": "art/weapons/redesigned/claw_B_1472007",
+      "category": "glove",
+      "sourceFile": "final512/03-B/claw_B_1472007.png",
+      "sha256": "54e9386b3133015c47bab57c91df0725bcb5d5784a00291ae83fa21d95a7d781",
+      "uuid": "e16140f2-df51-5f63-bbec-38290a5a1a62",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 14.079180557350261,
+      "gripPx": [
+        10.765625,
+        60.5979381443299
+      ],
+      "muzzlePx": [
+        206.04603731262722,
+        60.5979381443299
+      ],
+      "localScale": [
+        0.412333886306,
+        -0.412333886306
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "64542df909a281bc81310e6f8aaaf0c9abf1ce3919d23c8e083efdef36033fe5",
+        "sourceSizePx": [
+          518,
+          297
+        ],
+        "sourceBytes": 134988,
+        "sourceAppearance": {
+          "id": 7,
+          "image": {
+            "path": "art/weapons/redesigned/claw_B_1472007",
+            "sizePx": [
+              518,
+              297
+            ],
+            "sizeUnits": [
+              14.247529806406373,
+              8.168950487456936
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.4949494949494949
+            ],
+            "ppu": 36.35717959804389,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.412333886306,
+              -0.412333886306
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.477393060114135,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-B",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          294
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        120
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 8,
+      "key": "wand_B_1372007",
+      "previousRuntimePath": "art/weapons/redesigned/wand_B_1372007",
+      "category": "staff",
+      "sourceFile": "final512/03-B/wand_B_1372007.png",
+      "sha256": "58c01c46902cba54742f34a87167401ca8d9c6babf9a4c356286b7c65089696a",
+      "uuid": "c589d2a6-f749-5bb9-8e7c-e2d6ba40fa4a",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.682500811189442,
+      "gripPx": [
+        34.30061349693251,
+        151.4140625
+      ],
+      "muzzlePx": [
+        34.30061349693251,
+        2.0
+      ],
+      "localScale": [
+        0.38,
+        -0.38
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "fbb7e2abcae29236b2937f27afd8375551a6c5f25ab82507bc1067f347a7c7ff",
+        "sourceSizePx": [
+          169,
+          518
+        ],
+        "sourceBytes": 62541,
+        "sourceAppearance": {
+          "id": 8,
+          "image": {
+            "path": "art/weapons/redesigned/wand_B_1372007",
+            "sizePx": [
+              169,
+              518
+            ],
+            "sizeUnits": [
+              7.48699733806839,
+              22.948311367570568
+            ],
+            "anchor": [
+              0.4970414201183432,
+              0.2702702702702703
+            ],
+            "ppu": 22.572466954235782,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.38,
+              -0.38
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.613159773820392
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72785-73497",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.2269659,
+            0.6038273,
+            0.8549926
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          166,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        69,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        67,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        67,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 9,
+      "key": "bow_A_1452219",
+      "previousRuntimePath": "art/weapons/redesigned/bow_A_1452219",
+      "category": "bow",
+      "sourceFile": "final512/04-A/bow_A_1452219.png",
+      "sha256": "84d3403b6c388f974eaea651c449a11241e639a11cafdcdc82e604e1bf3c4a9b",
+      "uuid": "587f4e75-2f15-5565-88af-65de832e952f",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        78.31799163179916,
+        104.3984375
+      ],
+      "muzzlePx": [
+        90.23040039092325,
+        104.3984375
+      ],
+      "localScale": [
+        0.4578,
+        -0.4578
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "597aef5885258830943625e27d9538c7aaac85d3b56458e382383026515ecf8d",
+        "sourceSizePx": [
+          245,
+          518
+        ],
+        "sourceBytes": 100310,
+        "sourceAppearance": {
+          "id": 9,
+          "image": {
+            "path": "art/weapons/redesigned/bow_A_1452219",
+            "sizePx": [
+              245,
+              518
+            ],
+            "sizeUnits": [
+              8.740885416666668,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.7959183673469388,
+              0.4980694980694981
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4578,
+              -0.4578
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-A",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              44,
+              40
+            ],
+            "lowerPx": [
+              45,
+              479
+            ],
+            "bracePx": [
+              44.50113895216401,
+              260
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          242,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        99,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 10,
+      "key": "crossbow_A_1462011",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_A_1462011",
+      "category": "crossbow",
+      "sourceFile": "final512/04-A/crossbow_A_1462011.png",
+      "sha256": "fa8cf8ab5a432d6e3accda0ab445cdfadb06085d2e99814ecad9fab1f0ba6027",
+      "uuid": "8f6aa888-b17e-5f39-b13f-9368e20f7399",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.53333333333333,
+      "gripPx": [
+        24.7109375,
+        92.80087527352296
+      ],
+      "muzzlePx": [
+        205.6015625,
+        92.80087527352296
+      ],
+      "localScale": [
+        0.428017617944,
+        -0.489162991935
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "6030b927b0b94adb6eac23c5a68e88c6abf941973bf27684ead653e00d725a79",
+        "sourceSizePx": [
+          518,
+          463
+        ],
+        "sourceBytes": 193562,
+        "sourceAppearance": {
+          "id": 10,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_A_1462011",
+            "sizePx": [
+              518,
+              463
+            ],
+            "sizeUnits": [
+              16.727083333333333,
+              14.951041666666667
+            ],
+            "anchor": [
+              0.11583011583011583,
+              0.5010799136069115
+            ],
+            "ppu": 30.967741935483872,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.428017617944,
+              -0.489162991935
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.660416666666666,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-A",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            375,
+            231
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          460
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        186
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        184
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        184
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        150.21875,
+        92.80087527352298
+      ]
+    },
+    {
+      "id": 11,
+      "key": "claw_A_1472013",
+      "previousRuntimePath": "art/weapons/redesigned/claw_A_1472013",
+      "category": "glove",
+      "sourceFile": "final512/04-A/claw_A_1472013.png",
+      "sha256": "3fd82ec974394487464aedb18090470b5aca58944d14b520c76efbca4ab199f6",
+      "uuid": "3d07ecc7-7ca7-57a9-919e-18bee9aab382",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 10.943563420721759,
+      "gripPx": [
+        10.765625,
+        60.79999999999999
+      ],
+      "muzzlePx": [
+        206.3824379277236,
+        60.79999999999999
+      ],
+      "localScale": [
+        0.541282863913,
+        -0.541282863913
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "30c323e6936be4513008f4c91bca7ca307d5af09f808c948dac18770413bfcdc",
+        "sourceSizePx": [
+          518,
+          301
+        ],
+        "sourceBytes": 157593,
+        "sourceAppearance": {
+          "id": 11,
+          "image": {
+            "path": "art/weapons/redesigned/claw_A_1472013",
+            "sizePx": [
+              518,
+              301
+            ],
+            "sizeUnits": [
+              11.09349649048435,
+              6.446220933659825
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.5016611295681064
+            ],
+            "ppu": 46.6940247778799,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.541282863913,
+              -0.541282863913
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              10.493848031539251,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-A",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          298
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        122
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        120
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        120
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 12,
+      "key": "wand_A_1372009",
+      "previousRuntimePath": "art/weapons/redesigned/wand_A_1372009",
+      "category": "staff",
+      "sourceFile": "final512/04-A/wand_A_1372009.png",
+      "sha256": "681c00041b3e5d5c5fa22194f5af3ac7de887554258f255fb15dce809dcec6fa",
+      "uuid": "f9c5dbf9-8d8f-5791-83f8-5f8c31133099",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 23.005000822722945,
+      "gripPx": [
+        43.0,
+        151.4140625
+      ],
+      "muzzlePx": [
+        43.0,
+        2.0000000000000284
+      ],
+      "localScale": [
+        0.385913084112,
+        -0.385913084112
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "3da67b8ae916c8a2a7113c4db6d920c255be178b17fec6c1b88b090e8a25653c",
+        "sourceSizePx": [
+          212,
+          518
+        ],
+        "sourceBytes": 68139,
+        "sourceAppearance": {
+          "id": 12,
+          "image": {
+            "path": "art/weapons/redesigned/wand_A_1372009",
+            "sizePx": [
+              212,
+              518
+            ],
+            "sizeUnits": [
+              9.525508153158718,
+              23.274590676114226
+            ],
+            "anchor": [
+              0.5,
+              0.2702702702702703
+            ],
+            "ppu": 22.256030501606308,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.385913084112,
+              -0.385913084112
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.84936583695528
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "69607-71948",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.4851499,
+            0.7912979,
+            0.0331048
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          209,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        86,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        84,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        84,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 13,
+      "key": "fan_A_1292001",
+      "previousRuntimePath": "art/weapons/redesigned/fan_A_1292001",
+      "category": "fan",
+      "sourceFile": "final512/04-A/fan_A_1292001.png",
+      "sha256": "8e78747282bb6e170101f571330e0d0c179e4d08c289d9a3a201cb20b3f6485c",
+      "uuid": "406f2dc9-cee5-5997-b748-78b95bed727c",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.072500395983472,
+      "gripPx": [
+        21.124010554089708,
+        104.0
+      ],
+      "muzzlePx": [
+        153.0068230540897,
+        104.0
+      ],
+      "localScale": [
+        0.62073,
+        -0.62073
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "96a2426524eef8b9b4ceae4ea96eeff0939237d30c4476895be1c43abcd41d00",
+        "sourceSizePx": [
+          385,
+          518
+        ],
+        "sourceBytes": 144550,
+        "sourceAppearance": {
+          "id": 13,
+          "image": {
+            "path": "art/weapons/redesigned/fan_A_1292001",
+            "sizePx": [
+              385,
+              518
+            ],
+            "sizeUnits": [
+              8.32600127432351,
+              11.202256259998903
+            ],
+            "anchor": [
+              0.13246753246753246,
+              0.5
+            ],
+            "ppu": 46.24068473149272,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.62073,
+              -0.62073
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.1581984981846265,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71286-69964",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          4,
+          3,
+          381,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        155,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 14,
+      "key": "crossbow_S_1462125",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_S_1462125",
+      "category": "crossbow",
+      "sourceFile": "final512/05-S/crossbow_S_1462125.png",
+      "sha256": "52ca77b23411a957f379deb62dd5e08f0c6b323b7e6cef0014288a8b27f7f043",
+      "uuid": "9b532071-919f-5252-865a-5ef961fdd9b2",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.066666666666666,
+      "gripPx": [
+        25.5078125,
+        87.00462962962963
+      ],
+      "muzzlePx": [
+        206.0,
+        87.00462962962963
+      ],
+      "localScale": [
+        0.426054234375,
+        -0.486919125
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "b5a715da7c62e84ed82d3dda1365ad9b8c5797b13734166313fc1d7db1ca743a",
+        "sourceSizePx": [
+          518,
+          438
+        ],
+        "sourceBytes": 164621,
+        "sourceAppearance": {
+          "id": 14,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_S_1462125",
+            "sizePx": [
+              518,
+              438
+            ],
+            "sizeUnits": [
+              17.266666666666666,
+              14.6
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.5057077625570776
+            ],
+            "ppu": 30,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.426054234375,
+              -0.486919125
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              15.1,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-S",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            309,
+            216.5
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          434
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        176
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        174
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        174
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        123.921875,
+        87.00462962962963
+      ]
+    },
+    {
+      "id": 15,
+      "key": "claw_S_1472032",
+      "previousRuntimePath": "art/weapons/redesigned/claw_S_1472032",
+      "category": "glove",
+      "sourceFile": "final512/05-S/claw_S_1472032.png",
+      "sha256": "f373ae8e501adae242904acda2c1ede2ef0052bd66311725632431db6c5c41d9",
+      "uuid": "23518b35-8877-5fb1-9364-ee66758727c2",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 11.909171957844267,
+      "gripPx": [
+        10.765625,
+        62.800000000000004
+      ],
+      "muzzlePx": [
+        206.3824379277236,
+        62.800000000000004
+      ],
+      "localScale": [
+        0.511472282932,
+        -0.511472282932
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "b82b959fd1d0141e2f31bf7dd1435cf524093d6e2efc968c22be5ec912814bd9",
+        "sourceSizePx": [
+          518,
+          301
+        ],
+        "sourceBytes": 147381,
+        "sourceAppearance": {
+          "id": 15,
+          "image": {
+            "path": "art/weapons/redesigned/claw_S_1472032",
+            "sizePx": [
+              518,
+              301
+            ],
+            "sizeUnits": [
+              12.072334416115321,
+              7.015005133688633
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.48504983388704315
+            ],
+            "ppu": 42.908022768862615,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.511472282932,
+              -0.511472282932
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              11.419775799028008,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-S",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          298
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        122
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        120
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        120
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 16,
+      "key": "wand_S_1372014",
+      "previousRuntimePath": "art/weapons/redesigned/wand_S_1372014",
+      "category": "staff",
+      "sourceFile": "final512/05-S/wand_S_1372014.png",
+      "sha256": "0d35b028eddb3fd36330e839f36cacbc1dfacaae6d6fdae8c96822353b088385",
+      "uuid": "d692a16c-982c-53ca-b905-742120655799",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.89750081887844,
+      "gripPx": [
+        36.699421965317924,
+        151.4140625
+      ],
+      "muzzlePx": [
+        36.699421965317924,
+        2.0
+      ],
+      "localScale": [
+        0.399017840376,
+        -0.399017840376
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "88df72117d024fd05c1fb4a33a393197833ca288fdfd36d1e33960526f2ca81a",
+        "sourceSizePx": [
+          179,
+          518
+        ],
+        "sourceBytes": 73406,
+        "sourceAppearance": {
+          "id": 16,
+          "image": {
+            "path": "art/weapons/redesigned/wand_S_1372014",
+            "sizePx": [
+              179,
+              518
+            ],
+            "sizeUnits": [
+              8.00518095035008,
+              23.165830906599673
+            ],
+            "anchor": [
+              0.5027932960893855,
+              0.2702702702702703
+            ],
+            "ppu": 22.360518907717136,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.399017840376,
+              -0.399017840376
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.770630482576983
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72452-72010",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.6866853,
+            0.4019778,
+            0.0544803
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          176,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        73,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        71,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        71,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 17,
+      "key": "fan_S_1292002",
+      "previousRuntimePath": "art/weapons/redesigned/fan_S_1292008",
+      "category": "fan",
+      "sourceFile": "final512/05-S/fan_S_1292002.png",
+      "sha256": "9ef1bf2c5760cdf54569df0a8c25310fb01fdc885fa8f1518cccb6869cf8ad43",
+      "uuid": "ca740e39-20ed-5271-bb43-4a949de0eb40",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.48003459024553,
+      "gripPx": [
+        19.482666666666667,
+        105.59375
+      ],
+      "muzzlePx": [
+        151.62356686236137,
+        105.59375
+      ],
+      "localScale": [
+        0.616655299274,
+        -0.616655299274
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "8624ea514e2b083ca26d15c0a62d6ec8748824aad8225e27af4d35ac84473ab7",
+        "sourceSizePx": [
+          381,
+          518
+        ],
+        "sourceBytes": 169037,
+        "sourceAppearance": {
+          "id": 17,
+          "image": {
+            "path": "art/weapons/redesigned/fan_S_1292008",
+            "sizePx": [
+              381,
+              518
+            ],
+            "sizeUnits": [
+              8.559477845173282,
+              11.637295338057113
+            ],
+            "anchor": [
+              0.12335958005249344,
+              0.4922779922779923
+            ],
+            "ppu": 44.512061003212615,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.616655299274,
+              -0.616655299274
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.436186789376263,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71476-70806",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          4,
+          377,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        153,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        151,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        151,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 18,
+      "key": "pistol_S_1492003",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_S_1492003",
+      "category": "handgun",
+      "sourceFile": "final512/05-S/pistol_S_1492003.png",
+      "sha256": "e302d34f3c27bbca4c01f7dd273342613a202b4fa0d46866c21f5faf19763478",
+      "uuid": "f711428f-2b54-5fbc-ab32-a972bdac80a2",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.845000638186953,
+      "gripPx": [
+        38.65625,
+        71.05761316872429
+      ],
+      "muzzlePx": [
+        206.0,
+        37.98730066872429
+      ],
+      "localScale": [
+        0.4356,
+        -0.4356
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "2b1080891b676d5638481cc599f626f563d408332312ede6c7931896516ce56b",
+        "sourceSizePx": [
+          518,
+          249
+        ],
+        "sourceBytes": 83373,
+        "sourceAppearance": {
+          "id": 18,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_S_1492003",
+            "sizePx": [
+              518,
+              249
+            ],
+            "sizeUnits": [
+              18.054121739415706,
+              8.678525700993264
+            ],
+            "anchor": [
+              0.1833976833976834,
+              0.2931726907630522
+            ],
+            "ppu": 28.691509200865966,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4356,
+              -0.4356
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.638477086012735,
+              2.892841900331088
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "handgun-S",
+          "muzzleSkin": "handgun-S-muzzle",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          246
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        101
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 19,
+      "key": "claw_SS_1472021",
+      "previousRuntimePath": "art/weapons/redesigned/claw_SS_1472021",
+      "category": "glove",
+      "sourceFile": "final512/06-SS/claw_SS_1472021.png",
+      "sha256": "cc716e70feba8a060fe9bb11c17edd0b39937b898e2cb1be3f137864550f878f",
+      "uuid": "f2536006-72af-51c1-9361-a96103b00f65",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 10.075391035537919,
+      "gripPx": [
+        22.71875,
+        64.00000000000001
+      ],
+      "muzzlePx": [
+        206.53862269299495,
+        64.00000000000001
+      ],
+      "localScale": [
+        0.616004188163,
+        -0.616004188163
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "75b279f777f90174f3b273a4c100cb53255ddfb2467a058308598680a982c4de",
+        "sourceSizePx": [
+          518,
+          306
+        ],
+        "sourceBytes": 140371,
+        "sourceAppearance": {
+          "id": 19,
+          "image": {
+            "path": "art/weapons/redesigned/claw_SS_1472021",
+            "sizePx": [
+              518,
+              306
+            ],
+            "sizeUnits": [
+              10.22341833436793,
+              6.039316622232793
+            ],
+            "anchor": [
+              0.10617760617760617,
+              0.4836601307189542
+            ],
+            "ppu": 50.66798433344415,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.616004188163,
+              -0.616004188163
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              9.078711262180015,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-SS",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          4,
+          3,
+          515,
+          303
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        124
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "76b1d6b6cbfe9c7d954f9fa375830eb9e16f0a7aa037348547e36c315fdb1f7f",
+        "generatedMasterSha256": "f2550b24778dd95bf11d0cf3527ac1595ea8db58bad1d26c26b4b2a28287f5eb",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/19.png",
+        "beforeOriginalRatio": 0.59562758564828,
+        "afterOriginalRatio": 0.8013898425085947
+      }
+    },
+    {
+      "id": 20,
+      "key": "wand_SS_1372015",
+      "previousRuntimePath": "art/weapons/redesigned/wand_SS_1372015",
+      "category": "staff",
+      "sourceFile": "final512/06-SS/wand_SS_1372015.png",
+      "sha256": "84058962a9d1a52e8276c3811420984e43776ed69cd6bda066041ae90f050d72",
+      "uuid": "4725d5d8-0b1f-5c5c-9452-098882fcf1ee",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 23.005000822722945,
+      "gripPx": [
+        48.0,
+        151.4140625
+      ],
+      "muzzlePx": [
+        48.0,
+        2.0000000000000284
+      ],
+      "localScale": [
+        0.408393457944,
+        -0.408393457944
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "8c05d8e372e600242c71457ddd706b06e5e9d90b47a959278017f06a9627165f",
+        "sourceSizePx": [
+          238,
+          518
+        ],
+        "sourceBytes": 79623,
+        "sourceAppearance": {
+          "id": 20,
+          "image": {
+            "path": "art/weapons/redesigned/wand_SS_1372015",
+            "sizePx": [
+              238,
+              518
+            ],
+            "sizeUnits": [
+              10.693730851187617,
+              23.274590676114226
+            ],
+            "anchor": [
+              0.5,
+              0.2702702702702703
+            ],
+            "ppu": 22.256030501606308,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.408393457944,
+              -0.408393457944
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.84936583695528
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "73881-70376",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.838799,
+            0.0497066,
+            0.0368895
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          235,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        96,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        94,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        94,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 21,
+      "key": "fan_SS_1292005",
+      "previousRuntimePath": "art/weapons/redesigned/fan_SS_1292009",
+      "category": "fan",
+      "sourceFile": "final512/06-SS/fan_SS_1292005.png",
+      "sha256": "6932f578541db3311d5266854c868d69699d91219dff6c9c0d454b1d675965a5",
+      "uuid": "53b799b9-76b9-5889-9d54-b6c7f166304e",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.072500395983472,
+      "gripPx": [
+        22.772486772486772,
+        107.1875
+      ],
+      "muzzlePx": [
+        152.6631117724868,
+        107.1875
+      ],
+      "localScale": [
+        0.6579738,
+        -0.6579738
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "3601ee84fe934f0519f891b63e0a596bea27d37b57cc28c61941397cca3d5fa9",
+        "sourceSizePx": [
+          384,
+          518
+        ],
+        "sourceBytes": 170671,
+        "sourceAppearance": {
+          "id": 21,
+          "image": {
+            "path": "art/weapons/redesigned/fan_SS_1292009",
+            "sizePx": [
+              384,
+              518
+            ],
+            "sizeUnits": [
+              8.304375296987603,
+              11.202256259998903
+            ],
+            "anchor": [
+              0.14322916666666666,
+              0.4845559845559846
+            ],
+            "ppu": 46.24068473149272,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.6579738,
+              -0.6579738
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.050068611505101,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72084-71080",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          381,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        155,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 22,
+      "key": "pistol_SS_1492005",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_SS_1492005",
+      "category": "handgun",
+      "sourceFile": "final512/06-SS/pistol_SS_1492005.png",
+      "sha256": "b111c88c846b92efeb00e656123b9caa35cbe086569537636f754936c0764d98",
+      "uuid": "bb134fd0-87fd-544d-a2f5-cd4f3230473c",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 19.13500068432095,
+      "gripPx": [
+        34.2734375,
+        63.85022026431717
+      ],
+      "muzzlePx": [
+        206.00000000000003,
+        34.36584526431717
+      ],
+      "localScale": [
+        0.418420719101,
+        -0.418420719101
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "a2bfcd1a54c835ed6b4572753fcbce015191e50156264cb4d4e64c2ca3f9e7e5",
+        "sourceSizePx": [
+          518,
+          233
+        ],
+        "sourceBytes": 80163,
+        "sourceAppearance": {
+          "id": 22,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_SS_1492005",
+            "sizePx": [
+              518,
+              233
+            ],
+            "sizeUnits": [
+              19.359238973590337,
+              8.707920233294494
+            ],
+            "anchor": [
+              0.16216216216216217,
+              0.31759656652360513
+            ],
+            "ppu": 26.757250153616575,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.418420719101,
+              -0.418420719101
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              16.10778377918424,
+              2.7656055676557623
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "70679-72213",
+          "muzzleSkin": "69593",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          230
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        94
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        92
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        92
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 23,
+      "key": "cannon_SS_1532004",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_SS_1532004",
+      "category": "cannon",
+      "sourceFile": "final512/06-SS/cannon_SS_1532004.png",
+      "sha256": "02d119e47b12e97e45921aa5b0b0f5b4621c19a9d2117e882c42e8de450ecd04",
+      "uuid": "d41261c6-c182-5df7-a35e-cecebf9619a6",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 14.51250051900746,
+      "gripPx": [
+        66.1484375,
+        78.32786885245902
+      ],
+      "muzzlePx": [
+        206.0,
+        38.08568135245902
+      ],
+      "localScale": [
+        0.552,
+        -0.552
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "70c2a9de472b7c5855fb13ee0a1a5b1516c54e7bbe6bdf79589149bbbfc3189a",
+        "sourceSizePx": [
+          518,
+          250
+        ],
+        "sourceBytes": 98263,
+        "sourceAppearance": {
+          "id": 23,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_SS_1532004",
+            "sizePx": [
+              518,
+              250
+            ],
+            "sizeUnits": [
+              14.68256888446458,
+              7.086181894046612
+            ],
+            "anchor": [
+              0.3166023166023166,
+              0.21999999999999997
+            ],
+            "ppu": 35.27992983217593,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.552,
+              -0.552
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              9.948999379241442,
+              2.862817485194831
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "73882-69531",
+          "muzzleSkin": "67947",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          247
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        101
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 24,
+      "key": "claw_SSS_1472025",
+      "previousRuntimePath": "art/weapons/redesigned/claw_SSS_1472025",
+      "category": "glove",
+      "sourceFile": "final512/07-SSS/claw_SSS_1472025.png",
+      "sha256": "2a24dffa21a6a7b3a9d9b6c865425811ba118412d9f16ca23245804b7c124123",
+      "uuid": "211fdb90-3375-5852-9d7b-0aa349505da7",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 11.713439341542687,
+      "gripPx": [
+        10.765625,
+        68.58520900321544
+      ],
+      "muzzlePx": [
+        206.06768822597192,
+        68.58520900321544
+      ],
+      "localScale": [
+        0.535205713072,
+        -0.535205713072
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "82cb3da5a4d705c132d7cd82c56cfb4736a1bd1f078127c33b8b04b3efebd4d2",
+        "sourceSizePx": [
+          518,
+          317
+        ],
+        "sourceBytes": 146447,
+        "sourceAppearance": {
+          "id": 24,
+          "image": {
+            "path": "art/weapons/redesigned/claw_SSS_1472025",
+            "sizePx": [
+              518,
+              317
+            ],
+            "sizeUnits": [
+              11.854814877086218,
+              7.25478053288867
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.4637223974763407
+            ],
+            "ppu": 43.695325938933486,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.535205713072,
+              -0.535205713072
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              11.214014072919396,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-SSS",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          314
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        128
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        126
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        126
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 25,
+      "key": "wand_SSS_1372016",
+      "previousRuntimePath": "art/weapons/redesigned/wand_SSS_1372016",
+      "category": "staff",
+      "sourceFile": "final512/07-SSS/wand_SSS_1372016.png",
+      "sha256": "3657d4462a94a3a5a03d82f168a0d639b27d20369145f3eab1b57df34f9fc6bd",
+      "uuid": "6a71894c-30ff-5659-9f96-51cb69a9f488",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.467500803500442,
+      "gripPx": [
+        46.5,
+        151.4140625
+      ],
+      "muzzlePx": [
+        46.5,
+        2.0
+      ],
+      "localScale": [
+        0.429672727273,
+        -0.429672727273
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "c5b0ac179cdcb6331fff6130ae4051c8e4d16ec773c9f9235d85a328332c75f4",
+        "sourceSizePx": [
+          230,
+          518
+        ],
+        "sourceBytes": 90232,
+        "sourceAppearance": {
+          "id": 25,
+          "image": {
+            "path": "art/weapons/redesigned/wand_SSS_1372016",
+            "sizePx": [
+              230,
+              518
+            ],
+            "sizeUnits": [
+              10.092822626572463,
+              22.730791828541463
+            ],
+            "anchor": [
+              0.5,
+              0.2702702702702703
+            ],
+            "ppu": 22.78847142269737,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.429672727273,
+              -0.429672727273
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.4556890650638
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72019-68711",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.3005438,
+            0.0466651,
+            0.462077
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          227,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        93,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        91,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        91,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 26,
+      "key": "fan_SSS_1292013",
+      "previousRuntimePath": "art/weapons/redesigned/fan_SSS_1292013",
+      "category": "fan",
+      "sourceFile": "final512/07-SSS/fan_SSS_1292013.png",
+      "sha256": "fcdcc67e254383c7a6f0bd96a32bdcea8e9c7a8ffc272507ef28701ee6174abf",
+      "uuid": "65f08dfe-c69c-5d86-8345-a5e48ebf099d",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.287500403672471,
+      "gripPx": [
+        22.66315789473684,
+        105.9921875
+      ],
+      "muzzlePx": [
+        153.35065789473686,
+        105.9921875
+      ],
+      "localScale": [
+        0.663708162857,
+        -0.663708162857
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "18a9e30149f6e22fd41e9a010f738ea54c91f2e0b066205eeb2aa92aca1e84ec",
+        "sourceSizePx": [
+          386,
+          518
+        ],
+        "sourceBytes": 171997,
+        "sourceAppearance": {
+          "id": 26,
+          "image": {
+            "path": "art/weapons/redesigned/fan_SSS_1292013",
+            "sizePx": [
+              386,
+              518
+            ],
+            "sizeUnits": [
+              8.5097171012062,
+              11.419775799028008
+            ],
+            "anchor": [
+              0.14248704663212436,
+              0.49034749034749037
+            ],
+            "ppu": 45.35990978422619,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.663708162857,
+              -0.663708162857
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.2310549461026765,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "69449-73044",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          383,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        155,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 27,
+      "key": "pistol_SSS_1492008",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_SSS_1492008",
+      "category": "handgun",
+      "sourceFile": "final512/07-SSS/pistol_SSS_1492008.png",
+      "sha256": "3bf83cc39725a3ea573c033cde6941c480be2e813637ba4cb2bbd4c8d4cddaea",
+      "uuid": "3d071fd1-93e0-5f13-9384-7d621d8712d4",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 18.59750066509845,
+      "gripPx": [
+        28.6953125,
+        59.2
+      ],
+      "muzzlePx": [
+        206.0,
+        30.5125
+      ],
+      "localScale": [
+        0.443053040462,
+        -0.443053040462
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "225121f07e0de9c33ab5d992ee6259107ff405ad754f4be5be72f469ea539b0d",
+        "sourceSizePx": [
+          518,
+          206
+        ],
+        "sourceBytes": 70622,
+        "sourceAppearance": {
+          "id": 27,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_SSS_1492008",
+            "sizePx": [
+              518,
+              206
+            ],
+            "sizeUnits": [
+              18.815440126017574,
+              7.482588158223205
+            ],
+            "anchor": [
+              0.13513513513513514,
+              0.2912621359223301
+            ],
+            "ppu": 27.53058108291185,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.443053040462,
+              -0.443053040462
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              16.163843351501583,
+              2.61527353102947
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "69766-72278",
+          "muzzleSkin": "69730",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          203
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        84
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        82
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        82
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 28,
+      "key": "cannon_SSS_1532007",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_SSS_1532007",
+      "category": "cannon",
+      "sourceFile": "final512/07-SSS/cannon_SSS_1532007.png",
+      "sha256": "cb5dbaf562a854908b95d268d2e402016fe1a4159a2883136c6de7bde9032b04",
+      "uuid": "5d7efd91-c68e-55b4-a7f0-4c9b06819ad6",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 15.910000568985959,
+      "gripPx": [
+        61.765625,
+        74.08658008658008
+      ],
+      "muzzlePx": [
+        206.0,
+        39.422517586580085
+      ],
+      "localScale": [
+        0.518618918919,
+        -0.518618918919
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "7367b77bb415a8ef918c6751f64973cfb5f16ca426273331847f8b32fef4941f",
+        "sourceSizePx": [
+          518,
+          237
+        ],
+        "sourceBytes": 94159,
+        "sourceAppearance": {
+          "id": 28,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_SSS_1532007",
+            "sizePx": [
+              518,
+              237
+            ],
+            "sizeUnits": [
+              16.096445888153763,
+              7.364590107128266
+            ],
+            "anchor": [
+              0.2953667953667954,
+              0.2236286919831224
+            ],
+            "ppu": 32.18101707664696,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.518618918919,
+              -0.518618918919
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              11.248867589790853,
+              2.703457127933161
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "73496-69958",
+          "muzzleSkin": "68889",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          234
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        96
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        94
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        94
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 29,
+      "key": "claw_X_1472029",
+      "previousRuntimePath": "art/weapons/redesigned/claw_X_1472029",
+      "category": "glove",
+      "sourceFile": "final512/08-X/claw_X_1472029.png",
+      "sha256": "fcb6a96d7c1f8114ef9ce0db3415360b437260bb60a4c6a95f41490c2ed0278d",
+      "uuid": "06d5145b-5aaf-5809-bc46-0671384a5f1d",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 12.702331388477663,
+      "gripPx": [
+        10.765625,
+        62.79470198675495
+      ],
+      "muzzlePx": [
+        205.73362415720592,
+        62.79470198675495
+      ],
+      "localScale": [
+        0.514785281539,
+        -0.514785281539
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "bc4c612701c4bce21eb588d69a7831783d0c1cb6f2f4fd2e395abc4857c2a4c7",
+        "sourceSizePx": [
+          518,
+          308
+        ],
+        "sourceBytes": 159662,
+        "sourceAppearance": {
+          "id": 29,
+          "image": {
+            "path": "art/weapons/redesigned/claw_X_1472029",
+            "sizePx": [
+              518,
+              308
+            ],
+            "sizeUnits": [
+              12.833652802717191,
+              7.630820585399411
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.49350649350649356
+            ],
+            "ppu": 40.362631587658896,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.514785281539,
+              -0.514785281539
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.139941840408154,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-X",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          305
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        124
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 30,
+      "key": "wand_X_1372010",
+      "previousRuntimePath": "art/weapons/redesigned/wand_X_1372010",
+      "category": "staff",
+      "sourceFile": "final512/08-X/wand_X_1372010.png",
+      "sha256": "779903d035ff1edfbbd19cb46221fa0cead0908e3463d472e059d981055f3372",
+      "uuid": "73d1e20c-d608-5118-80f4-6f0eb28d3e05",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.682500811189442,
+      "gripPx": [
+        41.09844559585492,
+        151.4140625
+      ],
+      "muzzlePx": [
+        41.09844559585492,
+        2.0
+      ],
+      "localScale": [
+        0.437,
+        -0.437
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "d4e5c24d04ce04abeaa601fc169bd9b7ecd3e2f9cbdf883504a1d4ad485a0c68",
+        "sourceSizePx": [
+          199,
+          518
+        ],
+        "sourceBytes": 87767,
+        "sourceAppearance": {
+          "id": 30,
+          "image": {
+            "path": "art/weapons/redesigned/wand_X_1372010",
+            "sizePx": [
+              199,
+              518
+            ],
+            "sizeUnits": [
+              8.81605011997402,
+              22.948311367570568
+            ],
+            "anchor": [
+              0.507537688442211,
+              0.2702702702702703
+            ],
+            "ppu": 22.572466954235782,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.437,
+              -0.437
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.613159773820392
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "67946-67846",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.031896,
+            0.8069523,
+            0.7454042
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          196,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        81,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        79,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        79,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 31,
+      "key": "fan_X_1292015",
+      "previousRuntimePath": "art/weapons/redesigned/fan_X_1292015",
+      "category": "fan",
+      "sourceFile": "final512/08-X/fan_X_1292015.png",
+      "sha256": "88a27f22aa0e32dc635b41cd3c801809cfd9f045f33bd00bf75d85a3bd1aaa18",
+      "uuid": "ef8130da-e1a8-522b-bde9-c1158070d344",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 10.857500388294472,
+      "gripPx": [
+        30.215584415584416,
+        103.203125
+      ],
+      "muzzlePx": [
+        155.32495941558443,
+        103.203125
+      ],
+      "localScale": [
+        0.708984285149,
+        -0.708984285149
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "0f36219f60c9f3651cca4b53a7f6960eed779ef42aff75ef1f2f038c32ac3aaa",
+        "sourceSizePx": [
+          391,
+          518
+        ],
+        "sourceBytes": 182003,
+        "sourceAppearance": {
+          "id": 31,
+          "image": {
+            "path": "art/weapons/redesigned/fan_X_1292015",
+            "sizePx": [
+              391,
+              518
+            ],
+            "sizeUnits": [
+              8.291567679342068,
+              10.984736720969797
+            ],
+            "anchor": [
+              0.18925831202046037,
+              0.5038610038610039
+            ],
+            "ppu": 47.156341854888616,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.708984285149,
+              -0.708984285149
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              6.658701410008719,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "74410-68398",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          388,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        157,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 32,
+      "key": "pistol_X_1492012",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_X_1492012",
+      "category": "handgun",
+      "sourceFile": "final512/08-X/pistol_X_1492012.png",
+      "sha256": "dc448d5c994c8b26bf027d4dccf56570b095df0aab188df50298b050ebb1e5be",
+      "uuid": "3acf18ed-957d-5511-86cf-38a4b51d7787",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 15.05000053822996,
+      "gripPx": [
+        35.0703125,
+        68.3807531380753
+      ],
+      "muzzlePx": [
+        206.0,
+        36.505753138075306
+      ],
+      "localScale": [
+        0.562981885714,
+        -0.562981885714
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "b96f874682d203fd59fe298180e1365183d3c8ed26ce3aaba33d0382fcd6cc46",
+        "sourceSizePx": [
+          518,
+          245
+        ],
+        "sourceBytes": 96701,
+        "sourceAppearance": {
+          "id": 32,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_X_1492012",
+            "sizePx": [
+              518,
+              245
+            ],
+            "sizeUnits": [
+              15.226367732037343,
+              7.201660413801446
+            ],
+            "anchor": [
+              0.16602316602316602,
+              0.30612244897959184
+            ],
+            "ppu": 34.019932338169646,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.562981885714,
+              -0.562981885714
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.610254357227838,
+              2.3515625840984313
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "74682-68501",
+          "muzzleSkin": "72337",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          242
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        99
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        97
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        97
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 33,
+      "key": "cannon_X_1532008",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_X_1532008",
+      "category": "cannon",
+      "sourceFile": "final512/08-X/cannon_X_1532008.png",
+      "sha256": "873e70b93d739facde8952f5ecf277aa2a54716b71dc5a3614c75cc5fa75dd9e",
+      "uuid": "01d672fe-d25a-5033-9cf2-7ca5eacff0cf",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.98500060743096,
+      "gripPx": [
+        62.1640625,
+        80.23868312757202
+      ],
+      "muzzlePx": [
+        206.0,
+        52.34805812757202
+      ],
+      "localScale": [
+        0.499944303797,
+        -0.499944303797
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "520c3367ec0ef91cac052545ed39173e5b749eeae1edd630bd677a941e37366f",
+        "sourceSizePx": [
+          518,
+          249
+        ],
+        "sourceBytes": 96088,
+        "sourceAppearance": {
+          "id": 33,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_X_1532008",
+            "sizePx": [
+              518,
+              249
+            ],
+            "sizeUnits": [
+              17.184043583299292,
+              8.26028349853576
+            ],
+            "anchor": [
+              0.2972972972972973,
+              0.20080321285140568
+            ],
+            "ppu": 30.14424384394778,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.499944303797,
+              -0.499944303797
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              11.975752381411281,
+              2.3221680517972016
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "74169-74106",
+          "muzzleSkin": "67883",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          246
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        101
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        99
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "f98a69e69bdce19f862ac8d87ea42fa69c6b55b5063012f08c1a1988ae73ceec",
+        "generatedMasterSha256": "058dc4f2dff4baa7a0a0f3e075042977cca6848b690de84f24995f4a72d68e4a",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/33.png",
+        "beforeOriginalRatio": 1.4279178248745465,
+        "afterOriginalRatio": 0.9114369094943909
+      }
+    },
+    {
+      "id": 34,
+      "key": "claw_XX_1472031",
+      "previousRuntimePath": "art/weapons/redesigned/claw_XX_1472031",
+      "category": "glove",
+      "sourceFile": "final512/09-XX/claw_XX_1472031.png",
+      "sha256": "d32c7eeacf2494f61a334df426ac26a651ed77966d512e7d5bb904c897202e52",
+      "uuid": "cbfbbfe8-1d07-5c42-a037-3ee99920e89b",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 13.350538725983633,
+      "gripPx": [
+        10.765625,
+        58.801393728223
+      ],
+      "muzzlePx": [
+        205.69965464755572,
+        58.801393728223
+      ],
+      "localScale": [
+        0.515290729908,
+        -0.515290729908
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "bfcfcf649a5c5afb620fb2ff4752e5b83656c0d8363ef37d04857274c49abb92",
+        "sourceSizePx": [
+          518,
+          293
+        ],
+        "sourceBytes": 169337,
+        "sourceAppearance": {
+          "id": 34,
+          "image": {
+            "path": "art/weapons/redesigned/claw_XX_1472031",
+            "sizePx": [
+              518,
+              293
+            ],
+            "sizeUnits": [
+              13.486211419804505,
+              7.628301054059305
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.5017064846416383
+            ],
+            "ppu": 38.409601026965724,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.515290729908,
+              -0.515290729908
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.75722701873399,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-XX",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          290
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        118
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        116
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        116
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 35,
+      "key": "wand_XX_1372044",
+      "previousRuntimePath": "art/weapons/redesigned/wand_XX_1372044",
+      "category": "staff",
+      "sourceFile": "final512/09-XX/wand_XX_1372044.png",
+      "sha256": "0ddfde7a15d7aebb1ce505a50d06feb8ea841a5883eff4e84709b634929d2afa",
+      "uuid": "49160b3a-2fcf-58d4-ab9a-45b12f1b6e85",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.575000807344942,
+      "gripPx": [
+        60.5,
+        146.234375
+      ],
+      "muzzlePx": [
+        60.5,
+        2.0
+      ],
+      "localScale": [
+        0.450535238095,
+        -0.450535238095
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "add89da38819e5ec0ff399c84ade57a80fd6d443644b03139275d6b5a8627d70",
+        "sourceSizePx": [
+          300,
+          518
+        ],
+        "sourceBytes": 124077,
+        "sourceAppearance": {
+          "id": 35,
+          "image": {
+            "path": "art/weapons/redesigned/wand_XX_1372044",
+            "sizePx": [
+              300,
+              518
+            ],
+            "sizeUnits": [
+              13.227539535553678,
+              22.839551598056016
+            ],
+            "anchor": [
+              0.5,
+              0.29536679536679533
+            ],
+            "ppu": 22.679954892113095,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.450535238095,
+              -0.450535238095
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              15.961231039568103
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "68886-74528",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.838799,
+            0.0368895,
+            0.462077
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          297,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        121,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        119,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        119,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 36,
+      "key": "fan_XX_1292019",
+      "previousRuntimePath": "art/weapons/redesigned/fan_XX_1292019",
+      "category": "fan",
+      "sourceFile": "final512/09-XX/fan_XX_1292019.png",
+      "sha256": "8c65da80b7b93f557a54e5949183581e16799aa6139d45d81e849edb887eeb97",
+      "uuid": "4c0aa558-3cf6-5aca-bd08-7458597e89ed",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.072500395983472,
+      "gripPx": [
+        22.32233502538071,
+        105.99218749999999
+      ],
+      "muzzlePx": [
+        158.9863975253807,
+        105.99218749999999
+      ],
+      "localScale": [
+        0.7138395,
+        -0.7138395
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "a637f4557bc9bc3325037130cb0f4822fb0a451b36bbfd65c9c822752cd078e6",
+        "sourceSizePx": [
+          400,
+          518
+        ],
+        "sourceBytes": 199452,
+        "sourceAppearance": {
+          "id": 36,
+          "image": {
+            "path": "art/weapons/redesigned/fan_XX_1292019",
+            "sizePx": [
+              400,
+              518
+            ],
+            "sizeUnits": [
+              8.650390934362086,
+              11.202256259998903
+            ],
+            "anchor": [
+              0.135,
+              0.49034749034749037
+            ],
+            "ppu": 46.24068473149272,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.7138395,
+              -0.7138395
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.4177102262154895,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "69488-73013",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          397,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        161,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        159,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        159,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "58afcfcc4a316156230e2e3f5d2a52337a920b86d367cd79e87161f48fb1f4bc",
+        "generatedMasterSha256": "6e2fe3cdc8c54a5174c904c8da6e24bdc8a858bb91c14f8cb235c9db0e32383d",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/36.png",
+        "beforeOriginalRatio": 0.6822653950297081,
+        "afterOriginalRatio": 0.9665426429587528
+      }
+    },
+    {
+      "id": 37,
+      "key": "pistol_XX_1492011",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_XX_1492011",
+      "category": "handgun",
+      "sourceFile": "final512/09-XX/pistol_XX_1492011.png",
+      "sha256": "60e4b59f8322748076f60c2228d3e22b3171fc925c769d75e0f7e236a803c297",
+      "uuid": "e3ca325e-1c0d-548f-9b16-18adcfc69b94",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.66250059589746,
+      "gripPx": [
+        38.2578125,
+        60.53393665158371
+      ],
+      "muzzlePx": [
+        206.0,
+        34.23706165158371
+      ],
+      "localScale": [
+        0.522495174194,
+        -0.522495174194
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "23f6ac541b027f4c63e88ba20bcb53f2a34257dbaebb6b2c6e61af1547ece999",
+        "sourceSizePx": [
+          518,
+          227
+        ],
+        "sourceBytes": 87177,
+        "sourceAppearance": {
+          "id": 37,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_XX_1492011",
+            "sizePx": [
+              518,
+              227
+            ],
+            "sizeUnits": [
+              16.857764274755635,
+              7.3874758501342255
+            ],
+            "anchor": [
+              0.18146718146718147,
+              0.33920704845814975
+            ],
+            "ppu": 30.727680821572577,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.522495174194,
+              -0.522495174194
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.701001466548497,
+              2.1479004674399067
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "74937-69253",
+          "muzzleSkin": "74473",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          224
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        92
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 38,
+      "key": "cannon_XX_1532009",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_XX_1532009",
+      "category": "cannon",
+      "sourceFile": "final512/09-XX/cannon_XX_1532009.png",
+      "sha256": "e347da4bc2160300eb6de0c9b7ce259835f42cab07f5c9c7be4ae254e526adbc",
+      "uuid": "6006c0bf-4076-54b9-8005-cc801b68909d",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.737500634342453,
+      "gripPx": [
+        60.5703125,
+        72.55855855855856
+      ],
+      "muzzlePx": [
+        206.00000000000003,
+        37.09762105855855
+      ],
+      "localScale": [
+        0.492283636364,
+        -0.492283636364
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "23365d7d5d2d69dbc07db0097ad8f1184e004a5db3657bdd2fd4555cf1b320fc",
+        "sourceSizePx": [
+          518,
+          228
+        ],
+        "sourceBytes": 84575,
+        "sourceAppearance": {
+          "id": 38,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_XX_1532009",
+            "sizePx": [
+              518,
+              228
+            ],
+            "sizeUnits": [
+              17.945361969901153,
+              7.898730751230624
+            ],
+            "anchor": [
+              0.28957528957528955,
+              0.20614035087719296
+            ],
+            "ppu": 28.865397135416668,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.492283636364,
+              -0.492283636364
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.644897913154288,
+              3.0832764774540595
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72085-68436",
+          "muzzleSkin": "70676",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          225
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        92
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 39,
+      "key": "claw_XXX_1472033",
+      "previousRuntimePath": "art/weapons/redesigned/claw_XXX_1472033",
+      "category": "glove",
+      "sourceFile": "final512/10-XXX/claw_XXX_1472033.png",
+      "sha256": "73242518a7e01b260ee1a2699fe0b33138c8ec7b9423d102a409764e0ebec6f1",
+      "uuid": "7613d762-fb75-59e1-ab53-f69ae09426b9",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 13.006088984472248,
+      "gripPx": [
+        10.765625,
+        60.981549815498155
+      ],
+      "muzzlePx": [
+        206.02118773406855,
+        60.981549815498155
+      ],
+      "localScale": [
+        0.556905186063,
+        -0.556905186063
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "f9f91206c33ad051ce93824fb69c1d2ccfc930af8bd40b1601a28c646cfc1c30",
+        "sourceSizePx": [
+          518,
+          277
+        ],
+        "sourceBytes": 127145,
+        "sourceAppearance": {
+          "id": 39,
+          "image": {
+            "path": "art/weapons/redesigned/claw_XXX_1472033",
+            "sizePx": [
+              518,
+              277
+            ],
+            "sizeUnits": [
+              13.159932111260849,
+              7.037260993859566
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.4548736462093863
+            ],
+            "ppu": 39.361905184659086,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.556905186063,
+              -0.556905186063
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.448584429571072,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-XXX",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          274
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        112
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        110
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        110
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 40,
+      "key": "wand_XXX_1372177",
+      "previousRuntimePath": "art/weapons/redesigned/wand_XXX_1372177",
+      "category": "staff",
+      "sourceFile": "final512/10-XXX/wand_XXX_1372177.png",
+      "sha256": "39c01b17ac9cf82c438c51349c51f5886189c7629c79645b4f02a83648362b8c",
+      "uuid": "f454ce2e-2eee-5a02-a4ea-c28150a56a38",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.682500811189442,
+      "gripPx": [
+        42.80193236714976,
+        151.4140625
+      ],
+      "muzzlePx": [
+        42.80193236714976,
+        2.0
+      ],
+      "localScale": [
+        0.4598,
+        -0.4598
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "b89dd981715d8e47c17ff3a6a93215a745cbe18a78565ca18eab465d00324927",
+        "sourceSizePx": [
+          213,
+          518
+        ],
+        "sourceBytes": 76146,
+        "sourceAppearance": {
+          "id": 40,
+          "image": {
+            "path": "art/weapons/redesigned/wand_XXX_1372177",
+            "sizePx": [
+              213,
+              518
+            ],
+            "sizeUnits": [
+              9.436274751529982,
+              22.948311367570568
+            ],
+            "anchor": [
+              0.49765258215962443,
+              0.2702702702702703
+            ],
+            "ppu": 22.572466954235782,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.4598,
+              -0.4598
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.613159773820392
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "67402-68890",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.0466651,
+            0.0466651,
+            0.0466651
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          210,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        86,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        84,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        84,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 41,
+      "key": "fan_XXX_1292035",
+      "previousRuntimePath": "art/weapons/redesigned/fan_XXX_1292016",
+      "category": "fan",
+      "sourceFile": "final512/10-XXX/fan_XXX_1292035.png",
+      "sha256": "4c5071d378c7290cec698ea0470a4b4ed55abbde98c5077464611cedfdda7dc2",
+      "uuid": "10a649f9-8100-50b8-886c-c087802d4cb8",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 10.621714247049605,
+      "gripPx": [
+        35.512953367875646,
+        102.8046875
+      ],
+      "muzzlePx": [
+        156.07655415065452,
+        102.8046875
+      ],
+      "localScale": [
+        0.763547102935,
+        -0.763547102935
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "0c821af53ace0f90af728f02e99a491e79d57dd23a3e2cba09ed7b600e921ab3",
+        "sourceSizePx": [
+          392,
+          518
+        ],
+        "sourceBytes": 184464,
+        "sourceAppearance": {
+          "id": 41,
+          "image": {
+            "path": "art/weapons/redesigned/fan_XXX_1292016",
+            "sizePx": [
+              392,
+              518
+            ],
+            "sizeUnits": [
+              8.148164353901066,
+              10.767217181940694
+            ],
+            "anchor": [
+              0.22193877551020408,
+              0.5057915057915058
+            ],
+            "ppu": 48.10899522569444,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.763547102935,
+              -0.763547102935
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              6.27741233387276,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "67302-70220",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          389,
+          514
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        158,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        156,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        156,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "469c7389f9e798de80384331742b562c7d3a29c81d1a89dd5f65fd0f38245f30",
+        "generatedMasterSha256": "19afab32514bd2f1fd6f86258a994ef51b20339fd4391e9d994c8d9d195d3a72",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/41.png",
+        "beforeOriginalRatio": 0.6824924927031161,
+        "afterOriginalRatio": 0.8832255787922679
+      }
+    },
+    {
+      "id": 42,
+      "key": "pistol_XXX_1492021",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_XXX_1492021",
+      "category": "handgun",
+      "sourceFile": "final512/10-XXX/pistol_XXX_1492021.png",
+      "sha256": "1e4716a5cd50d584728a0903f9a8e55a16c6c403cf4646cec5178619fa9b571c",
+      "uuid": "89d08ea5-ef03-57b0-9ae8-f9f16bc1b37f",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 18.70500066894295,
+      "gripPx": [
+        34.671875,
+        64.63063063063063
+      ],
+      "muzzlePx": [
+        206.0,
+        35.544693130630634
+      ],
+      "localScale": [
+        0.477908275862,
+        -0.477908275862
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "dd3b447a60c5c60add2a0de83a6efadea43109dfbdf863b5cfccefad0c13c001",
+        "sourceSizePx": [
+          518,
+          228
+        ],
+        "sourceBytes": 79015,
+        "sourceAppearance": {
+          "id": 42,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_XXX_1492021",
+            "sizePx": [
+              518,
+              228
+            ],
+            "sizeUnits": [
+              18.924199895532126,
+              8.329570610388657
+            ],
+            "anchor": [
+              0.1640926640926641,
+              0.29385964912280704
+            ],
+            "ppu": 27.37235935255029,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.477908275862,
+              -0.477908275862
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              15.709277905557556,
+              2.6669239235016318
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "74684-74238",
+          "muzzleSkin": "67889",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          225
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        92
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        90
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 43,
+      "key": "cannon_XXX_1532011",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_XXX_1532011",
+      "category": "cannon",
+      "sourceFile": "final512/10-XXX/cannon_XXX_1532011.png",
+      "sha256": "1fd4ad5134f4b483a2a7b3636b0e29e0e5e65ef21552d8702014da210922e104",
+      "uuid": "5e56376c-11b9-5539-9da4-61df3f24fada",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 18.275000653564952,
+      "gripPx": [
+        60.96874999999999,
+        78.23605150214593
+      ],
+      "muzzlePx": [
+        206.00000000000003,
+        43.571989002145926
+      ],
+      "localScale": [
+        0.490955294118,
+        -0.490955294118
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "d43229b4e790a4fb44f519384d37762b4caaab6bdaab9ebc7b2b12315946deda",
+        "sourceSizePx": [
+          518,
+          239
+        ],
+        "sourceBytes": 93496,
+        "sourceAppearance": {
+          "id": 43,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_XXX_1532011",
+            "sizePx": [
+              518,
+              239
+            ],
+            "sizeUnits": [
+              18.489160817473916,
+              8.530713195707078
+            ],
+            "anchor": [
+              0.2915057915057915,
+              0.18828451882845187
+            ],
+            "ppu": 28.016414866727942,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.490955294118,
+              -0.490955294118
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.992383277143833,
+              3.105322376679982
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71045-74813",
+          "muzzleSkin": "74204",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          236
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        97
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        95
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        95
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "087f3f9d507c5404e6bbcc1c583361ec8172a55c9bc270a3e3a6e393a2fa13ad",
+        "generatedMasterSha256": "e657550ad6a2cab6b5919ffffbf46812aac29290b53b014419ffde9a997b1f57",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/43.png",
+        "beforeOriginalRatio": 1.5396154066320433,
+        "afterOriginalRatio": 1.2042536348904103
+      }
+    },
+    {
+      "id": 44,
+      "key": "claw_Z_1472053",
+      "previousRuntimePath": "art/weapons/redesigned/claw_Z_1472053",
+      "category": "glove",
+      "sourceFile": "final512/11-Z/claw_Z_1472053.png",
+      "sha256": "1cf096a7bf9ca3c3036561f1036301f4865215874de2b0e450b2fccead5b5877",
+      "uuid": "476efaa4-4911-5431-a7c8-4afc8a739404",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 14.724932030448063,
+      "gripPx": [
+        10.765625,
+        60.98932384341637
+      ],
+      "muzzlePx": [
+        206.034055081457,
+        60.98932384341637
+      ],
+      "localScale": [
+        0.49472013524,
+        -0.49472013524
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "a2175d92c6c747206624694ccd4eb79524eef9e7cfb9a7e68d8f3444f0900ff5",
+        "sourceSizePx": [
+          518,
+          287
+        ],
+        "sourceBytes": 135836,
+        "sourceAppearance": {
+          "id": 44,
+          "image": {
+            "path": "art/weapons/redesigned/claw_Z_1472053",
+            "sizePx": [
+              518,
+              287
+            ],
+            "sizeUnits": [
+              14.900088423493687,
+              8.255454396800555
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.4738675958188153
+            ],
+            "ppu": 34.76489436017336,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.49472013524,
+              -0.49472013524
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.094678238439974,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-Z",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          284
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        116
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        114
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        114
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 45,
+      "key": "wand_Z_1372222",
+      "previousRuntimePath": "art/weapons/redesigned/wand_Z_1372222",
+      "category": "staff",
+      "sourceFile": "final512/11-Z/wand_Z_1372222.png",
+      "sha256": "de73e1aed2db7380746f51c77ce973867ce4143f81980dcc7efa523aa77f8b00",
+      "uuid": "58d59448-45af-50dd-9afe-340da0883c9d",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.682500811189442,
+      "gripPx": [
+        52.0,
+        156.1953125
+      ],
+      "muzzlePx": [
+        52.0,
+        2.0
+      ],
+      "localScale": [
+        0.4712,
+        -0.4712
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "f5acedf87e0e220370669ed225ccd28724f24ae10b053c874933a19c3d5f9c58",
+        "sourceSizePx": [
+          256,
+          518
+        ],
+        "sourceBytes": 101164,
+        "sourceAppearance": {
+          "id": 45,
+          "image": {
+            "path": "art/weapons/redesigned/wand_Z_1372222",
+            "sizePx": [
+              256,
+              518
+            ],
+            "sizeUnits": [
+              11.341250405594721,
+              22.948311367570568
+            ],
+            "anchor": [
+              0.5,
+              0.24710424710424705
+            ],
+            "ppu": 22.572466954235782,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.4712,
+              -0.4712
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              17.144780886582645
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "69642-73064",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            0.0331048,
+            0.2462013,
+            1
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          253,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        104,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        102,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        102,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 46,
+      "key": "fan_Z_1292017",
+      "previousRuntimePath": "art/weapons/redesigned/fan_Z_1292017",
+      "category": "fan",
+      "sourceFile": "final512/11-Z/fan_Z_1292017.png",
+      "sha256": "8ed00670be56328f5e1312ea45b23baf86caf6349abbbefddf29ecd12285f835",
+      "uuid": "c2437163-86c5-5eda-b630-496c23bf7023",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.287500403672471,
+      "gripPx": [
+        23.062337662337665,
+        109.578125
+      ],
+      "muzzlePx": [
+        155.34358766233765,
+        109.578125
+      ],
+      "localScale": [
+        0.736776951429,
+        -0.736776951429
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "a7048d1104eb7671e45de0c9684530f2fa92a3c2f169cb3a6a80247bd2fbbce5",
+        "sourceSizePx": [
+          391,
+          518
+        ],
+        "sourceBytes": 174416,
+        "sourceAppearance": {
+          "id": 46,
+          "image": {
+            "path": "art/weapons/redesigned/fan_Z_1292017",
+            "sizePx": [
+              391,
+              518
+            ],
+            "sizeUnits": [
+              8.619946597335813,
+              11.419775799028008
+            ],
+            "anchor": [
+              0.1432225063938619,
+              0.472972972972973
+            ],
+            "ppu": 45.35990978422619,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.736776951429,
+              -0.736776951429
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.319238543006368,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71365-71867",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          4,
+          3,
+          388,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        157,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 47,
+      "key": "pistol_Z_1492013",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_Z_1492013",
+      "category": "handgun",
+      "sourceFile": "final512/11-Z/pistol_Z_1492013.png",
+      "sha256": "c2888a8da4447c262f30e2c304fb039868e2ac3df52442bb828a4524de56be0e",
+      "uuid": "699977c6-73a0-558c-a34e-210b3879ca88",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.87750060358646,
+      "gripPx": [
+        35.8671875,
+        77.144578313253
+      ],
+      "muzzlePx": [
+        205.99999999999997,
+        49.65239081325301
+      ],
+      "localScale": [
+        0.543473426752,
+        -0.543473426752
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "354584207dbfc14028f652b9906c3078f5c75181edd98537efb7c9d199127777",
+        "sourceSizePx": [
+          518,
+          255
+        ],
+        "sourceBytes": 101134,
+        "sourceAppearance": {
+          "id": 47,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_Z_1492013",
+            "sizePx": [
+              518,
+              255
+            ],
+            "sizeUnits": [
+              17.075283813784736,
+              8.405786433426849
+            ],
+            "anchor": [
+              0.16988416988416988,
+              0.24705882352941178
+            ],
+            "ppu": 30.336245397093947,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.543473426752,
+              -0.543473426752
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.075571792444174,
+              2.274506917280206
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72731-72316",
+          "muzzleSkin": "71283",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          252
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        103
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        101
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        101
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 48,
+      "key": "cannon_Z_1532013",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_Z_1532013",
+      "category": "cannon",
+      "sourceFile": "final512/11-Z/cannon_Z_1532013.png",
+      "sha256": "44e7a8e0fc0b44cd898ef26302df69c8c9d4bc1a958e420210b70052beda8782",
+      "uuid": "6130ffc9-dc55-5ef0-846b-61052354dd38",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 18.275000653564952,
+      "gripPx": [
+        56.18750000000001,
+        76.9620253164557
+      ],
+      "muzzlePx": [
+        206.00000000000003,
+        52.657337816455694
+      ],
+      "localScale": [
+        0.504105882353,
+        -0.504105882353
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "db0a08e25001cce0c78c6a2f5982306c3dcd5c0b3bb5014f75247f1fbdd15a2b",
+        "sourceSizePx": [
+          518,
+          243
+        ],
+        "sourceBytes": 101329,
+        "sourceAppearance": {
+          "id": 48,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_Z_1532013",
+            "sizePx": [
+              518,
+              243
+            ],
+            "sizeUnits": [
+              18.489160817473916,
+              8.673486638313054
+            ],
+            "anchor": [
+              0.26833976833976836,
+              0.2098765432098766
+            ],
+            "ppu": 28.016414866727942,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.504105882353,
+              -0.504105882353
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.420703604961762,
+              2.177294999741137
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71081-68609",
+          "muzzleSkin": "70557",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          240
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        98
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        96
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        96
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "56b40ac0d515c6d0521f620e6cf31e4aa94c0786e29e907f5a4a9eaf2792b209",
+        "generatedMasterSha256": "5c4b845f4392ee94d1f12bd6540b8aa95bf87db4ea1b802ef0f64cae3a99c306",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/48.png",
+        "beforeOriginalRatio": 1.3285004339241635,
+        "afterOriginalRatio": 0.8748661394134732
+      }
+    },
+    {
+      "id": 49,
+      "key": "claw_ZZ_1472052",
+      "previousRuntimePath": "art/weapons/redesigned/claw_ZZ_1472052",
+      "category": "glove",
+      "sourceFile": "final512/12-ZZ/claw_ZZ_1472052.png",
+      "sha256": "283e29b7073e7a0a02e25bf6d13542a4ec7b3d4c8400dcb2ac68193c6a7ee7ac",
+      "uuid": "0faeb0fa-2bde-5ff2-8c49-9a433dd26482",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 19.161143958890037,
+      "gripPx": [
+        10.765625,
+        65.97350993377484
+      ],
+      "muzzlePx": [
+        205.73362415720587,
+        65.97350993377484
+      ],
+      "localScale": [
+        0.375966778652,
+        -0.375966778652
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "0839f09152a8910b55951533a0f8c770c06d30e05eec7c60fcba3f92617eb0be",
+        "sourceSizePx": [
+          518,
+          308
+        ],
+        "sourceBytes": 163130,
+        "sourceAppearance": {
+          "id": 49,
+          "image": {
+            "path": "art/weapons/redesigned/claw_ZZ_1472052",
+            "sizePx": [
+              518,
+              308
+            ],
+            "sizeUnits": [
+              19.359238973590337,
+              11.510898849161821
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.4675324675324676
+            ],
+            "ppu": 26.757250153616575,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.375966778652,
+              -0.375966778652
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              18.312793623666533,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-ZZ",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          305
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        124
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 50,
+      "key": "wand_ZZ_1372228",
+      "previousRuntimePath": "art/weapons/redesigned/wand_ZZ_1372228",
+      "category": "staff",
+      "sourceFile": "final512/12-ZZ/wand_ZZ_1372228.png",
+      "sha256": "107da50a400a9a0025913ce8b0a263b5da85daea4a4a2b021ab1039b2fbc0b5e",
+      "uuid": "319a86bd-c35e-563c-b6cb-c8f3d93b02b7",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.467500803500442,
+      "gripPx": [
+        44.5,
+        151.4140625
+      ],
+      "muzzlePx": [
+        44.5,
+        2.0
+      ],
+      "localScale": [
+        0.487218181818,
+        -0.487218181818
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "e0656ee6a287aa852d01383328f090e4d9c2d22595a3e27c4187ea8ebd9dafa3",
+        "sourceSizePx": [
+          220,
+          518
+        ],
+        "sourceBytes": 96408,
+        "sourceAppearance": {
+          "id": 50,
+          "image": {
+            "path": "art/weapons/redesigned/wand_ZZ_1372228",
+            "sizePx": [
+              220,
+              518
+            ],
+            "sizeUnits": [
+              9.654004251504096,
+              22.730791828541463
+            ],
+            "anchor": [
+              0.5,
+              0.2702702702702703
+            ],
+            "ppu": 22.78847142269737,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.487218181818,
+              -0.487218181818
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.4556890650638
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "67143-68689",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            1,
+            0.4072402,
+            0.0395462
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          217,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        89,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        87,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        87,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 51,
+      "key": "fan_ZZ_1292018",
+      "previousRuntimePath": "art/weapons/redesigned/fan_ZZ_1292018",
+      "category": "fan",
+      "sourceFile": "final512/12-ZZ/fan_ZZ_1292018.png",
+      "sha256": "45cb1f3a1db6245991aa5f0fdfe397e32d6b2b9e7f9f6cfb51b81a7f49ccd803",
+      "uuid": "45b13389-0c82-5dd7-bc2c-d5f8cffad556",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.502500411361472,
+      "gripPx": [
+        23.06052631578947,
+        103.6015625
+      ],
+      "muzzlePx": [
+        153.34958881578947,
+        103.6015625
+      ],
+      "localScale": [
+        0.740931173832,
+        -0.740931173832
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "8ab1a66f3c467fd1638c10c6e030ee35ce1e17cbc91df1be2a2ecc201b76ff41",
+        "sourceSizePx": [
+          386,
+          518
+        ],
+        "sourceBytes": 187664,
+        "sourceAppearance": {
+          "id": 51,
+          "image": {
+            "path": "art/weapons/redesigned/fan_ZZ_1292018",
+            "sizePx": [
+              386,
+              518
+            ],
+            "sizeUnits": [
+              8.671806950752984,
+              11.637295338057113
+            ],
+            "anchor": [
+              0.14507772020725387,
+              0.5019305019305019
+            ],
+            "ppu": 44.512061003212615,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.740931173832,
+              -0.740931173832
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.346323504912502,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71362-73009",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          383,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        155,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        153,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 52,
+      "key": "pistol_ZZ_1492031",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_ZZ_1492031",
+      "category": "handgun",
+      "sourceFile": "final512/12-ZZ/pistol_ZZ_1492031.png",
+      "sha256": "59ef57742e3fb10544cc2ad218417e807dfc40f4fe7c6069a1ab566ca635a550",
+      "uuid": "8a071dbe-71f7-5048-aba5-6820b68fe12b",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.307500618964458,
+      "gripPx": [
+        29.4921875,
+        90.4
+      ],
+      "muzzlePx": [
+        206.0,
+        52.15
+      ],
+      "localScale": [
+        0.543444819876,
+        -0.543444819876
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "e76a3612499c630f51c1f827f59eb02a0ca92a467a5de61caf26b6c23dd4529b",
+        "sourceSizePx": [
+          518,
+          296
+        ],
+        "sourceBytes": 147941,
+        "sourceAppearance": {
+          "id": 52,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_ZZ_1492031",
+            "sizePx": [
+              518,
+              296
+            ],
+            "sizeUnits": [
+              17.510322891842947,
+              10.005898795338828
+            ],
+            "anchor": [
+              0.138996138996139,
+              0.2432432432432432
+            ],
+            "ppu": 29.582549859277947,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.543444819876,
+              -0.543444819876
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.975044480861825,
+              3.245156366055836
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "73941-74936",
+          "muzzleSkin": "69065",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          293
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        120
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 53,
+      "key": "cannon_ZZ_1532014",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_ZZ_1532014",
+      "category": "cannon",
+      "sourceFile": "final512/12-ZZ/cannon_ZZ_1532014.png",
+      "sha256": "1456debcf78d3abb9faa4411258dcd6191bbab0e17f66f8c919f44fe0a039fc4",
+      "uuid": "9c7f1959-4df8-5882-bd23-539a1fc4dea5",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 18.70500066894295,
+      "gripPx": [
+        69.3359375,
+        78.87288135593221
+      ],
+      "muzzlePx": [
+        206.0,
+        43.41194385593221
+      ],
+      "localScale": [
+        0.505365517241,
+        -0.505365517241
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "1edf3975428daf36e218667c286aa270e8cf6d370733c82afcb45bc1576414b8",
+        "sourceSizePx": [
+          518,
+          242
+        ],
+        "sourceBytes": 116091,
+        "sourceAppearance": {
+          "id": 53,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_ZZ_1532014",
+            "sizePx": [
+              518,
+              242
+            ],
+            "sizeUnits": [
+              18.924199895532126,
+              8.841035472430066
+            ],
+            "anchor": [
+              0.33204633204633205,
+              0.1900826446280992
+            ],
+            "ppu": 27.37235935255029,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.505365517241,
+              -0.505365517241
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              12.530889120014516,
+              3.2514551944060988
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "72077-74474",
+          "muzzleSkin": "72729",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          239
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        98
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        96
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        96
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "1580e160db68bf6f5bde3751fc8eb440004a5c112fc01cec25da6f5c667dfa8b",
+        "generatedMasterSha256": "2c4a6434e1145d86d217e4aba334ee2968bb3e3c76dd62188d843814e1fbefea",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/53.png",
+        "beforeOriginalRatio": 1.5626433523943968,
+        "afterOriginalRatio": 1.2467899088253167
+      }
+    },
+    {
+      "id": 54,
+      "key": "claw_ZZZ_1472068",
+      "previousRuntimePath": "art/weapons/redesigned/claw_ZZZ_1472068",
+      "category": "glove",
+      "sourceFile": "final512/13-ZZZ/claw_ZZZ_1472068.png",
+      "sha256": "e7c884d7e290289d02584db1caa9d747321bf1080c0ddda88c827bf1f22502fc",
+      "uuid": "1455fd47-2728-5881-85bb-60bb2efa0d4d",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 13.994093902560142,
+      "gripPx": [
+        10.765625,
+        63.98675496688741
+      ],
+      "muzzlePx": [
+        205.73362415720587,
+        63.98675496688741
+      ],
+      "localScale": [
+        0.526664941882,
+        -0.526664941882
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "dd9091f9f013c89636aed695a0d4ac55d4c8a59b552da198c27fe474f6cbb089",
+        "sourceSizePx": [
+          518,
+          308
+        ],
+        "sourceBytes": 182337,
+        "sourceAppearance": {
+          "id": 54,
+          "image": {
+            "path": "art/weapons/redesigned/claw_ZZZ_1472068",
+            "sizePx": [
+              518,
+              308
+            ],
+            "sizeUnits": [
+              14.138770036891822,
+              8.406836238151893
+            ],
+            "anchor": [
+              0.04826254826254826,
+              0.48376623376623373
+            ],
+            "ppu": 36.63685021033653,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.526664941882,
+              -0.526664941882
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.37451219705983,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "shuriken-ZZZ",
+          "muzzleSkin": "none",
+          "soundId": 21
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          305
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        124
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        122
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 55,
+      "key": "wand_ZZZ_1372237",
+      "previousRuntimePath": "art/weapons/redesigned/wand_ZZZ_1372237",
+      "category": "staff",
+      "sourceFile": "final512/13-ZZZ/wand_ZZZ_1372237.png",
+      "sha256": "92cf138d815ccaae20671e42d5829b8d1d4b5518c6896a956d7f2a43351a4e7a",
+      "uuid": "f810088b-1109-5797-a15d-a2c88752205c",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 22.682500811189442,
+      "gripPx": [
+        42.0,
+        151.4140625
+      ],
+      "muzzlePx": [
+        42.0,
+        2.0
+      ],
+      "localScale": [
+        0.494,
+        -0.494
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 90,
+      "compression": {
+        "sourceSha256": "067f803c21706fc8f432c629f91c72e481ffe3a0ee6f821860c4159d3d3daab4",
+        "sourceSizePx": [
+          206,
+          518
+        ],
+        "sourceBytes": 94183,
+        "sourceAppearance": {
+          "id": 55,
+          "image": {
+            "path": "art/weapons/redesigned/wand_ZZZ_1372237",
+            "sizePx": [
+              206,
+              518
+            ],
+            "sizeUnits": [
+              9.126162435752002,
+              22.948311367570568
+            ],
+            "anchor": [
+              0.5,
+              0.2702702702702703
+            ],
+            "ppu": 22.572466954235782,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.494,
+              -0.494
+            ],
+            "localRotationDeg": 90,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              0,
+              16.613159773820392
+            ],
+            "localRotationDeg": 90,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71261-69069",
+          "muzzleSkin": "none",
+          "soundId": 19,
+          "castColor": [
+            1,
+            0.0409152,
+            0.1470273
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          203,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        84,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        82,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        82,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "616f29ef656343f8e64b012f4e0737a0602cc13bd8ba704b33c385276aeb0357",
+        "generatedMasterSha256": "1d2283e3319694d0bd7e57a29c8ac28c32f3021aef93e20250cb81f46cef63fb",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/55.png",
+        "beforeOriginalRatio": 0.5718042439006288,
+        "afterOriginalRatio": 0.8675650597112986
+      }
+    },
+    {
+      "id": 56,
+      "key": "fan_ZZZ_1292022",
+      "previousRuntimePath": "art/weapons/redesigned/fan_ZZZ_1292022",
+      "category": "fan",
+      "sourceFile": "final512/13-ZZZ/fan_ZZZ_1292022.png",
+      "sha256": "f61ca48d79717e6db1764e67f79514721443855a8cb9f3b4fab392f6fb7c9d71",
+      "uuid": "b9c57b2c-4659-5cbf-9240-977bd860f530",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 11.072500395983472,
+      "gripPx": [
+        23.062337662337665,
+        105.9921875
+      ],
+      "muzzlePx": [
+        155.34358766233765,
+        105.9921875
+      ],
+      "localScale": [
+        0.7883271,
+        -0.7883271
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "a01817427d9732bff799ab80b7780c07fbb9f52cddc1aae901b1a563cc3773f6",
+        "sourceSizePx": [
+          391,
+          518
+        ],
+        "sourceBytes": 212441,
+        "sourceAppearance": {
+          "id": 56,
+          "image": {
+            "path": "art/weapons/redesigned/fan_ZZZ_1292022",
+            "sizePx": [
+              391,
+              518
+            ],
+            "sizeUnits": [
+              8.45575713833894,
+              11.202256259998903
+            ],
+            "anchor": [
+              0.1432225063938619,
+              0.49034749034749037
+            ],
+            "ppu": 46.24068473149272,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.7883271,
+              -0.7883271
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              7.179824475520532,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71043-68865",
+          "muzzleSkin": "none",
+          "soundId": 20
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          387,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        157,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        155,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 57,
+      "key": "pistol_ZZZ_1492023",
+      "previousRuntimePath": "art/weapons/redesigned/pistol_ZZZ_1492023",
+      "category": "handgun",
+      "sourceFile": "final512/13-ZZZ/pistol_ZZZ_1492023.png",
+      "sha256": "5a960a3934e30a140b9879c52cf275f6365b023cfd02da2d51de4b3e3204458d",
+      "uuid": "fb09ac9b-83eb-521a-ab93-c471f9a78430",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.55500059205296,
+      "gripPx": [
+        35.8671875,
+        89.39726027397259
+      ],
+      "muzzlePx": [
+        206.0,
+        59.11601027397259
+      ],
+      "localScale": [
+        0.582233142857,
+        -0.582233142857
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "7ee13b2c72142d8705fec53aae649d63abdf50ae778ca10d70f01bf530da45b2",
+        "sourceSizePx": [
+          518,
+          298
+        ],
+        "sourceBytes": 141241,
+        "sourceAppearance": {
+          "id": 57,
+          "image": {
+            "path": "art/weapons/redesigned/pistol_ZZZ_1492023",
+            "sizePx": [
+              518,
+              298
+            ],
+            "sizeUnits": [
+              16.74900450524108,
+              9.635527688343323
+            ],
+            "anchor": [
+              0.16988416988416988,
+              0.2516778523489933
+            ],
+            "ppu": 30.927211216517854,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.582233142857,
+              -0.582233142857
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              13.806611821887918,
+              2.457382900382861
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "68742-69048",
+          "muzzleSkin": "71285",
+          "soundId": 8
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          295
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        120
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        118
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 58,
+      "key": "cannon_ZZZ_1532015",
+      "previousRuntimePath": "art/weapons/redesigned/cannon_ZZZ_1532015",
+      "category": "cannon",
+      "sourceFile": "final512/13-ZZZ/cannon_ZZZ_1532015.png",
+      "sha256": "ffe742e53c7f609c2f8cd3df7e245a447eff715fd9d2e6a4683b24b880815f55",
+      "uuid": "13c1b653-2497-5a94-b67c-7781c8082f70",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 19.88750071123245,
+      "gripPx": [
+        45.4296875,
+        74.55506607929514
+      ],
+      "muzzlePx": [
+        206.00000000000003,
+        41.883191079295145
+      ],
+      "localScale": [
+        0.487401081081,
+        -0.487401081081
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "1367ee2b3280836a3bf934521b1ad238419f42ff90e51253df246bf6e13c5f22",
+        "sourceSizePx": [
+          518,
+          233
+        ],
+        "sourceBytes": 113755,
+        "sourceAppearance": {
+          "id": 58,
+          "image": {
+            "path": "art/weapons/redesigned/cannon_ZZZ_1532015",
+            "sizePx": [
+              518,
+              233
+            ],
+            "sizeUnits": [
+              20.120557360192205,
+              9.05036653460383
+            ],
+            "anchor": [
+              0.21621621621621623,
+              0.20171673819742486
+            ],
+            "ppu": 25.74481366131757,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.487401081081,
+              -0.487401081081
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              15.653638255130229,
+              3.1851075357833216
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "71032-73155",
+          "muzzleSkin": "67957",
+          "soundId": 22
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          230
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        94
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        92
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        92
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "lineWeightRevision": {
+        "date": "2026-10-23",
+        "method": "Built-in ImageGen controlled outline edit; trim and resize for existing runtime registration",
+        "previousSha256": "8ac75cd587086209bc90b2346a813458e1a0743abe7ce0274d2469088eeebf99",
+        "generatedMasterSha256": "44ec5ba0fc4f2d08e32170cd5e56a0b128c98c15c73d841a2317378edd495242",
+        "master": "AI-Workspace/Deliverables/weapon-line-fix-20261023/masters/58.png",
+        "beforeOriginalRatio": 1.4489530183358885,
+        "afterOriginalRatio": 0.8011857866092559
+      }
+    },
+    {
+      "id": 59,
+      "key": "bow_D_1452003",
+      "previousRuntimePath": "art/weapons/redesigned/bow_D_1452003",
+      "category": "bow",
+      "sourceFile": "final512/01-D/bow_D_1452003.png",
+      "sha256": "b6aebf16f10a0eb91325ffa4686abfd0d9b807abc8f5a81acb47cae804b0516d",
+      "uuid": "d8ede3a8-121e-57c3-baae-2c87e7f699b4",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        82.47154471544715,
+        104.3984375
+      ],
+      "muzzlePx": [
+        94.38395347457123,
+        104.3984375
+      ],
+      "localScale": [
+        0.42,
+        -0.42
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "bf16b43cb80789c1320c67defea1e7c716051e647062fd7df4bd0af1b9d626a3",
+        "sourceSizePx": [
+          252,
+          518
+        ],
+        "sourceBytes": 84052,
+        "sourceAppearance": {
+          "id": 59,
+          "image": {
+            "path": "art/weapons/redesigned/bow_D_1452003",
+            "sizePx": [
+              252,
+              518
+            ],
+            "sizeUnits": [
+              8.990625000000001,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.8134920634920635,
+              0.4980694980694981
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.42,
+              -0.42
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-D",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              44,
+              48
+            ],
+            "lowerPx": [
+              44,
+              474
+            ],
+            "bracePx": [
+              44,
+              260
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          249,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        102,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        100,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        100,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 60,
+      "key": "bow_D_1452005",
+      "previousRuntimePath": "art/weapons/redesigned/bow_D_1452005",
+      "category": "bow",
+      "sourceFile": "final512/01-D/bow_D_1452005.png",
+      "sha256": "f5b57aad8a165a43b7d10b753b446123dfbde7da8cda888037ce4d973998fe88",
+      "uuid": "db1e4afb-19c5-5355-91e5-a9b5ba731ce3",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        79.51046025104603,
+        105.9921875
+      ],
+      "muzzlePx": [
+        91.4228690101701,
+        105.9921875
+      ],
+      "localScale": [
+        0.42,
+        -0.42
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "8c4ef5a6efb26fd89e737524767c3a35794e2b23afb44b431128da5dd69465ec",
+        "sourceSizePx": [
+          245,
+          518
+        ],
+        "sourceBytes": 84630,
+        "sourceAppearance": {
+          "id": 60,
+          "image": {
+            "path": "art/weapons/redesigned/bow_D_1452005",
+            "sizePx": [
+              245,
+              518
+            ],
+            "sizeUnits": [
+              8.740885416666668,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.8081632653061225,
+              0.49034749034749037
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.42,
+              -0.42
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-D",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              43,
+              49
+            ],
+            "lowerPx": [
+              42,
+              475
+            ],
+            "bracePx": [
+              42.49530516431925,
+              264
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          242,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        99,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        97,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 61,
+      "key": "bow_C_1452044",
+      "previousRuntimePath": "art/weapons/redesigned/bow_C_1452044",
+      "category": "bow",
+      "sourceFile": "final512/02-C/bow_C_1452044.png",
+      "sha256": "63cf3b90cfb4a346e3101994b71ab98a5450452aa39830d85f4ac663dfacc784",
+      "uuid": "5aa7149c-5fa8-5278-b805-630a7c41388d",
+      "majorAxis": "height",
+      "visibleMajorWorldUnits": 18.26666666666667,
+      "gripPx": [
+        81.26970954356845,
+        113.5625
+      ],
+      "muzzlePx": [
+        93.18211830269254,
+        113.5625
+      ],
+      "localScale": [
+        0.4326,
+        -0.4326
+      ],
+      "localPosition": [
+        0,
+        0
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "c687be261ab0e9bb820fd3238d34d58e90f38336e6aa32677028dc3078a0583f",
+        "sourceSizePx": [
+          247,
+          518
+        ],
+        "sourceBytes": 95105,
+        "sourceAppearance": {
+          "id": 61,
+          "image": {
+            "path": "art/weapons/redesigned/bow_C_1452044",
+            "sizePx": [
+              247,
+              518
+            ],
+            "sizeUnits": [
+              8.812239583333334,
+              18.480729166666666
+            ],
+            "anchor": [
+              0.8178137651821862,
+              0.45366795366795365
+            ],
+            "ppu": 28.02919708029197,
+            "localPosition": [
+              0,
+              0
+            ],
+            "localScale": [
+              0.4326,
+              -0.4326
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              1.0666666666666664,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-C",
+          "muzzleSkin": "none",
+          "soundId": 17,
+          "bowString": {
+            "upperPx": [
+              52,
+              65
+            ],
+            "lowerPx": [
+              52,
+              467
+            ],
+            "bracePx": [
+              52,
+              283
+            ],
+            "drawPx": 97.51357664233576,
+            "handRetreatPx": 44.846715328467155,
+            "color": [
+              88,
+              63,
+              33,
+              255
+            ],
+            "lineWidthPx": 11.211678832116789
+          }
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          244,
+          515
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        100,
+        208
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        98,
+        206
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        98,
+        206
+      ],
+      "worldSpanAlphaThreshold": 16
+    },
+    {
+      "id": 62,
+      "key": "crossbow_D_1462210",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_D_1462210",
+      "category": "crossbow",
+      "sourceFile": "final512/01-D/crossbow_D_1462210.png",
+      "sha256": "dfd81fe31d98b671e23bfb006c207a886da631a766b1efadf175935b8cc4951d",
+      "uuid": "d8fffca1-efe3-538f-8e84-421045994482",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 16.501041666666666,
+      "gripPx": [
+        25.5078125,
+        90.59267734553775
+      ],
+      "muzzlePx": [
+        206.3532136741683,
+        90.59267734553775
+      ],
+      "localScale": [
+        0.39344516129,
+        -0.449651612903
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "7662ba69ec5549cdd539d6aa30e8b1a8d9ed6adb27591309828918c240c34515",
+        "sourceSizePx": [
+          518,
+          443
+        ],
+        "sourceBytes": 158205,
+        "sourceAppearance": {
+          "id": 62,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_D_1462210",
+            "sizePx": [
+              518,
+              443
+            ],
+            "sizeUnits": [
+              16.727083333333333,
+              14.305208333333333
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.4909706546275395
+            ],
+            "ppu": 30.967741935483872,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.39344516129,
+              -0.449651612903
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.628124999999999,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-D",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            279,
+            225.5
+          ]
+        },
+        "sourceAlphaBounds16": [
+          4,
+          3,
+          515,
+          440
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        178
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        176
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        176
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        111.96875,
+        90.59267734553775
+      ]
+    },
+    {
+      "id": 63,
+      "key": "crossbow_C_1462003",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_C_1462003",
+      "category": "crossbow",
+      "sourceFile": "E:/gunner/AI-Workspace/Work/v1/art-design/hunting-crossbow-c-proportions-v5-20261015/crossbow_C_1462003-proportions-v5-final.png",
+      "sha256": "2752dce1133d670d0c809827aa92e0ddc65b078641f978cfb4dca689d03fa6a5",
+      "uuid": "699b2a8d-15e4-5c34-be0c-e43b0cc74f70",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 17.033333333333335,
+      "gripPx": [
+        28.17302052785924,
+        87.54875886524823
+      ],
+      "muzzlePx": [
+        194.8080353646545,
+        87.54875886524823
+      ],
+      "localScale": [
+        0.3925845,
+        -0.448668
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "sourceRevision": "hunting-crossbow-c-proportions-v5-20261015",
+      "sizePx": [
+        208,
+        173
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        170
+      ],
+      "alphaBounds16": [
+        4,
+        2,
+        206,
+        168
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        99.21407624633432,
+        87.54875886524823
+      ],
+      "compression": {
+        "sourceSha256": "2397120baff89414c77ac83bf6f0c4a63071fd35ab9d88ca2867d2a635400eab",
+        "sourceSizePx": [
+          1378,
+          1141
+        ],
+        "sourceBytes": 814734,
+        "sourceAppearance": {
+          "id": 63,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_C_1462003",
+            "sizePx": [
+              1378,
+              1141
+            ],
+            "sizeUnits": [
+              17.412413452027696,
+              14.417680514342235
+            ],
+            "anchor": [
+              0.1269956458635704,
+              0.4881682734443471
+            ],
+            "ppu": 79.13894324853229,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.3925845,
+              -0.448668
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              14.051236399604353,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-C",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            650,
+            584
+          ]
+        },
+        "sourceAlphaBounds16": [
+          14,
+          15,
+          1362,
+          1120
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      }
+    },
+    {
+      "id": 64,
+      "key": "crossbow_B_1462006",
+      "previousRuntimePath": "art/weapons/redesigned/crossbow_B_1462006",
+      "category": "crossbow",
+      "sourceFile": "final512/03-B/crossbow_B_1462006.png",
+      "sha256": "3e273fbba325d54420f2405c544635e1d58afe10daa9971ceba550c60c541438",
+      "uuid": "1ba3c5e6-1dc0-534f-b903-09dc29f0b33d",
+      "majorAxis": "width",
+      "visibleMajorWorldUnits": 14.933333333333334,
+      "gripPx": [
+        25.5078125,
+        100.59756097560977
+      ],
+      "muzzlePx": [
+        168.546875,
+        100.59756097560977
+      ],
+      "localScale": [
+        0.460834171875,
+        -0.526667625
+      ],
+      "localPosition": [
+        -1.07699776,
+        0.17099947
+      ],
+      "localRotationDeg": 0,
+      "compression": {
+        "sourceSha256": "91036630bfdff54b169dc0915c19287d1d5573fc3bd1307b81f3c7ab0b8cefff",
+        "sourceSizePx": [
+          518,
+          498
+        ],
+        "sourceBytes": 172028,
+        "sourceAppearance": {
+          "id": 64,
+          "image": {
+            "path": "art/weapons/redesigned/crossbow_B_1462006",
+            "sizePx": [
+              518,
+              498
+            ],
+            "sizeUnits": [
+              15.108333333333334,
+              14.525
+            ],
+            "anchor": [
+              0.11969111969111969,
+              0.4969879518072289
+            ],
+            "ppu": 34.285714285714285,
+            "localPosition": [
+              -1.07699776,
+              0.17099947
+            ],
+            "localScale": [
+              0.460834171875,
+              -0.526667625
+            ],
+            "localRotationDeg": 0,
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ]
+          },
+          "muzzle": {
+            "localPosition": [
+              10.470833333333333,
+              0
+            ],
+            "localRotationDeg": 0,
+            "localScale": [
+              1,
+              1
+            ]
+          },
+          "projectileSkin": "arrow-B",
+          "muzzleSkin": "none",
+          "soundId": 18,
+          "supportGripPx": [
+            245,
+            250.5
+          ]
+        },
+        "sourceAlphaBounds16": [
+          3,
+          3,
+          515,
+          495
+        ],
+        "method": "Lanczos RGBA; no palette quantization",
+        "maxEdge": 208
+      },
+      "sizePx": [
+        208,
+        200
+      ],
+      "alphaBounds1": [
+        2,
+        2,
+        206,
+        198
+      ],
+      "alphaBounds16": [
+        2,
+        2,
+        206,
+        198
+      ],
+      "worldSpanAlphaThreshold": 16,
+      "supportGripPx": [
+        98.421875,
+        100.59756097560975
+      ]
+    }
+  ],
+  "lineWeightRevision": {
+    "date": "2026-10-23",
+    "ids": [
+      53,
+      43,
+      58,
+      33,
+      48,
+      55,
+      19,
+      36,
+      41
+    ],
+    "manifest": "AI-Workspace/Deliverables/weapon-line-fix-20261023/manifest.json",
+    "note": "Nine generated outline corrections, with original runtime envelopes, anchors and firing transforms preserved. Residual thickness ratios are recorded per weapon."
+  }
+}

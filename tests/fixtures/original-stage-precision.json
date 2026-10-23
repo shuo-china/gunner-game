@@ -1,0 +1,68 @@
+{
+  "source": "level0:124872",
+  "bundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d",
+  "method": "Read raw serialized s_digits and s_exponent using UnityPy and recovered type tree; preserve trailing zeroes.",
+  "nativeRuntime": "Tree_manager.GetStageHealth/GetStageMoney return the serialized table entry directly; Tree_manager.Balance_Reload has no recovered runtime caller.",
+  "fields": {
+    "Stage_Health_Balance": {
+      "count": 5000,
+      "precisionCounts": {
+        "5": 1,
+        "2": 4999
+      },
+      "rawTableSha256": "c1c10c0caa3d3d184492e81abc815e6cfbbc7770c731c691ccbaf3e5a29b60b5",
+      "samples": [
+        {
+          "stageIndex": 0,
+          "s_digits": "25000",
+          "s_exponent": -2
+        },
+        {
+          "stageIndex": 1,
+          "s_digits": "75",
+          "s_exponent": 1
+        },
+        {
+          "stageIndex": 2,
+          "s_digits": "22",
+          "s_exponent": 2
+        },
+        {
+          "stageIndex": 4999,
+          "s_digits": "81",
+          "s_exponent": 2353
+        }
+      ]
+    },
+    "Stage_Money_Balance": {
+      "count": 5000,
+      "precisionCounts": {
+        "5": 1,
+        "2": 4999
+      },
+      "rawTableSha256": "d14238c2945f1144b44ccf19c92dce434b6de7ca35ed6f28f004fcc30b616ac7",
+      "samples": [
+        {
+          "stageIndex": 0,
+          "s_digits": "20000",
+          "s_exponent": -3
+        },
+        {
+          "stageIndex": 1,
+          "s_digits": "60",
+          "s_exponent": 0
+        },
+        {
+          "stageIndex": 2,
+          "s_digits": "18",
+          "s_exponent": 1
+        },
+        {
+          "stageIndex": 4999,
+          "s_digits": "63",
+          "s_exponent": 2352
+        }
+      ]
+    }
+  }
+}

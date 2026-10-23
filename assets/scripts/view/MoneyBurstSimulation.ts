@@ -1,6 +1,6 @@
 import { MAP_CONFIG } from '../core/config';
 import { projectWorld } from '../core/projection';
-import { TreeState, Vec2 } from '../core/types';
+import { CollisionWall, TreeState, Vec2 } from '../core/types';
 import { evaluateParticleCurve, ParticleCurve } from './OriginalParticleSimulation';
 import { particleVelocityKeep } from './OriginalParticleMotion';
 
@@ -25,6 +25,8 @@ interface Contact {time:number;nx:number;ny:number;nz:number;penetration:number}
 const STEP=1/120;
 const EPSILON=1e-5;
 const DEFAULT_SEED=0x4d4f4e59;
+const TREE_CELL_SIZE=10;
+const ascending=(a:number,b:number):number=>a-b;
 
 /** Source-configured visual simulation, independent of the combat random stream.
  * Unity's internal cone sampler, collision response and integration are not
@@ -36,8 +38,25 @@ export class MoneyBurstSimulation {
   readonly particles:MoneyParticle[]=[];
   private randomState=DEFAULT_SEED;
   private clock=0;
-  private readonly boxes:Box[]=[];
+  private readonly wallBoxes:Box[]=[];
+  private wallCount=0;
+  private readonly treeBoxes:Box[]=[];
+  private readonly treeGrid=new Map<number,Map<number,number[]>>();
+  private readonly gridRows:Map<number,number[]>[]=[];
+  private readonly gridCells:number[][]=[];
+  private usedRows=0;
+  private usedCells=0;
+  private minCellX=0;
+  private maxCellX=-1;
+  private minCellZ=0;
+  private maxCellZ=-1;
+  private readonly candidates:number[]=[];
+  private readonly visited:number[]=[];
+  private queryVersion=0;
+  private walls:readonly CollisionWall[]=MAP_CONFIG.bulletWalls;
   constructor(readonly config:MoneyBurstConfig,seed=DEFAULT_SEED) {this.reset(seed);}
+
+  setWalls(walls:readonly CollisionWall[]):void {this.walls=walls;}
 
   spawn(position:Vec2,sourceTime=this.clock):void {
     const c=this.config;
@@ -66,10 +85,7 @@ export class MoneyBurstSimulation {
     if(!(dt>0)||!Number.isFinite(dt))return;
     const endTime=typeof frameTime==='number'&&Number.isFinite(frameTime)?Math.max(this.clock,frameTime):
       Math.min(Number.MAX_VALUE,this.clock+dt);
-    this.boxes.length=0;
-    const c=this.config.collision;
-    for(const wall of MAP_CONFIG.bulletWalls)this.boxes.push({...wall,minY:c.wallMinY,maxY:c.wallMaxY});
-    for(const tree of trees)if(tree.alive)this.boxes.push({...tree.collider,minY:c.treeMinY,maxY:c.treeMaxY});
+    let collisionReady=false;
     for(const p of this.particles)if(p.active) {
       // Death may occur in a physics tick near the end of this render frame.
       // Existing particles consume dt; a new burst consumes only the time since
@@ -79,6 +95,8 @@ export class MoneyBurstSimulation {
       // Pausing is handled by the caller: zero/invalid delta leaves state intact.
       if(elapsed>=p.life-p.age){p.age=p.life;p.active=false;continue;}
       let remaining=elapsed;
+      // An empty/expired pool still advances its clock, but needs no tree walk.
+      if(remaining>1e-10&&!collisionReady){this.indexColliders(trees);collisionReady=true;}
       while(remaining>1e-10) {const used=Math.min(STEP,remaining);this.advance(p,used);remaining-=used;}
     }
     this.clock=endTime;
@@ -104,6 +122,61 @@ export class MoneyBurstSimulation {
     let x=this.randomState;x^=x<<13;x^=x>>>17;x^=x<<5;this.randomState=x>>>0;
     return this.randomState/4294967296;
   }
+  private indexColliders(trees:readonly TreeState[]):void {
+    const c=this.config.collision;
+    this.wallCount=this.walls.length;
+    for(let i=0;i<this.wallCount;i++) {
+      const wall=this.walls[i],box=this.wallBoxes[i]??(this.wallBoxes[i]={minX:0,maxX:0,minY:0,maxY:0,minZ:0,maxZ:0});
+      box.minX=wall.minX;box.maxX=wall.maxX;box.minZ=wall.minZ;box.maxZ=wall.maxZ;
+      box.minY=c.wallMinY;box.maxY=c.wallMaxY;
+    }
+    // Rebuild membership for deaths, moved colliders and map switches, reusing
+    // boxes/rows/cells instead of allocating one object per tree every frame.
+    this.treeGrid.clear();
+    for(let i=0;i<this.usedRows;i++)this.gridRows[i].clear();
+    this.usedRows=this.usedCells=0;
+    this.minCellX=this.minCellZ=Infinity;this.maxCellX=this.maxCellZ=-Infinity;
+    let index=0;
+    for(const tree of trees)if(tree.alive) {
+      const collider=tree.collider,box=this.treeBoxes[index]??(this.treeBoxes[index]={minX:0,maxX:0,minY:0,maxY:0,minZ:0,maxZ:0});
+      box.minX=collider.minX;box.maxX=collider.maxX;box.minZ=collider.minZ;box.maxZ=collider.maxZ;
+      box.minY=tree.colliderMinY??c.treeMinY;box.maxY=tree.colliderMaxY??c.treeMaxY;
+      const minX=Math.floor(box.minX/TREE_CELL_SIZE),maxX=Math.floor(box.maxX/TREE_CELL_SIZE);
+      const minZ=Math.floor(box.minZ/TREE_CELL_SIZE),maxZ=Math.floor(box.maxZ/TREE_CELL_SIZE);
+      this.minCellX=Math.min(this.minCellX,minX);this.maxCellX=Math.max(this.maxCellX,maxX);
+      this.minCellZ=Math.min(this.minCellZ,minZ);this.maxCellZ=Math.max(this.maxCellZ,maxZ);
+      for(let x=minX;x<=maxX;x++) {
+        let row=this.treeGrid.get(x);
+        if(!row){row=this.gridRows[this.usedRows]??(this.gridRows[this.usedRows]=new Map());this.usedRows++;this.treeGrid.set(x,row);}
+        for(let z=minZ;z<=maxZ;z++) {
+          let cell=row.get(z);
+          if(!cell){cell=this.gridCells[this.usedCells]??(this.gridCells[this.usedCells]=[]);this.usedCells++;cell.length=0;row.set(z,cell);}
+          cell.push(index);
+        }
+      }
+      index++;
+    }
+  }
+  private queryTrees(p:MoneyParticle,dt:number,radius:number):readonly number[] {
+    const result=this.candidates;result.length=0;
+    if(++this.queryVersion===Number.MAX_SAFE_INTEGER){this.visited.fill(0);this.queryVersion=1;}
+    const endX=p.x+p.vx*dt,endZ=p.z+p.vz*dt;
+    // Swept bounds include the sphere radius. The margin only admits extra
+    // candidates at floating-point cell boundaries; narrow phase is unchanged.
+    const minX=Math.max(this.minCellX,Math.floor((Math.min(p.x,endX)-radius-EPSILON)/TREE_CELL_SIZE));
+    const maxX=Math.min(this.maxCellX,Math.floor((Math.max(p.x,endX)+radius+EPSILON)/TREE_CELL_SIZE));
+    const minZ=Math.max(this.minCellZ,Math.floor((Math.min(p.z,endZ)-radius-EPSILON)/TREE_CELL_SIZE));
+    const maxZ=Math.min(this.maxCellZ,Math.floor((Math.max(p.z,endZ)+radius+EPSILON)/TREE_CELL_SIZE));
+    for(let x=minX;x<=maxX;x++) {
+      const row=this.treeGrid.get(x);if(!row)continue;
+      for(let z=minZ;z<=maxZ;z++) {
+        const cell=row.get(z);if(!cell)continue;
+        for(const index of cell)if(this.visited[index]!==this.queryVersion){this.visited[index]=this.queryVersion;result.push(index);}
+      }
+    }
+    // Equal-time contacts must retain the former wall-then-tree array order.
+    result.sort(ascending);return result;
+  }
   private advance(p:MoneyParticle,dt:number):void {
     const c=this.config,t=Math.min(1,(p.age+dt*.5)/p.life);
     p.rotation+=evaluateParticleCurve(c.rotationCurve,t,p.random)*dt;
@@ -119,8 +192,12 @@ export class MoneyBurstSimulation {
       if(p.y<radius)contact={time:0,nx:0,ny:1,nz:0,penetration:radius-p.y};
       else if(p.vy<0&&p.y+p.vy*remaining<radius)
         contact={time:(radius-p.y)/(p.vy*remaining),nx:0,ny:1,nz:0,penetration:0};
-      for(const box of this.boxes) {
-        const hit=sweepParticleBox(p,remaining,box,radius);
+      for(let i=0;i<this.wallCount;i++) {
+        const hit=sweepParticleBox(p,remaining,this.wallBoxes[i],radius);
+        if(hit&&(!contact||hit.time<contact.time))contact=hit;
+      }
+      for(const index of this.queryTrees(p,remaining,radius)) {
+        const hit=sweepParticleBox(p,remaining,this.treeBoxes[index],radius);
         if(hit&&(!contact||hit.time<contact.time))contact=hit;
       }
       if(!contact){p.x+=p.vx*remaining;p.y+=p.vy*remaining;p.z+=p.vz*remaining;break;}

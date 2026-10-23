@@ -1,0 +1,14 @@
+{
+  "source": "Cat__t7445.c CalculateAtkCoolMax RVA 0x2b399cc: float divide by clamped int percent, float multiply by 100, clamp 0.05f..2f. Expected values independently evaluated using Python struct pack/unpack IEEE754 binary32.",
+  "baseInterval": 0.6000000238418579,
+  "cases": [
+    { "mode": "Main", "skins": [], "goldSpeed": 0, "rebirthSpeed": 0, "stage": 0, "percent": 100, "interval": 0.6000000238418579, "bits": "3f19999a" },
+    { "mode": "Main", "skins": [1], "goldSpeed": 1, "rebirthSpeed": 2, "stage": 0, "percent": 128, "interval": 0.4687500298023224, "bits": "3ef00001" },
+    { "mode": "Main", "skins": [1, 24], "goldSpeed": 0, "rebirthSpeed": 0, "stage": 0, "percent": 350, "interval": 0.17142857611179352, "bits": "3e2f8af9" },
+    { "mode": "SpeedRun", "skins": [1, 24], "goldSpeed": 0, "rebirthSpeed": 0, "stage": 100, "percent": 350, "interval": 0.17142857611179352, "bits": "3e2f8af9" },
+    { "mode": "Boss", "skins": [1, 24], "goldSpeed": 500, "rebirthSpeed": 0, "stage": 100, "percent": 250, "interval": 0.24000000953674316, "bits": "3e75c290" },
+    { "mode": "Raid", "skins": [24], "goldSpeed": 500, "rebirthSpeed": 20000, "stage": 100, "percent": 240, "interval": 0.2500000298023224, "bits": "3e800001" },
+    { "mode": "Main", "skins": [1], "goldSpeed": 0, "rebirthSpeed": 19999, "stage": 0, "percent": 10000, "interval": 0.05000000074505806, "bits": "3d4ccccd" },
+    { "mode": "Main", "skins": [24], "goldSpeed": 0, "rebirthSpeed": 0, "stage": 100, "percent": 100, "interval": 0.6000000238418579, "bits": "3f19999a" }
+  ]
+}

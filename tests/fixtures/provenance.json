@@ -1,0 +1,51 @@
+[
+  {
+    "fixture": "characters/cat_basic/source_idle_curves.json",
+    "origin": "AI-Workspace/Work/v1/art-reference/characters/cat_basic/source_idle_curves.json",
+    "sourceSha256": "f8c7f231ae65bc7bd26901fefcea46cb937122eae6e32f131a6d22b5284a5a80",
+    "fixtureSha256": "f8c7f231ae65bc7bd26901fefcea46cb937122eae6e32f131a6d22b5284a5a80",
+    "extraction": "Exact source curve JSON."
+  },
+  {
+    "fixture": "characters/cat_basic/source_walk_curves.json",
+    "origin": "AI-Workspace/Work/v1/art-reference/characters/cat_basic/source_walk_curves.json",
+    "sourceSha256": "34ff6106a5ec0acbbdbd722a83dd5ce92c81e54cc1148539e580f10c9a431f14",
+    "fixtureSha256": "34ff6106a5ec0acbbdbd722a83dd5ce92c81e54cc1148539e580f10c9a431f14",
+    "extraction": "Exact source curve JSON."
+  },
+  {
+    "fixture": "original-muzzle-position-source.json",
+    "origin": "AI-Workspace/Work/v1/qa/fidelity/original-muzzle-position-source.json",
+    "sourceSha256": "dd4167ec37e4f7b6e6edc736ac686200f4a3f4b4827f1bd9dc34f25c45df106d",
+    "fixtureSha256": "dd4167ec37e4f7b6e6edc736ac686200f4a3f4b4827f1bd9dc34f25c45df106d",
+    "extraction": "Exact muzzle transform evidence JSON."
+  },
+  {
+    "fixture": "original-money-numbers.json",
+    "origin": "AI-Workspace/Work/v1/art-reference/original-money-numbers.json",
+    "sourceSha256": "eafaca9b9dfebb2e166eb30aeddd8f6eebe544b64ffe1bdd7e2f90a1855c2824",
+    "fixtureSha256": "6a064a177a06d9239f42f58e4d42e561a279c613ffee060359e3d34089713d2b",
+    "extraction": "Only fields asserted by money-numbers.test.cjs: material/font references, setting keys, glyph indices/widths, duration and source curve values."
+  },
+  {
+    "fixture": "character-runtime-evidence.json",
+    "origin": "AI-Workspace/Work/v1/art-reference/character-runtime-evidence.json",
+    "sourceSha256": "bde626f7de3fcc106ae0c0aaaebfcd39a6370f882efc00076a8b3e71f26e8ed8",
+    "fixtureSha256": "35eb1c7fb22c5effe31a9a1e64efff7991668fcc3b2406c4b525db21b8ad5627",
+    "extraction": "Only the two muzzle particle ClampVelocityModule records used by particles.test.cjs."
+  },
+  {
+    "fixture": "cocos-3.8.8/mesh-buffer.ts.txt",
+    "origin": "Creator 3.8.8 engine/cocos/2d/renderer/mesh-buffer.ts",
+    "sourceSha256": "eac84799c424c4c1998eaf43973eef24137d4f3083669e96246d8d7a03e54df9",
+    "fixtureSha256": "eac84799c424c4c1998eaf43973eef24137d4f3083669e96246d8d7a03e54df9",
+    "extraction": "Exact MIT-licensed source; license preserved in file."
+  },
+  {
+    "fixture": "cocos-3.8.8/static-vb-accessor.ts.txt",
+    "origin": "Creator 3.8.8 engine/cocos/2d/renderer/static-vb-accessor.ts",
+    "sourceSha256": "f2d18f996542626370de0df0debb5dabff3e9b7c476ff926bed36a329bbc5dae",
+    "fixtureSha256": "f2d18f996542626370de0df0debb5dabff3e9b7c476ff926bed36a329bbc5dae",
+    "extraction": "Exact MIT-licensed source; license preserved in file."
+  }
+]

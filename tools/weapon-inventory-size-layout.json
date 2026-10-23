@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "gradeProgression": false,
+  "surfaces": {
+    "Gun_Item": { "source": "weapon", "collectionScale": 0.75 },
+    "Gun_Slot": { "source": "weapon", "collectionScale": 1 },
+    "Gun_Info_UI": { "source": "weapon", "collectionScale": 1.2 },
+    "NewGun_UI": { "source": "weapon", "collectionScale": 0.75 },
+    "Gun_Item_Demo": { "source": "raid", "collectionScale": 0.75 },
+    "Raid_GunSlot": { "source": "raid", "collectionScale": 1 }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "gradeProgression": false,
+  "categories": {
+    "bow": {
+      "referenceVisibleSize": [
+        52.68120292202603,
+        115.55876769992807
+      ],
+      "referenceLocalScale": [
+        0.07738469464711223,
+        0.07738469464711223
+      ]
+    },
+    "crossbow": {
+      "referenceVisibleSize": [
+        121.01920756369434,
+        105.59519091341957
+      ],
+      "referenceLocalScale": [
+        0.07029174254682512,
+        0.07029174254682512
+      ]
+    },
+    "glove": {
+      "referenceVisibleSize": [
+        112.08738030539442,
+        67.58209694884076
+      ],
+      "referenceLocalScale": [
+        0.08542738609096744,
+        0.08542738609096744
+      ]
+    },
+    "staff": {
+      "referenceVisibleSize": [
+        42.666124188009235,
+        133.90598975929052
+      ],
+      "referenceLocalScale": [
+        0.08888775872501924,
+        0.08888775872501924
+      ]
+    },
+    "fan": {
+      "referenceVisibleSize": [
+        86.53044233978432,
+        116.9020545517616
+      ],
+      "referenceLocalScale": [
+        0.07760042428374697,
+        0.07760042428374697
+      ]
+    },
+    "handgun": {
+      "referenceVisibleSize": [
+        128.5336829796613,
+        61.1165061226821
+      ],
+      "referenceLocalScale": [
+        0.047618442174117454,
+        0.047618442174117454
+      ]
+    },
+    "cannon": {
+      "referenceVisibleSize": [
+        171.37824397288176,
+        81.4886748302428
+      ],
+      "referenceLocalScale": [
+        0.06349125623215661,
+        0.06349125623215661
+      ]
+    }
+  }
+}

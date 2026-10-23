@@ -1,0 +1,2638 @@
+{
+  "provenance": {
+    "version": "Cat Gunner 1.1.61",
+    "method": "Independent Python integer-coefficient oracle, transcribed from ARM64 instructions and native manager operators; starting precision follows shipped scene tables recorded in original-economy-precision.json and original-stage-precision.json; not runtime captures.",
+    "sourceSha256": {
+      "CatGunner-Original/Decompiled/native/Assembly-CSharp/Rebirth_manager__t7591.c": "33aa50e50b052779558601e983a914897f4996e4bacb4d4b45a5d49c43557743",
+      "CatGunner-Original/Decompiled/native/Assembly-CSharp/Cat__t7445.c": "3e42f7f67be2bd9bc2b926436f41db92bf94e593ea4724db7d7290c74e194a70",
+      "CatGunner-Original/Decompiled/native/Assembly-CSharp/Gamemanager__t7191.c": "adf5fe0e133b216e730932d6a97633e04f169caa16dbc10ed368a5369c818bea",
+      "CatGunner-Original/Decompiled/native/Assembly-CSharp/Tree_manager__t7671.c": "2958879a74a863a7127d86687ee6fedc1ccaef5a27b7326cbdbcb6d4e9f5ff17",
+      "CatGunner-Original/Decompiled/native/Assembly-CSharp/StarUpgrade_manager__t7549.c": "2eba02a7ccd32fdcd87fa08c6fe976ca5f16ffc85c29506bd4dd5a1672b5f1ce",
+      "AI-Workspace/Work/cat-gunner/code-analysis/libil2cpp.so": "80eb8bcbebd058ffb4beac5d8d7d544066587a7a1abee8898874847ff13dc583"
+    },
+    "functions": {
+      "intConstructor": "0x4555b64 -> 0x4555028",
+      "doubleConstructor": "0x4556060",
+      "precisionGetter": "0x4554ee0",
+      "toPrecision": "0x4558464",
+      "add": "0x4558020",
+      "sub": "0x4558270",
+      "mul": "0x4558538",
+      "div": "0x45587e8",
+      "discardDecimal": "0x455a16c",
+      "pow": "0x455ef6c"
+    },
+    "constants": {
+      "0x1070a18": "1.6000000000000001",
+      "0x106fd58": "1.002",
+      "0x106fde8": "1.05"
+    }
+  },
+  "rewards": [
+    {
+      "stageIndex": 0,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 0,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 0,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 0,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 0,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 0,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 1,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      },
+      "enhanced": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "31622",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "94866",
+        "exponent": -2,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "39528",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "11858",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "39799",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "11939",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "49749",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "14924",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "71091",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "21327",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 2,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "88864",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "26659",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "85205",
+        "exponent": -2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "25561",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "1065",
+        "exponent": 0,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "3195",
+        "exponent": 0,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "1",
+        "exponent": 3,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "3",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "125",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "375",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "15692",
+        "exponent": -1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "47076",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "19615",
+        "exponent": -1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "58845",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "87721",
+        "exponent": 0,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "26316",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "10965",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "32895",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "90141",
+        "exponent": 0,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "27042",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "11267",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "33801",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "97508",
+        "exponent": 0,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "29252",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "12188",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "36564",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "1",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "3",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "125",
+        "exponent": 3,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "375",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "1025",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "3075",
+        "exponent": 2,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "12813",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "38439",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "11013",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "33039",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 20,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "13767",
+        "exponent": 1,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "41301",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "54509",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "16352",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "68136",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "2044",
+        "exponent": 4,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "54786",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "16435",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "68483",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "20544",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "55622",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "16686",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "69527",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "20858",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "55901",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "1677",
+        "exponent": 4,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "69877",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "20963",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "56181",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "16854",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "70226",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "21067",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "57022",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "17106",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 100,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "71278",
+        "exponent": 2,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "21383",
+        "exponent": 3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17633",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "52899",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22041",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66123",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17642",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "52926",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22052",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66156",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17668",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "53004",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 999,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22086",
+        "exponent": 5,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66258",
+        "exponent": 5,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "31618",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "94854",
+        "exponent": 8,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "39523",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "11856",
+        "exponent": 9,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "31619",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "94857",
+        "exponent": 8,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "39524",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "11857",
+        "exponent": 9,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "31621",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "94863",
+        "exponent": 8,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 19999,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "39527",
+        "exponent": 8,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "11858",
+        "exponent": 9,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 0,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17677",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "53031",
+        "exponent": 10,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 0,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22096",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66288",
+        "exponent": 10,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 1,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17677",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "53031",
+        "exponent": 10,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 1,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22096",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66288",
+        "exponent": 10,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 4,
+      "rewardPercent": 100,
+      "ordinary": {
+        "digits": "17677",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "53031",
+        "exponent": 10,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 99999,
+      "waveIndex": 4,
+      "rewardPercent": 125,
+      "ordinary": {
+        "digits": "22096",
+        "exponent": 10,
+        "precision": 5
+      },
+      "enhanced": {
+        "digits": "66288",
+        "exponent": 10,
+        "precision": 5
+      }
+    }
+  ],
+  "upgrades": [
+    {
+      "level": 0,
+      "price": {
+        "digits": "3",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "1",
+        "exponent": 2,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "0",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "1",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 1,
+      "price": {
+        "digits": "9",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "5",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "105",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "5",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "105",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 2,
+      "price": {
+        "digits": "17",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "1",
+        "exponent": 1,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "11",
+        "exponent": 1,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "1",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "11",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 3,
+      "price": {
+        "digits": "27",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "15",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "115",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "15",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "115",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 4,
+      "price": {
+        "digits": "39",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "21",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "121",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "2",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "12",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 5,
+      "price": {
+        "digits": "52",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "27",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "127",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "25",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "125",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 9,
+      "price": {
+        "digits": "119",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "55",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "155",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "45",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "145",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 10,
+      "price": {
+        "digits": "139",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "62",
+        "exponent": 0,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "162",
+        "exponent": 0,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "5",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "15",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 99,
+      "price": {
+        "digits": "475",
+        "exponent": 1,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "124",
+        "exponent": 2,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "125",
+        "exponent": 2,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "495",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "595",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 100,
+      "price": {
+        "digits": "483",
+        "exponent": 1,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "13",
+        "exponent": 3,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "131",
+        "exponent": 2,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "5",
+        "exponent": 2,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "6",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 500,
+      "price": {
+        "digits": "626",
+        "exponent": 2,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "393",
+        "exponent": 10,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "393",
+        "exponent": 10,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "25",
+        "exponent": 2,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "26",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 999,
+      "price": {
+        "digits": "189",
+        "exponent": 3,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "147",
+        "exponent": 21,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "147",
+        "exponent": 21,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "4995",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "5095",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 1000,
+      "price": {
+        "digits": "189",
+        "exponent": 3,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "154",
+        "exponent": 21,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "154",
+        "exponent": 21,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "5",
+        "exponent": 3,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "51",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 14999,
+      "price": {
+        "digits": "144",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "658",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "658",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "74995",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "75095",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 15000,
+      "price": {
+        "digits": "144",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "691",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "691",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "75",
+        "exponent": 3,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "751",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 1
+      }
+    },
+    {
+      "level": 15001,
+      "price": {
+        "digits": "144",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "725",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "725",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "75005",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "75105",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1002",
+        "exponent": -3,
+        "precision": 4
+      }
+    },
+    {
+      "level": 15002,
+      "price": {
+        "digits": "144",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "761",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "761",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "7501",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "7511",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1004",
+        "exponent": -3,
+        "precision": 4
+      }
+    },
+    {
+      "level": 15003,
+      "price": {
+        "digits": "145",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "799",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "799",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "75015",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "75115",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "1006",
+        "exponent": -3,
+        "precision": 4
+      }
+    },
+    {
+      "level": 15005,
+      "price": {
+        "digits": "145",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "881",
+        "exponent": 317,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "881",
+        "exponent": 317,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "75025",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "75125",
+        "exponent": 0,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "101",
+        "exponent": -2,
+        "precision": 4
+      }
+    },
+    {
+      "level": 15010,
+      "price": {
+        "digits": "147",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "112",
+        "exponent": 318,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "112",
+        "exponent": 318,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "7505",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "7515",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "102",
+        "exponent": -2,
+        "precision": 4
+      }
+    },
+    {
+      "level": 15100,
+      "price": {
+        "digits": "174",
+        "exponent": 5,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "908",
+        "exponent": 319,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "908",
+        "exponent": 319,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "755",
+        "exponent": 2,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "756",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "12",
+        "exponent": -1,
+        "precision": 4
+      }
+    },
+    {
+      "level": 16000,
+      "price": {
+        "digits": "94",
+        "exponent": 6,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "106",
+        "exponent": 339,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "106",
+        "exponent": 339,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "8",
+        "exponent": 4,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "801",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "5886",
+        "exponent": -3,
+        "precision": 4
+      }
+    },
+    {
+      "level": 19000,
+      "price": {
+        "digits": "284",
+        "exponent": 8,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "395",
+        "exponent": 402,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "395",
+        "exponent": 402,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "95",
+        "exponent": 3,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "951",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "135",
+        "exponent": 1,
+        "precision": 4
+      }
+    },
+    {
+      "level": 19998,
+      "price": {
+        "digits": "187",
+        "exponent": 9,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "554",
+        "exponent": 423,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "554",
+        "exponent": 423,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "9999",
+        "exponent": 1,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "10009",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "8212",
+        "exponent": 0,
+        "precision": 4
+      }
+    },
+    {
+      "level": 19999,
+      "price": {
+        "digits": "187",
+        "exponent": 9,
+        "precision": 3
+      },
+      "powerBonus": {
+        "digits": "581",
+        "exponent": 423,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "581",
+        "exponent": 423,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "99995",
+        "exponent": 0,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "10009",
+        "exponent": 1,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "8228",
+        "exponent": 0,
+        "precision": 4
+      }
+    },
+    {
+      "level": 20000,
+      "price": null,
+      "powerBonus": {
+        "digits": "61",
+        "exponent": 424,
+        "precision": 3
+      },
+      "powerPercent": {
+        "digits": "61",
+        "exponent": 424,
+        "precision": 3
+      },
+      "speedBonus": {
+        "digits": "1",
+        "exponent": 5,
+        "precision": 5
+      },
+      "speedPercent": {
+        "digits": "1001",
+        "exponent": 2,
+        "precision": 5
+      },
+      "latePriceFactor": {
+        "digits": "8244",
+        "exponent": 0,
+        "precision": 4
+      }
+    }
+  ],
+  "combatDamage": [
+    {
+      "weaponId": 22,
+      "serializedBase": "800e0",
+      "powerLevel": 0,
+      "rebirthLevel": 5,
+      "starLevel": 0,
+      "damage": {
+        "digits": "1016",
+        "exponent": 0,
+        "precision": 4
+      }
+    },
+    {
+      "weaponId": 22,
+      "serializedBase": "800e0",
+      "powerLevel": 0,
+      "rebirthLevel": 5,
+      "starLevel": 1,
+      "damage": {
+        "digits": "1524",
+        "exponent": 0,
+        "precision": 4
+      }
+    },
+    {
+      "weaponId": 1,
+      "serializedBase": "80e0",
+      "powerLevel": 1,
+      "rebirthLevel": 1,
+      "starLevel": 1,
+      "damage": {
+        "digits": "135",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "weaponId": 1,
+      "serializedBase": "80e0",
+      "powerLevel": 2,
+      "rebirthLevel": 11,
+      "starLevel": 2,
+      "damage": {
+        "digits": "379",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "weaponId": 0,
+      "serializedBase": "100e0",
+      "powerLevel": 5,
+      "rebirthLevel": 5,
+      "starLevel": 10,
+      "damage": {
+        "digits": "22",
+        "exponent": 4,
+        "precision": 3
+      }
+    },
+    {
+      "weaponId": 0,
+      "serializedBase": "100e0",
+      "powerLevel": 10,
+      "rebirthLevel": 11,
+      "starLevel": 20,
+      "damage": {
+        "digits": "43",
+        "exponent": 10,
+        "precision": 3
+      }
+    },
+    {
+      "weaponId": 0,
+      "serializedBase": "100e0",
+      "powerLevel": 1000,
+      "rebirthLevel": 2000,
+      "starLevel": 10,
+      "damage": {
+        "digits": "116",
+        "exponent": 78,
+        "precision": 3
+      }
+    },
+    {
+      "weaponId": 22,
+      "serializedBase": "800e0",
+      "powerLevel": 10000,
+      "rebirthLevel": 20000,
+      "starLevel": 20,
+      "damage": {
+        "digits": "714",
+        "exponent": 759,
+        "precision": 3
+      }
+    }
+  ],
+  "treeMoney": [
+    {
+      "stageIndex": 0,
+      "degree": 0,
+      "moneyLevel": 0,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "2",
+        "exponent": 1,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "254",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 1,
+      "moneyLevel": 0,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "36",
+        "exponent": 0,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "4572",
+        "exponent": -2,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 2,
+      "moneyLevel": 0,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "6",
+        "exponent": 1,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "762",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 3,
+      "moneyLevel": 0,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "2",
+        "exponent": 3,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "254",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 0,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "2",
+        "exponent": 1,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "27432",
+        "exponent": -3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 1,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "36",
+        "exponent": 0,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "493776",
+        "exponent": -4,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 2,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "6",
+        "exponent": 1,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "82296",
+        "exponent": -3,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 0,
+      "degree": 3,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "2",
+        "exponent": 3,
+        "precision": 5
+      },
+      "payout": {
+        "digits": "27432",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 1,
+      "degree": 0,
+      "moneyLevel": 0,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "6",
+        "exponent": 1,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "1026",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 1,
+      "degree": 1,
+      "moneyLevel": 0,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "108",
+        "exponent": 0,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "18468",
+        "exponent": -2,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 1,
+      "degree": 2,
+      "moneyLevel": 0,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "18",
+        "exponent": 1,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "3078",
+        "exponent": -1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 1,
+      "degree": 3,
+      "moneyLevel": 0,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "6",
+        "exponent": 3,
+        "precision": 3
+      },
+      "payout": {
+        "digits": "1026",
+        "exponent": 1,
+        "precision": 5
+      }
+    },
+    {
+      "stageIndex": 3,
+      "degree": 0,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "54",
+        "exponent": 1,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "74",
+        "exponent": 1,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 3,
+      "degree": 1,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "972",
+        "exponent": 0,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "13331952",
+        "exponent": -4,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 3,
+      "degree": 2,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "16",
+        "exponent": 2,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "218",
+        "exponent": 1,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 3,
+      "degree": 3,
+      "moneyLevel": 1,
+      "rebirthLevel": 5,
+      "baseReward": {
+        "digits": "54",
+        "exponent": 3,
+        "precision": 3
+      },
+      "payout": {
+        "digits": "74",
+        "exponent": 3,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 10,
+      "degree": 0,
+      "moneyLevel": 11,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "1",
+        "exponent": 6,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "386",
+        "exponent": 4,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 10,
+      "degree": 1,
+      "moneyLevel": 11,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "18",
+        "exponent": 5,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "695628",
+        "exponent": 1,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 10,
+      "degree": 2,
+      "moneyLevel": 11,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "3",
+        "exponent": 6,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "115",
+        "exponent": 5,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 10,
+      "degree": 3,
+      "moneyLevel": 11,
+      "rebirthLevel": 11,
+      "baseReward": {
+        "digits": "1",
+        "exponent": 8,
+        "precision": 3
+      },
+      "payout": {
+        "digits": "386",
+        "exponent": 6,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 1000,
+      "degree": 0,
+      "moneyLevel": 1000,
+      "rebirthLevel": 2000,
+      "baseReward": {
+        "digits": "81",
+        "exponent": 470,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "783",
+        "exponent": 544,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 1000,
+      "degree": 1,
+      "moneyLevel": 1000,
+      "rebirthLevel": 2000,
+      "baseReward": {
+        "digits": "1458",
+        "exponent": 469,
+        "precision": 17
+      },
+      "payout": {
+        "digits": "141475572",
+        "exponent": 539,
+        "precision": 17
+      }
+    },
+    {
+      "stageIndex": 1000,
+      "degree": 2,
+      "moneyLevel": 1000,
+      "rebirthLevel": 2000,
+      "baseReward": {
+        "digits": "24",
+        "exponent": 471,
+        "precision": 2
+      },
+      "payout": {
+        "digits": "232",
+        "exponent": 545,
+        "precision": 3
+      }
+    },
+    {
+      "stageIndex": 1000,
+      "degree": 3,
+      "moneyLevel": 1000,
+      "rebirthLevel": 2000,
+      "baseReward": {
+        "digits": "81",
+        "exponent": 472,
+        "precision": 3
+      },
+      "payout": {
+        "digits": "783",
+        "exponent": 546,
+        "precision": 3
+      }
+    }
+  ],
+  "stars": [
+    {
+      "level": 0,
+      "percent": {
+        "digits": "1",
+        "exponent": 2,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "1",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "level": 1,
+      "percent": {
+        "digits": "15",
+        "exponent": 1,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "15",
+        "exponent": -1,
+        "precision": 3
+      }
+    },
+    {
+      "level": 2,
+      "percent": {
+        "digits": "24",
+        "exponent": 1,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "24",
+        "exponent": -1,
+        "precision": 3
+      }
+    },
+    {
+      "level": 3,
+      "percent": {
+        "digits": "41",
+        "exponent": 1,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "41",
+        "exponent": -1,
+        "precision": 3
+      }
+    },
+    {
+      "level": 4,
+      "percent": {
+        "digits": "75",
+        "exponent": 1,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "75",
+        "exponent": -1,
+        "precision": 3
+      }
+    },
+    {
+      "level": 5,
+      "percent": {
+        "digits": "14",
+        "exponent": 2,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "14",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "level": 6,
+      "percent": {
+        "digits": "31",
+        "exponent": 2,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "31",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "level": 7,
+      "percent": {
+        "digits": "7",
+        "exponent": 3,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "7",
+        "exponent": 1,
+        "precision": 3
+      }
+    },
+    {
+      "level": 8,
+      "percent": {
+        "digits": "161",
+        "exponent": 2,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "161",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "level": 9,
+      "percent": {
+        "digits": "431",
+        "exponent": 2,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "431",
+        "exponent": 0,
+        "precision": 3
+      }
+    },
+    {
+      "level": 10,
+      "percent": {
+        "digits": "12",
+        "exponent": 4,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "12",
+        "exponent": 2,
+        "precision": 3
+      }
+    },
+    {
+      "level": 11,
+      "percent": {
+        "digits": "35",
+        "exponent": 4,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "35",
+        "exponent": 2,
+        "precision": 3
+      }
+    },
+    {
+      "level": 12,
+      "percent": {
+        "digits": "11",
+        "exponent": 5,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "11",
+        "exponent": 3,
+        "precision": 3
+      }
+    },
+    {
+      "level": 13,
+      "percent": {
+        "digits": "38",
+        "exponent": 5,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "38",
+        "exponent": 3,
+        "precision": 3
+      }
+    },
+    {
+      "level": 14,
+      "percent": {
+        "digits": "13",
+        "exponent": 6,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "13",
+        "exponent": 4,
+        "precision": 3
+      }
+    },
+    {
+      "level": 15,
+      "percent": {
+        "digits": "53",
+        "exponent": 6,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "53",
+        "exponent": 4,
+        "precision": 3
+      }
+    },
+    {
+      "level": 16,
+      "percent": {
+        "digits": "22",
+        "exponent": 7,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "22",
+        "exponent": 5,
+        "precision": 3
+      }
+    },
+    {
+      "level": 17,
+      "percent": {
+        "digits": "97",
+        "exponent": 7,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "97",
+        "exponent": 5,
+        "precision": 3
+      }
+    },
+    {
+      "level": 18,
+      "percent": {
+        "digits": "46",
+        "exponent": 8,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "46",
+        "exponent": 6,
+        "precision": 3
+      }
+    },
+    {
+      "level": 19,
+      "percent": {
+        "digits": "23",
+        "exponent": 9,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "23",
+        "exponent": 7,
+        "precision": 3
+      }
+    },
+    {
+      "level": 20,
+      "percent": {
+        "digits": "12",
+        "exponent": 10,
+        "precision": 3
+      },
+      "multiplier": {
+        "digits": "12",
+        "exponent": 8,
+        "precision": 3
+      }
+    }
+  ]
+}

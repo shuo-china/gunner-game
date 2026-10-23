@@ -1,0 +1,196 @@
+{
+  "level0:69729": {
+    "data": {
+      "ClampVelocityModule": {
+        "enabled": true,
+        "x": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "y": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "z": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "magnitude": {
+          "minMaxState": 0,
+          "scalar": 0,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "separateAxis": false,
+        "inWorldSpace": false,
+        "multiplyDragByParticleSize": true,
+        "multiplyDragByParticleVelocity": true,
+        "dampen": 0.20000000298023224,
+        "drag": {
+          "minMaxState": 0,
+          "scalar": 0,
+          "minScalar": 0,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        }
+      }
+    }
+  },
+  "level0:73756": {
+    "data": {
+      "ClampVelocityModule": {
+        "enabled": true,
+        "x": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "y": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "z": {
+          "minMaxState": 0,
+          "scalar": 1,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "magnitude": {
+          "minMaxState": 0,
+          "scalar": 0.5,
+          "minScalar": 1,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        },
+        "separateAxis": false,
+        "inWorldSpace": false,
+        "multiplyDragByParticleSize": true,
+        "multiplyDragByParticleVelocity": true,
+        "dampen": 0.05000000074505806,
+        "drag": {
+          "minMaxState": 0,
+          "scalar": 0,
+          "minScalar": 0,
+          "maxCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          },
+          "minCurve": {
+            "m_Curve": [],
+            "m_PreInfinity": 2,
+            "m_PostInfinity": 2,
+            "m_RotationOrder": 4
+          }
+        }
+      }
+    }
+  }
+}

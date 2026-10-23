@@ -1,0 +1,70 @@
+// Approved projectile material: palette in sRGB, then one decode into the
+// existing linear world buffer. Mesh colors already contain linear FX tint.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: projectile-vs:vert
+      frag: projectile-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: one
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        paletteShadow: { value: [0, 0, 0, 0] }
+        paletteMid: { value: [1, 1, 1, 1] }
+        paletteHighlight: { value: [1, 1, 1, 1] }
+}%
+CCProgram projectile-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec4 color;
+  out vec2 uv0;
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1.0);
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+    uv0 = a_texCoord; color = a_color;
+    return cc_matViewProj * pos;
+  }
+}%
+CCProgram projectile-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  in vec4 color;
+  in vec2 uv0;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform Palette {
+    vec4 paletteShadow;
+    vec4 paletteMid;
+    vec4 paletteHighlight;
+  };
+  vec3 decodeSrgb(vec3 c) {
+    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+  }
+  vec4 frag () {
+    vec4 o = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+    float lightness = dot(o.rgb, vec3(.299, .587, .114));
+    vec3 face = mix(paletteShadow.rgb, paletteMid.rgb, smoothstep(.28, .60, lightness));
+    face = mix(face, paletteHighlight.rgb, smoothstep(.60, .94, lightness));
+    float mask = smoothstep(.29, .46, lightness) * paletteShadow.a;
+    o.rgb = decodeSrgb(mix(o.rgb, face, mask)) * color.rgb;
+    o.a *= color.a;
+    return o;
+  }
+}%

@@ -1,14 +1,14 @@
-import { Color, gfx, Node, Sprite, UITransform } from 'cc';
-import { ArtLibrary } from './ArtLibrary';
+import { Color, gfx, Material, Node, Sprite, UITransform } from 'cc';
+import { ArtLibrary, ImageSpec } from './ArtLibrary';
 import { particleVelocityKeep } from './OriginalParticleMotion';
 import { sampleParticleStops } from './OriginalFeedbackMath';
 
 interface Point {x:number;y:number}
-interface EmitterSpec {localScale:number;gunScale:number;rigScale:number}
+export interface MuzzleEmitterSpec {localScale:number;gunScale:number;rigScale:number;projectionGapDegrees?:number}
 /** The current emitter's three local unit axes, projected through its hierarchy. */
 export interface MuzzleEmitterPose {origin:Point;xAxis:Point;yAxis:Point;zAxis:Point}
 interface CurveKey {time:number;value:number;inSlope:number;outSlope:number}
-interface SystemSpec {
+export interface MuzzleSystemSpec {
   source:string; spriteId:string; burst:number; duration:number; worldSimulation:boolean;
   lifetime:[number,number]; speed:[number,number]; size:[number,number]; startAlpha:number;
   coneAngle:number; radius:number; sizeCurve:CurveKey[];
@@ -16,47 +16,81 @@ interface SystemSpec {
   limitVelocity:{magnitude:number;dampen:number}|null;
   sortingOrder:number;
 }
+export interface MuzzleEffectSpec {emitter:MuzzleEmitterSpec;particleSystems:MuzzleSystemSpec[]}
 interface Particle {
-  node:Node; sprite:Sprite; transform:UITransform; spec:SystemSpec;
+  node:Node; sprite:Sprite; transform:UITransform; spec:MuzzleSystemSpec;
   x:number;y:number;z:number;vx:number;vy:number;vz:number;speed:number;size:number;age:number;life:number;
   emissionPose:MuzzleEmitterPose|null;
 }
 
+interface SharedMuzzleMaterial { material:Material; users:number }
+// All muzzle systems use the same complete additive blend state. A base
+// material identity is the remaining cache key; unrelated world sprites keep
+// their source-alpha material. References are held once per owning effect.
+const muzzleMaterials=new WeakMap<Material,SharedMuzzleMaterial>();
+
 /** The two original Gun0 ParticleSystems, projected into the fixed 2D camera. */
 export class OriginalMuzzleEffect {
   private readonly particles:Particle[]=[];
-  private readonly specs:SystemSpec[];
+  private readonly specs:MuzzleSystemSpec[];
   private readonly playing:number[];
-  private readonly emitter:EmitterSpec;
+  private readonly emitter:MuzzleEmitterSpec;
   private readonly systemParticles:Particle[][];
   private readonly point:Point={x:0,y:0};
   private readonly velocity:Point={x:0,y:0};
   private readonly rgb=[1,1,1];
   private readonly alpha=[1];
   private readonly color=new Color();
-  constructor(art:ArtLibrary,parent:Node,
-    private readonly toLocal:(position:Point)=>Point,parentForOrder?:(order:number)=>Node) {
-    this.specs=art.catalog.effects.muzzle.particleSystems;
+  private readonly materials=new Map<Material,SharedMuzzleMaterial>();
+  private listening=false;
+  constructor(art:ArtLibrary,private readonly parent:Node,
+    private readonly toLocal:(position:Point)=>Point,parentForOrder?:(order:number)=>Node,
+    definition:MuzzleEffectSpec=art.catalog.effects.muzzle,
+    images:Record<string,ImageSpec>=art.catalog.effects) {
+    this.specs=definition.particleSystems;
     this.playing=this.specs.map(()=>0);
     this.systemParticles=this.specs.map(()=>[]);
-    this.emitter=art.catalog.effects.muzzle.emitter;
+    this.emitter=definition.emitter;
     // Six glow quads (order1) then eight stretched sparks (order2).
-    for(const spec of this.specs.slice().sort((a,b)=>a.stretched===b.stretched?0:a.stretched?1:-1)) {
+    let pendingNode:Node|undefined;
+    try { for(const spec of this.specs.slice().sort((a,b)=>a.stretched===b.stretched?0:a.stretched?1:-1)) {
       const particles=this.systemParticles[this.specs.indexOf(spec)];
       for(let i=0;i<spec.burst;i++) {
-        const n=art.image(`${spec.spriteId}_${i}`,art.catalog.effects[spec.spriteId],parentForOrder?.(spec.sortingOrder)??parent);
+        const n=art.image(`${spec.spriteId}_${i}`,images[spec.spriteId],parentForOrder?.(spec.sortingOrder)??parent);
+        pendingNode=n;
         const sprite=n.getComponent(Sprite)!;
-        // Creator 3.8.8 exposes no public destination-blend setter for UISprite.
-        // This verified UIRenderer field feeds its material blend-state update.
-        (sprite as any)._dstBlendFactor=gfx.BlendFactor.ONE;
-        (sprite as any).srcBlendFactor=gfx.BlendFactor.SRC_ALPHA;
-        (sprite as any).updateMaterial();
+        // Custom materials skip UIRenderer's blend-factor update in Creator 3.8.8.
+        // One shared variant also lets consecutive glow/spark quads batch.
+        sprite.customMaterial=this.additiveMaterial(sprite.getSharedMaterial(0)!);
         n.active=false;
         const particle:Particle={node:n,sprite,transform:n.getComponent(UITransform)!,spec,
           x:0,y:0,z:0,vx:0,vy:0,vz:0,speed:0,size:0,age:1,life:0,emissionPose:null};
         this.particles.push(particle);particles.push(particle);
+        pendingNode=undefined;
       }
     }
+      // CatView construction can fail after this effect was created. The
+      // enclosing node still tears down, even if no caller received CatView.
+      if(this.materials.size){parent.once(Node.EventType.NODE_DESTROYED,this.destroy,this);this.listening=true;}
+    } catch(error) {
+      if(pendingNode?.isValid){pendingNode.active=false;pendingNode.destroy();}
+      this.destroy();throw error;
+    }
+  }
+
+  private additiveMaterial(base:Material):Material {
+    let shared=this.materials.get(base);
+    if(shared)return shared.material;
+    shared=muzzleMaterials.get(base);
+    if(!shared) {
+      const material=new Material();
+      try {material.copy(base,{states:{blendState:{targets:[{
+        blend:true,blendSrc:gfx.BlendFactor.SRC_ALPHA,blendDst:gfx.BlendFactor.ONE,
+        blendSrcAlpha:gfx.BlendFactor.ONE,blendDstAlpha:gfx.BlendFactor.ONE,
+      }]}}});} catch(error) {material.destroy();throw error;}
+      shared={material,users:0};muzzleMaterials.set(base,shared);
+    }
+    shared.users++;this.materials.set(base,shared);return shared.material;
   }
 
   fire(pose:MuzzleEmitterPose):void {
@@ -123,6 +157,15 @@ export class OriginalMuzzleEffect {
   reset():void {
     for(let i=0;i<this.playing.length;i++)this.playing[i]=0;
     for(const p of this.particles){p.node.active=false;p.age=p.life;p.emissionPose=null;}
+  }
+  destroy():void {
+    if(this.listening){this.parent.off(Node.EventType.NODE_DESTROYED,this.destroy,this);this.listening=false;}
+    for(const p of this.particles)if(p.node.isValid){p.node.active=false;p.node.destroy();}
+    this.particles.length=0;
+    for(const [base,shared] of this.materials)if(--shared.users===0){
+      muzzleMaterials.delete(base);shared.material.destroy();
+    }
+    this.materials.clear();
   }
 }
 

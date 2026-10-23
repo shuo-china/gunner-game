@@ -1,0 +1,93 @@
+{
+  "D": {
+    "outline": "#583F21",
+    "theme1": "#9E9EA0",
+    "theme1Name": "中灰金属",
+    "theme2": "#B77A4A",
+    "theme2Name": "木棕"
+  },
+  "C": {
+    "outline": "#583F21",
+    "theme1": "#E4E4E4",
+    "theme1Name": "中性灰白",
+    "theme2": "#B27343",
+    "theme2Name": "木棕"
+  },
+  "B": {
+    "outline": "#583F21",
+    "theme1": "#83CCEE",
+    "theme1Name": "天蓝",
+    "theme2": "#906A51",
+    "theme2Name": "低饱和褐"
+  },
+  "A": {
+    "outline": "#583F21",
+    "theme1": "#B9E633",
+    "theme1Name": "黄绿",
+    "theme2": "#DBDBDB",
+    "theme2Name": "灰白"
+  },
+  "S": {
+    "outline": "#583F21",
+    "theme1": "#D8AA42",
+    "theme1Name": "金黄",
+    "theme2": "#F6F0D3",
+    "theme2Name": "米白"
+  },
+  "SS": {
+    "outline": "#583F21",
+    "theme1": "#EC3F36",
+    "theme1Name": "红",
+    "theme2": "#F1BE46",
+    "theme2Name": "金黄"
+  },
+  "SSS": {
+    "outline": "#583F21",
+    "theme1": "#953DB5",
+    "theme1Name": "紫",
+    "theme2": "#F4C961",
+    "theme2Name": "浅金黄"
+  },
+  "X": {
+    "outline": "#015B39",
+    "theme1": "#32E8E0",
+    "theme1Name": "青绿",
+    "theme2": "#7138FF",
+    "theme2Name": "蓝紫"
+  },
+  "XX": {
+    "outline": "#5B0157",
+    "theme1": "#EC36B5",
+    "theme1Name": "桃红",
+    "theme2": "#FFC438",
+    "theme2Name": "金黄"
+  },
+  "XXX": {
+    "outline": "#525252",
+    "theme1": "#3D3D3D",
+    "theme1Name": "炭灰",
+    "theme2": "#FFCC55",
+    "theme2Name": "金黄"
+  },
+  "Z": {
+    "outline": "#7E06B3",
+    "theme1": "#3388FF",
+    "theme1Name": "蓝",
+    "theme2": "#FFABD2",
+    "theme2Name": "粉红"
+  },
+  "ZZ": {
+    "outline": "#7E06B3",
+    "theme1": "#FFAB38",
+    "theme1Name": "橙黄",
+    "theme2": "#ABFFD8",
+    "theme2Name": "薄荷浅绿"
+  },
+  "ZZZ": {
+    "outline": "#7E06B3",
+    "theme1": "#FF396B",
+    "theme1Name": "玫红",
+    "theme2": "#9CFF6B",
+    "theme2Name": "浅绿"
+  }
+}

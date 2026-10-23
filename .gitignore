@@ -4,5 +4,10 @@
 /profiles/
 /build/
 /node_modules/
+/tests/.build/
+/tests/.build-*/
+/tests/.*-build/
+/tests/.hunt-build/
+/tests/.speedrun-agent-check/
 *.log
 .DS_Store

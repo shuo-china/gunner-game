@@ -11,6 +11,7 @@
   "debug": false,
   "sourceMaps": false,
   "md5Cache": true,
+  "server": "https://nurse.kylinsit.com/forest-gunner/",
   "replaceSplashScreen": true,
   "resolution": {
     "width": 720,
@@ -28,7 +29,7 @@
   "outputName": "wechatgame",
   "packages": {
     "wechatgame": {
-      "appid": "wx2af23eaa33e48d81",
+      "appid": "wx3dd63318911f5012",
       "orientation": "portrait",
       "separateEngine": false,
       "buildOpenDataContextTemplate": false,

@@ -60,9 +60,10 @@ export function sampleOriginalDamageCurve(values: readonly number[], t: number):
  * Its dirty keys are signed movement*8 cast to ushort and scale*64 cast to byte.
  * They control redraws; they must not quantize the values used for vertices.
  */
-export function originalDamageDirtyKeys(x: number, y: number, scale: number): number[] {
-  return [Math.trunc(x * 8) & 0xffff, Math.trunc(y * 8) & 0xffff,
-    Math.trunc(Math.max(0, Math.min(255, scale * 64)))];
+export function originalDamageDirtyKeys(x: number, y: number, scale: number, out: number[] = []): number[] {
+  out[0] = Math.trunc(x * 8) & 0xffff; out[1] = Math.trunc(y * 8) & 0xffff;
+  out[2] = Math.trunc(Math.max(0, Math.min(255, scale * 64)));
+  return out;
 }
 
 /** CanSpawnText buckets world X/Y (not the ground X/Z) using Mathf.RoundToInt. */

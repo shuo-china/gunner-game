@@ -1,0 +1,248 @@
+{
+  "sourceBundle": "AI-Workspace/Work/cat-gunner/assets-analysis/data.unity3d",
+  "sourceNative": "CatGunner-Original/Decompiled/native/Assembly-CSharp/Cat__t7445.c",
+  "calcBulletSpawnPosRva": "0x2b424cc",
+  "camDirCctorRva": "0x2b430c4",
+  "camDirEulerRadiansFromElf": [
+    0.6981316804885864,
+    -0.7853981852531433,
+    0
+  ],
+  "camDirConstantAddresses": [
+    "0x0106c248",
+    "0x0106c0e0"
+  ],
+  "forward": [
+    0,
+    0,
+    1
+  ],
+  "bulletHeight": 2,
+  "chain": [
+    {
+      "source": "level0:44677",
+      "hierarchy": "Cat_manager/Cat",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "quaternion": [
+        -0.0,
+        -0.0,
+        -0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:44673",
+      "hierarchy": "Cat_manager/Cat/Pivot",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "quaternion": [
+        0.31598538160324097,
+        -0.3596048057079315,
+        0.13088542222976685,
+        0.8681628704071045
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:42416",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone",
+      "position": [
+        0.0,
+        0.4000000059604645,
+        -0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        0.550000011920929,
+        0.550000011920929,
+        0.550000011920929
+      ]
+    },
+    {
+      "source": "level0:58805",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1",
+      "position": [
+        0.0,
+        0.0,
+        -0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.7168566584587097,
+        0.6972206234931946
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:47858",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7",
+      "position": [
+        2.551380157470703,
+        -1.6487921476364136,
+        -1.300464873565943e-06
+      ],
+      "quaternion": [
+        -1.1486854134545865e-07,
+        7.535915358403145e-08,
+        0.8651372194290161,
+        0.5015352964401245
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:63621",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7/Rebound_Pivot",
+      "position": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:52975",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7/Rebound_Pivot/Gun_Pivot",
+      "position": [
+        1.6599984169006348,
+        -0.23999977111816406,
+        0.0
+      ],
+      "quaternion": [
+        -1.2640554158949158e-09,
+        -1.484745126845155e-08,
+        5.960463766996327e-08,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:58355",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7/Rebound_Pivot/Gun_Pivot/Bounce",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "source": "level0:61182",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7/Rebound_Pivot/Gun_Pivot/Bounce/0",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "quaternion": [
+        1.0,
+        1.4901158351676713e-07,
+        3.0501939818350365e-07,
+        2.477302416536986e-07
+      ],
+      "scale": [
+        0.4000000059604645,
+        0.4000000059604645,
+        0.4000000059604645
+      ]
+    },
+    {
+      "source": "level0:49459",
+      "hierarchy": "Cat_manager/Cat/Pivot/Cat_Bone/bone_1/bone_7/Rebound_Pivot/Gun_Pivot/Bounce/0/Shoot_trans",
+      "position": [
+        8.079999923706055,
+        1.9600000381469727,
+        -0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.7071068286895752,
+        0.0,
+        0.7071068286895752
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "runtimePivotEuler": {
+    "left": [
+      40,
+      -45,
+      0
+    ],
+    "right": [
+      -40,
+      135,
+      0
+    ]
+  },
+  "cameraBasis": {
+    "right": [
+      0.7071067796452598,
+      0,
+      0.7071068328480861
+    ],
+    "up": [
+      -0.4082444121793012,
+      0.8165004704498066,
+      0.4082444440367463
+    ]
+  },
+  "normalCancellation": "CalcBulletSpawnPos adds k*CamDir to reach Y=2; localZ displacements along either facing normal cancel. Serialized residual axis tilt is below the numeric regression tolerance."
+}

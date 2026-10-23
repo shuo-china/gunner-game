@@ -1,3 +1,23 @@
 {
-  "__version__": "1.3.9"
+  "__version__": "1.3.9",
+  "bundleConfig": {
+    "custom": {
+      "wechat-resources": {
+        "displayName": "WeChat remote resources",
+        "configs": {
+          "native": {},
+          "web": {},
+          "miniGame": {
+            "configMode": "overwrite",
+            "overwriteSettings": {
+              "wechatgame": {
+                "compressionType": "merge_dep",
+                "isRemote": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

@@ -39,6 +39,24 @@ try {
     } catch {
         throw 'Another build started by this script is running. Wait for it to finish.'
     }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-battle-sizes.cjs') --check
+    if ($LASTEXITCODE -ne 0) { throw 'Weapon battle sizes do not match the reviewed grade policy.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-effect-colors.cjs') --check
+    if ($LASTEXITCODE -ne 0) { throw 'Weapon effect colors do not match the reviewed grade palette.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-collection-sizes.cjs') --check
+    if ($LASTEXITCODE -ne 0) { throw 'Weapon collection sizes do not match the reviewed grade policy.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-inventory-sizes.cjs') --check
+    if ($LASTEXITCODE -ne 0) { throw 'Weapon inventory sizes do not match the reviewed grade policy.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-feature-entries.cjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Feature entry synchronization failed.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-audio.cjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Selected weapon audio synchronization failed.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'dedupe-resources.cjs') --write
+    if ($LASTEXITCODE -ne 0) { throw 'Exact resource deduplication failed; Creator import was not started.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'build-weapon-runtime.cjs') --write
+    if ($LASTEXITCODE -ne 0) { throw 'Weapon runtime catalogs could not be generated.' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'check-latin-fonts.cjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Shared UI fonts need regeneration or repair before building.' }
     $targets = if ($Platform -eq 'all') { @('web', 'wechat') } else { @($Platform) }
     foreach ($target in $targets) {
         $configPath = Join-Path $projectRoot ("build-{0}.json" -f $target)
@@ -58,8 +76,13 @@ try {
         Write-Host "Building $target with Creator $engineVersion..."
         Write-Host "Log: $stdoutLog"
         $buildProcess = Start-Process -FilePath $EnginePath -ArgumentList $engineArguments `
-            -WorkingDirectory $projectRoot -WindowStyle Hidden -Wait -PassThru `
+            -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru `
             -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog
+        # Creator can leave its crashpad helper alive after the build process exits.
+        # Wait only for the process whose exit code determines build success.
+        $null = $buildProcess.Handle
+        $buildProcess.WaitForExit()
+        $buildProcess.Refresh()
         $code = $buildProcess.ExitCode
         if ($code -notin @(0, 36)) {
             if (Test-Path -LiteralPath $stderrLog) { Get-Content -LiteralPath $stderrLog -Tail 25 }
@@ -82,6 +105,8 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "Environment injection failed for $target; this output must not be distributed."
         }
+        & $nodeCommand.Source (Join-Path $PSScriptRoot 'install-startup-screen.cjs') $target $outputDirectory
+        if ($LASTEXITCODE -ne 0) { throw "Startup artwork installation failed for $target." }
         Write-Host "Built $target successfully (exit $code): $outputDirectory"
     }
 } catch {
