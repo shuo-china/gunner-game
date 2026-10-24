@@ -1,20 +1,21 @@
-import { MineHud, loadMineHudAssets } from './view/MineHud';
+import type { MineHud } from './view/MineHud';
 import { OfflineHud, loadOfflineHudAssets } from './view/OfflineHud';
 import type { OfflineHudState } from './view/OfflineHud';
 import { DailyCheckEntry, DailyCheckHud, loadDailyCheckEntryAssets, loadDailyCheckHudAssets } from './view/DailyCheckHud';
 import { DailyShareEntry, DAILY_SHARE_ENTRY_IMAGES, loadDailyShareEntryAssets } from './view/DailyShareEntry';
 import { MinePlacement } from './core/MineMap';
 import { leftMenuOffsets, rightMenuOffsets, rightMenuShareOffset } from './view/FeatureEntry';
-import { FishHud, loadFishHudAssets } from './view/FishHud';
+import type { FishHud } from './view/FishHud';
 import type { FishActionResult, FishDrawKind } from './session/FishSystem';
-import { AdventureHud, loadAdventureHudAssets } from './view/AdventureHud';
-import { PetHud, loadPetHudAssets } from './view/PetHud';
+import type { AdventureHud } from './view/AdventureHud';
+import type { PetHud } from './view/PetHud';
 import { PetVisualAssets } from './view/PetView';
 import type { PetActionResult, PetSlotRef } from './session/PetSystem';
 import { _decorator, assetManager, BlockInputEvents, Camera, Color, Component, director, Game, game, Graphics, Label, Node, profiler, ResolutionPolicy, sys, UITransform, view } from 'cc';
 import { BYTEDANCE, DEBUG, NATIVE, PREVIEW, WECHAT } from 'cc/env';
 import { COMBAT_CONFIG, CombatWorld, createStageDefinition } from './core';
 import { ArtLibrary, makeNode } from './view/ArtLibrary';
+import { loadFeatureCode } from './view/FeatureCode';
 import { BattleAssetLoader } from './view/BattleAssetLoader';
 import { GameResourcePreloader } from './view/GameResourcePreloader';
 import { ResourceModuleManager } from './view/ResourceModuleManager';
@@ -45,8 +46,10 @@ import { OriginalColorPipeline } from './view/OriginalColorPipeline';
 import { ORIGINAL_CAMERA_CLEAR } from './view/OriginalColorMath';
 import { BattleMode, BattleSession, economyStorageKey, UpgradeType } from './session/BattleSession';
 import { resolveRuntimeEnvironment } from './session/RuntimeEnvironment';
+import { resolveContentConfig } from './session/ContentConfig';
 import { resolveGameBackendConfig } from './session/GameBackendConfig';
 import { GameLoginClient, GameLoginError } from './session/GameLogin';
+import { takeEarlyWechatLogin } from './session/EarlyWechatLogin';
 import { createGamePlatform } from './platform/PlatformServices';
 import type { PlatformShareProvider } from './platform/PlatformTypes';
 import { TutorialPreviewController } from './session/TutorialPreview';
@@ -57,24 +60,24 @@ import { attachFontPolicyLabel } from './view/FontPolicyLabel';
 import { loadOriginalMoneyBurst } from './view/OriginalMoneyBurst';
 import { loadOriginalMoneyNumbers } from './view/DamageNumbers';
 import { WeaponVisualAssets } from './view/WeaponVisualAssets';
-import { loadWeaponHudAssets, WeaponHud } from './view/WeaponHud';
+import type { WeaponHud } from './view/WeaponHud';
 import { loadOriginalAlertAssets, OriginalAlerts } from './view/OriginalAlerts';
 import { loadOriginalSfxAssets, OriginalSfx } from './view/OriginalSfx';
 import { loadOriginalBgmAssets, OriginalBgm } from './view/OriginalBgm';
 import { AudioPreferences } from './session/AudioPreferences';
 import { installWeChatFontFallback } from './session/WeChatFontFallback';
 import { loadSettingsHudAssets, SettingsHud } from './view/SettingsHud';
-import { loadRebirthHudAssets, RebirthHud } from './view/RebirthHud';
-import { loadSpeedRunHudAssets, SpeedRunHud } from './view/SpeedRunHud';
+import type { RebirthHud } from './view/RebirthHud';
+import type { SpeedRunHud } from './view/SpeedRunHud';
 import { createSpeedRunDefinition } from './core/SpeedRunMap';
 import { createRaidDefinition } from './core/RaidMap';
-import { loadRaidHudAssets, RaidHud } from './view/RaidHud';
+import type { RaidHud } from './view/RaidHud';
 import { BossCombat } from './core/BossCombat';
 import { createHuntDefinition } from './core/HuntMap';
-import { HuntHud, loadHuntHudAssets } from './view/HuntHud';
+import type { HuntHud } from './view/HuntHud';
 import { createBossDefinition } from './core/BossMap';
-import { loadBossHudAssets, BossHud } from './view/BossHud';
-import { loadSkinHudAssets, SkinHud } from './view/SkinHud';
+import type { BossHud } from './view/BossHud';
+import type { SkinHud } from './view/SkinHud';
 import { SkinVisualAssets } from './view/SkinVisualAssets';
 import { RewardedAdService, SimulatedRewardedAdProvider } from './session/RewardedAds';
 import type { RewardedAdProvider } from './session/RewardedAds';
@@ -357,17 +360,24 @@ export class GameBootstrap extends Component {
       ]).then(value=>({ok:true as const,value}),error=>({ok:false as const,error}));
       if(platform.requiresLogin){
         failedModule=`${platform.label}登录`;
-        this.gameLogin=new GameLoginClient(platform.createLogin(),resolveGameBackendConfig(scope.__FOREST_GUNNER_BACKEND__,environment));
+        const loginBinding=platform.createLogin(),backend=resolveGameBackendConfig(scope.__FOREST_GUNNER_BACKEND__,environment);
+        let earlyLogin=takeEarlyWechatLogin(scope,loginBinding,backend);
+        this.gameLogin=earlyLogin?.client??new GameLoginClient(loginBinding,backend);
         while(!this.disposed){
           message.string=versionLine+`正在登录${platform.label}…`;
           try{
-            const account=await this.startupTimeline.measureAsync('login',()=>this.gameLogin!.login());
+            const early=earlyLogin;earlyLogin=undefined;
+            const account=early?await early.outcome.then(result=>{
+              this.startupTimeline!.recordCompleted('login',early.startedAt,early.finishedAt??Date.now(),result.ok?'success':'failed');
+              if(!result.ok)throw result.error;
+              return result.value;
+            }):await this.startupTimeline.measureAsync('login',()=>this.gameLogin!.login());
             if(this.disposed)return;
             console.info(`[ForestGunner] ${platform.label}登录成功，玩家 ${account.player.id}`);
             break;
           }catch(error){
             if(this.disposed)return;
-            message.string=versionLine+(error instanceof GameLoginError?error.message:'平台登录失败，请重试')+'\n点击这里重试';
+            message.string=versionLine+GameLoginError.messageFor(error)+'\n点击这里重试';
             if(!await this.waitOfflineRetry())return;
           }
         }
@@ -439,7 +449,9 @@ export class GameBootstrap extends Component {
         }
         if(this.disposed)return;
       }
-      this.session=new BattleSession({environment,storage:measuredStorage,contentConfig:tutorialPreview.contentConfig,
+      this.session=new BattleSession({environment,storage:measuredStorage,
+        contentConfig:platform.channel==='taptap-h5'
+          ?{...(tutorialPreview.contentConfig??resolveContentConfig(environment)),adsEnabled:false}:tutorialPreview.contentConfig,
         rewardAuthority:this.cloudSave?'server':environment==='test'?'local':'unavailable',
         rewardBackend:this.cloudSave?{claim:(kind,payload)=>this.cloudSave!.claimReward(kind,payload),
           requireReload:message=>this.cloudSave!.requireReload(message)}:undefined,
@@ -548,6 +560,28 @@ export class GameBootstrap extends Component {
         }else adProvider=platform.createRewardedAds();
         this.rewardedAds=new RewardedAdService(adProvider,()=>this.syncModalState(),placement=>this.session.content.isAdEnabled(placement));
       }
+      let WeaponHud:typeof import('./view/WeaponHud').WeaponHud;
+      const loadWeaponHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('weapons');WeaponHud=code.WeaponHud;return code.loadWeaponHudAssets(art);};
+      let SpeedRunHud:typeof import('./view/SpeedRunHud').SpeedRunHud;
+      const loadSpeedRunHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('speedrun');SpeedRunHud=code.SpeedRunHud;return code.loadSpeedRunHudAssets(art);};
+      let RebirthHud:typeof import('./view/RebirthHud').RebirthHud;
+      const loadRebirthHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('rebirth');RebirthHud=code.RebirthHud;return code.loadRebirthHudAssets(art);};
+      let RaidHud:typeof import('./view/RaidHud').RaidHud;
+      const loadRaidHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('raid');RaidHud=code.RaidHud;return code.loadRaidHudAssets(art);};
+      let BossHud:typeof import('./view/BossHud').BossHud;
+      const loadBossHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('boss');BossHud=code.BossHud;return code.loadBossHudAssets(art);};
+      let HuntHud:typeof import('./view/HuntHud').HuntHud;
+      const loadHuntHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('hunt');HuntHud=code.HuntHud;return code.loadHuntHudAssets(art);};
+      let MineHud:typeof import('./view/MineHud').MineHud;
+      const loadMineHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('mine');MineHud=code.MineHud;return code.loadMineHudAssets(art);};
+      let SkinHud:typeof import('./view/SkinHud').SkinHud;
+      const loadSkinHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('skins');SkinHud=code.SkinHud;return code.loadSkinHudAssets(art);};
+      let PetHud:typeof import('./view/PetHud').PetHud;
+      const loadPetHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('pets');PetHud=code.PetHud;return code.loadPetHudAssets(art);};
+      let FishHud:typeof import('./view/FishHud').FishHud;
+      const loadFishHudAssets=async(art:ArtLibrary)=>{const code=await loadFeatureCode('fish');FishHud=code.FishHud;return code.loadFishHudAssets(art);};
+      let AdventureHud:typeof import('./view/AdventureHud').AdventureHud;
+      const loadAdventureHudAssets=async(art:ArtLibrary,visuals:PetVisualAssets)=>{const code=await loadFeatureCode('adventure');AdventureHud=code.AdventureHud;return code.loadAdventureHudAssets(art,visuals);};
       const prepareWeaponChoices=async():Promise<void>=>{
         await art.weaponVisuals?.prepareAll();
         if(this.disposed||this.artLibrary!==art)return;

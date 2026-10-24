@@ -2,6 +2,7 @@ import { UnavailableRewardedAdProvider } from '../session/RewardedAds';
 import type { RewardedAdProvider } from '../session/RewardedAds';
 import { resolvePlatformConfig } from './PlatformConfig';
 import { createWechatLogin } from './WechatPlatform';
+import { createTapTapH5Login } from './TapTapH5Platform';
 import { createWechatShare } from './WechatShare';
 import type { GameChannel, PlatformBuildTarget, PlatformContext, PlatformLoginBinding, PlatformShareProvider } from './PlatformTypes';
 
@@ -54,6 +55,7 @@ export class PlatformProviderRegistry {
 export function createDefaultPlatformProviders(): PlatformProviderRegistry {
   return new PlatformProviderRegistry()
     .registerLogin('wechat-mini', createWechatLogin)
+    .registerLogin('taptap-h5', createTapTapH5Login)
     .registerShare('wechat-mini', createWechatShare)
     .registerAds('unavailable', () => new UnavailableRewardedAdProvider());
 }

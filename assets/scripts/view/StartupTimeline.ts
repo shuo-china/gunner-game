@@ -69,6 +69,20 @@ export class StartupTimeline {
     catch (error) { finish('failed'); throw error; }
   }
 
+  /** An engine-independent operation may finish before this timeline exists. */
+  recordCompleted(phase: StartupPhase, startedAt: number, finishedAt: number, outcome: StartupOutcome): void {
+    if (this.completedAt !== undefined || !Number.isFinite(startedAt) || !Number.isFinite(finishedAt)) return;
+    const now = this.readNow(), state = this.phases[phase];
+    const start = Math.max(this.bootStartedAt, Math.min(now, startedAt));
+    const end = Math.max(start, Math.min(now, finishedAt));
+    const attempt: Attempt = { phase, attempt: ++state.attempts, startedAtMs: start - this.bootStartedAt,
+      finishedAtMs: end - this.bootStartedAt, status: outcome };
+    state.lastSequence = ++this.attemptCount; state.totalMs += end - start;
+    if (outcome === 'success') state.succeeded++; else if (outcome === 'failed') state.failed++; else state.cancelled++;
+    this.attempts.push(attempt);
+    if (this.attempts.length > ATTEMPT_CAPACITY) this.attempts.shift();
+  }
+
   /** Freeze total launch time when gameplay becomes interactive. Later menu
    * dwell or background loading must not make the initial launch look slower. */
   complete(): void {

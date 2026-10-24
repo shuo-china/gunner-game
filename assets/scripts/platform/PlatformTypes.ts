@@ -1,7 +1,7 @@
 import type { RewardedAdPlacement } from '../session/RewardedAds';
 
 /** Distribution targets are separate from backend identity namespaces and ad networks. */
-export type GameChannel = 'web' | 'wechat-mini' | 'douyin-mini' | 'taptap-mini' | 'taptap-android';
+export type GameChannel = 'web' | 'wechat-mini' | 'douyin-mini' | 'taptap-h5' | 'taptap-mini' | 'taptap-android';
 export interface PlatformBuildTarget { readonly wechat?: boolean; readonly douyin?: boolean; readonly native?: boolean; }
 export interface PlatformChannelConfig {
   readonly channel: GameChannel;

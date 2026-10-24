@@ -15,6 +15,9 @@ const MESSAGES: Record<string, string> = {
   WECHAT_CODE_INVALID: '微信登录凭证已失效，请重试', WECHAT_LOGIN_FAILED: '微信登录失败，请重试',
   WECHAT_NOT_CONFIGURED: '登录服务尚未配置，请稍后再试', WECHAT_CONFIG_ERROR: '登录服务配置异常，请联系管理员',
   WECHAT_UNAVAILABLE: '微信登录服务暂时不可用，请稍后重试', WECHAT_RATE_LIMITED: '登录过于频繁，请稍后重试',
+  TAPTAP_SDK_UNAVAILABLE: 'TapTap 登录接口尚未就绪，请在 TapTap 内打开并重试',
+  TAPTAP_LOGIN_FAILED: 'TapTap 登录失败，请重试', TAPTAP_CODE_INVALID: 'TapTap 登录凭证已失效，请重试',
+  TAPTAP_NOT_CONFIGURED: 'TapTap 登录服务尚未配置，请稍后再试', TAPTAP_UNAVAILABLE: 'TapTap 登录服务暂时不可用，请稍后重试',
   TOO_MANY_REQUESTS: '登录过于频繁，请稍后重试', ACCOUNT_DISABLED: '账号不可用，请联系管理员',
   WECHAT_ACCOUNT_RESTRICTED: '当前微信账号暂无法登录，请联系管理员',
   SESSION_INVALID: '登录已失效，请重新登录', INVALID_RESPONSE: '登录服务返回异常，请稍后重试',
@@ -26,12 +29,20 @@ const MESSAGES: Record<string, string> = {
   REWARD_STATE_INVALID: '领取记录异常，请联系管理员', REWARD_STATE_CONFLICT: '领取记录已更新，请重新进入游戏',
   DAILY_NOT_CLAIMABLE: '今天已签到或当前奖励尚不可领取', REDEEM_INVALID: '兑换码不存在或已失效',
   SHARE_NOT_CLAIMABLE: '今天已领取分享奖励或暂不可领取',
+  SHARE_UNSUPPORTED: '当前平台未开放分享奖励',
   REDEEM_ALREADY_USED: '兑换码已被使用。', REWARD_WALLET_LIMIT: '钻石余额已达上限',
   REWARD_CALCULATION_FAILED: '离线收益计算暂不可用，请稍后重试', REWARD_CONFIG_ERROR: '奖励服务暂不可用，请稍后重试',
 };
 
 export class GameLoginError extends Error {
   constructor(readonly code: string, readonly status = 0) { super(typeof MESSAGES[code] === 'string' ? MESSAGES[code] : MESSAGES.SERVER_ERROR); this.name = 'GameLoginError'; }
+  /** Early authentication has its own bundled class identity. Map only known
+   * error codes, so its retry UI is identical without displaying server text. */
+  static messageFor(error: unknown): string {
+    const value = error as { name?: unknown; code?: unknown } | null;
+    return value?.name === 'GameLoginError' && typeof value.code === 'string'
+      ? new GameLoginError(value.code).message : MESSAGES.LOGIN_FAILED;
+  }
 }
 
 /** Platform authentication and authenticated transport, separate from game-state synchronization. */
@@ -54,6 +65,11 @@ export class GameLoginClient {
 
   get player(): GamePlayer | undefined { return this.result?.player; }
   get backendScope(): string { return this.config.baseUrl; }
+
+  get startupRequest(): ((ownerId: string) => Promise<Record<string, any>>) | undefined {
+    return this.binding.provider.identityProvider === 'wechat_mini'
+      ? ownerId => this.authenticatedRequest('GET', '/startup', ownerId) : undefined;
+  }
 
   /** Pin the owner across credential renewal: an old save must never follow a new account. */
   async saveRequest(method: 'GET' | 'POST', ownerId: string, data?: unknown): Promise<Record<string, any>> {
@@ -186,7 +202,8 @@ export class GameLoginClient {
           }
           if (!object) { reject(new GameLoginError('INVALID_RESPONSE')); return; }
           resolve(object);
-        }, fail: () => reject(new GameLoginError('NETWORK_ERROR')),
+        }, fail: error => reject(new GameLoginError(error && typeof error === 'object'
+          && (error as { code?: unknown }).code === 'TIMEOUT' ? 'TIMEOUT' : 'NETWORK_ERROR')),
       });
       return () => task?.abort?.();
     });

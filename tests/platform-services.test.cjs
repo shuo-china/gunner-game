@@ -177,7 +177,7 @@ test('sharing follows the selected channel and unsupported channels never use a 
     offShareAppMessage() { assert.equal(this, wx); menuCalls++; },
     offShareTimeline() { assert.equal(this, wx); menuCalls++; },
   };
-  for (const channel of ['web', 'douyin-mini', 'taptap-mini', 'taptap-android']) {
+  for (const channel of ['web', 'douyin-mini', 'taptap-h5', 'taptap-mini', 'taptap-android']) {
     const globals = { __FOREST_GUNNER_PLATFORM__: { channel }, wx };
     const platform = createGamePlatform(globals, { native: channel === 'taptap-android' });
     const share = platform.createShare();

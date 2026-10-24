@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('all', 'web', 'wechat')]
+    [ValidateSet('all', 'web', 'wechat', 'taptap-h5')]
     [string]$Platform = 'all',
     [string]$Environment,
     [string]$EnginePath = 'E:\CocosEditors\Creator\3.8.8\CocosCreator.exe'
@@ -22,6 +22,9 @@ try {
     }
     if ($resolvedEnvironment -cnotin @('test', 'production')) {
         throw 'FOREST_GUNNER_ENV / -Environment must be exactly test or production.'
+    }
+    if ($Platform -eq 'taptap-h5' -and $resolvedEnvironment -cne 'production') {
+        throw 'The TapTap H5 release target requires production.'
     }
     Write-Host "Build environment: $resolvedEnvironment"
     $nodeCommand = Get-Command node -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -51,7 +54,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Feature entry synchronization failed.' }
     & $nodeCommand.Source (Join-Path $PSScriptRoot 'sync-weapon-audio.cjs')
     if ($LASTEXITCODE -ne 0) { throw 'Selected weapon audio synchronization failed.' }
-    & $nodeCommand.Source (Join-Path $PSScriptRoot 'dedupe-resources.cjs') --write
+    # The H5 channel ships the current resource set; do not prune source files for it.
+    $dedupeMode = if ($Platform -eq 'taptap-h5') { '--check' } else { '--write' }
+    & $nodeCommand.Source (Join-Path $PSScriptRoot 'dedupe-resources.cjs') $dedupeMode
     if ($LASTEXITCODE -ne 0) { throw 'Exact resource deduplication failed; Creator import was not started.' }
     & $nodeCommand.Source (Join-Path $PSScriptRoot 'build-weapon-runtime.cjs') --write
     if ($LASTEXITCODE -ne 0) { throw 'Weapon runtime catalogs could not be generated.' }
@@ -105,8 +110,22 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "Environment injection failed for $target; this output must not be distributed."
         }
-        & $nodeCommand.Source (Join-Path $PSScriptRoot 'install-startup-screen.cjs') $target $outputDirectory
+        $startupPlatform = if ($target -eq 'taptap-h5') { 'web' } else { $target }
+        & $nodeCommand.Source (Join-Path $PSScriptRoot 'install-startup-screen.cjs') $startupPlatform $outputDirectory
         if ($LASTEXITCODE -ne 0) { throw "Startup artwork installation failed for $target." }
+        if ($target -eq 'wechat') {
+            & $nodeCommand.Source (Join-Path $PSScriptRoot 'install-early-login.cjs') $outputDirectory
+            if ($LASTEXITCODE -ne 0) { throw 'Early WeChat login installation failed.' }
+        }
+        if ($target -eq 'taptap-h5') {
+            # Startup installation adds scripts; keep channel selection before every script.
+            & $nodeCommand.Source (Join-Path $PSScriptRoot 'inject-environment.cjs') $target $outputDirectory $resolvedEnvironment
+            if ($LASTEXITCODE -ne 0) { throw 'TapTap channel injection failed.' }
+            & $nodeCommand.Source (Join-Path $PSScriptRoot 'disable-taptap-splash.cjs') $outputDirectory
+            if ($LASTEXITCODE -ne 0) { throw 'TapTap Cocos splash processing failed.' }
+            & $nodeCommand.Source (Join-Path $PSScriptRoot 'audit-taptap-h5.cjs') $outputDirectory
+            if ($LASTEXITCODE -ne 0) { throw 'TapTap H5 release audit failed.' }
+        }
         Write-Host "Built $target successfully (exit $code): $outputDirectory"
     }
 } catch {

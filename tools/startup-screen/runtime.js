@@ -26,7 +26,7 @@
     layout(width, height) {
       return { top: Math.floor(height * .79), height: Math.ceil(height * .17),
         versionY: height * .937, labelY: height * .817, barY: height * .853, percentY: height * .817,
-        statusY: height * .888, hintY: height * .914, barW: width * .756, barH: width * .027,
+        statusY: height * .888, barW: width * .756, barH: width * .027,
         labelSize: width * .035, percentSize: width * .038, detailSize: width * .027 };
     },
     statusLines(status, error) {
@@ -80,7 +80,7 @@
       ctx.fillStyle = error ? '#973f2d' : '#563f29'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       const text = this.statusLines(status, error);
       ctx.font = 'bold ' + Math.round(l.labelSize) + 'px "Microsoft YaHei", sans-serif';
-      const heading = error ? '整装稍候，点击重试' : value >= 1 ? '准备就绪，即刻出征' : '小队集结中…';
+      const heading = error ? '整装稍候，点击重试' : value >= 1 ? '准备就绪，即刻出征' : '小队集结中（首次加载会慢一点）';
       ctx.lineWidth = width * .006; ctx.strokeStyle = '#fff3d3'; ctx.lineJoin = 'round';
       ctx.strokeText(heading, x, l.labelY - offset);
       ctx.fillText(heading, x, l.labelY - offset);
@@ -91,9 +91,6 @@
       ctx.fillStyle = error ? '#973f2d' : '#69513a';
       ctx.font = Math.round(l.detailSize) + 'px "Microsoft YaHei", sans-serif';
       ctx.fillText(this.fitLine(ctx, text.line, l.barW), width / 2, l.statusY - offset, l.barW);
-      if (!error && value < 1) {
-        ctx.fillText('首次加载会慢一点，小队正背着行囊赶来啦～', width / 2, l.hintY - offset, l.barW);
-      }
       ctx.fillStyle = '#7b6247';
       ctx.font = Math.round(l.detailSize * .9) + 'px "Microsoft YaHei", sans-serif';
       ctx.fillText(this.fitLine(ctx, text.version, l.barW), width / 2, l.versionY - offset, l.barW);

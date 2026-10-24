@@ -40,7 +40,7 @@ test('loading strip stays inside portrait viewports and uses only selected statu
     assert.ok(l.barY+l.barH/2 < l.top+l.height);
     const ctx = drawingContext(labels);
     theme.overlay(ctx,w,h,.68,false,l.top);
-    assert.deepEqual(labels.map(args=>args[0]),['小队集结中…','68%','正在加载引擎与启动场景…','首次加载会慢一点，小队正背着行囊赶来啦～','版本 local']);
+    assert.deepEqual(labels.map(args=>args[0]),['小队集结中（首次加载会慢一点）','68%','正在加载引擎与启动场景…','版本 local']);
     assert.match(ctx.font,/sans-serif/);
     labels.length=0;theme.overlay(ctx,w,h,.68,true,l.top);
     assert.equal(labels[2][0],'加载失败：请重新进入游戏');
@@ -111,7 +111,7 @@ test('engine cover rebinds GPU frames on resize and uploads only changed progres
   labels.length=0;screen.sync();
   let text=labels.map(args=>args[0]).join('');
   assert.match(text,/art\/maps\/.*ground\/spriteFrame/);assert.doesNotMatch(text,/已等待|等待中|正在准备森林地图/);
-  assert.equal(labels.length,5);
+  assert.equal(labels.length,4);
   assert.doesNotMatch(text,/art\/next\/config/);
   const waitingUploads=screen.overlayTexture.uploads;screen.sync();assert.equal(screen.overlayTexture.uploads,waitingUploads);
   elapsedMs=5000;labels.length=0;screen.sync();assert.equal(screen.overlayTexture.uploads,waitingUploads+1);

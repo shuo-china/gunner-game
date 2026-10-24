@@ -1,6 +1,7 @@
 {
   "extends": "./temp/tsconfig.cocos.json",
   "compilerOptions": {
+    "module": "ESNext",
     "strict": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,

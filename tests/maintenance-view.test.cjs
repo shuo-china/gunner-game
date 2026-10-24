@@ -35,6 +35,9 @@ function loadScript(relative, imports, globals = {}) {
   const module = { exports: {} };
   const context = vm.createContext({ module, exports: module.exports,
     require: name => {
+      if (name === './session/EarlyWechatLogin') return require('./.build/session/session/EarlyWechatLogin.js');
+      if (name === './view/FeatureCode') return loadScript('view/FeatureCode', Object.fromEntries(
+        Object.entries(imports).filter(([key]) => key.startsWith('./view/')).map(([key, value]) => [key.replace('./view/', './'), value])), globals);
       if (name === './ResourceLoadingPolicy' || name === './view/ResourceLoadingPolicy') return shared('ResourceLoadingPolicy');
       if (name === './ResourceBatch') return shared('ResourceBatch');
       if (name === './view/UiPreparationQueue') return shared('UiPreparationQueue');
@@ -244,7 +247,7 @@ test('ArtLibrary coalesces concurrent frame loads, retries failure and serves su
 
 function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.resolve({}), startupFontWait,
   moneyWait = Promise.resolve({}), rebirthWait = Promise.resolve({}), skinWait = Promise.resolve({}), settingsWait = Promise.resolve({}), bgmWait = Promise.resolve({}), failResize = false, failHudImage = false, failRebirthImage = false, failSkinImage = false, failSettingsImage = false,
-  realWorld = false, storage, environment = 'production', contentOverrides, settingsLoad, skinPrepare, wechat = false, douyin = false, native = false, platformConfig, debug = true, loginRequest, saveRequest, rewardRequest, useRuntimeRewardAuthority = false,
+  realWorld = false, storage, environment = 'production', contentOverrides, settingsLoad, skinPrepare, wechat = false, douyin = false, native = false, platformConfig, debug = true, loginRequest, saveRequest, rewardRequest, aggregateStartup = false, useRuntimeRewardAuthority = false,
   deferHiddenHuds = false, manualStartup = false, dailyCheck = false, dailyCheckLoad, dailyCheckEntryLoad, offlineLoad, offlineUpdate, sessionNow, weaponLoad, raidLoad, bossLoad, speedRunLoad, fishLoad, adventureLoad, bgmLoad, release, backgroundFail = false } = {}) {
   const engine = engineStub(), { cc, artModule, colorMath } = engine;
   if (storage) cc.sys.localStorage = storage;
@@ -587,8 +590,13 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
     './core/HuntMap': { createHuntDefinition: core.createHuntDefinition },
     './core/BossCombat': { BossCombat: core.BossCombat },
     './session/RuntimeEnvironment': require('./.build/session/session/RuntimeEnvironment.js'),
+    './session/ContentConfig': require('./.build/session/session/ContentConfig.js'),
     './session/GameBackendConfig': require('./.build/session/session/GameBackendConfig.js'),
-    './session/GameLogin': require('./.build/session/session/GameLogin.js'),
+    './session/GameLogin': { ...require('./.build/session/session/GameLogin.js'),
+      GameLoginClient: class extends require('./.build/session/session/GameLogin.js').GameLoginClient {
+        // Older transaction fixtures intentionally model the separate endpoints.
+        get startupRequest() { return aggregateStartup ? super.startupRequest : undefined; }
+      } },
     './platform/PlatformServices': require('./.build/session/platform/PlatformServices.js'),
     './session/TutorialPreview': require('./.build/session/session/TutorialPreview.js'),
     './session/RewardedAds': require('./.build/session/session/RewardedAds.js'),
@@ -651,6 +659,12 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
         context.wx ??= {};
         context.wx.login ??= options => { calls.loginCodes = (calls.loginCodes || 0) + 1; options.success({ code: 'fixture-code-' + calls.loginCodes }); };
         context.wx.request ??= options => {
+          if (options.url.endsWith('/startup')) {
+            calls.startupRequests ??= []; calls.startupRequests.push(options);
+            options.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:calls.cloudRevision??'0',
+              save:calls.cloudRaw??null,saved_at_ms:0,...bootstrapRewardState(calls.cloudRaw,calls.cloudRevision,Date.now())}});
+            return;
+          }
           if (options.url.includes('/rewards/')) {
             calls.rewardRequests ??= []; calls.rewardRequests.push(options);
             if (rewardRequest) return rewardRequest(options);
@@ -1026,14 +1040,14 @@ test('production without login keeps rewards unavailable and never computes loca
   assert.equal(h.calls.rewardRequests, undefined); app.onDestroy();
 });
 
-test('cloud startup reuses complete offline receipt state before constructing the settled session', async () => {
+for (const aggregateStartup of [false, true]) test(`cloud startup reuses complete offline receipt state before constructing the settled session (aggregate=${aggregateStartup})`, async () => {
   const saved = offlineBootStorage(), original = saved.data.get(saved.key);
   const { DailyCheckSystem } = require('./.build/session/session/DailyCheckSystem.js');
   const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
   const daily = new DailyCheckSystem().snapshot('2026-10-15');
   const share = { today: '2026-10-15', lastClaimDay: '2026-10-15', canClaim: false, blocked: false, diamonds: 80 };
   let offline;
-  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, useRuntimeRewardAuthority: true, sessionNow: () => OFFLINE_BOOT_NOW,
+  const h = bootstrapHarness({ wechat: true, aggregateStartup, deferHiddenHuds: true, useRuntimeRewardAuthority: true, sessionNow: () => OFFLINE_BOOT_NOW,
     rewardRequest: options => {
       if (options.url.endsWith('/offline')) { offline = options; return; }
       assert.equal(app.session, undefined, 'daily state is verified before session construction');
@@ -1062,7 +1076,25 @@ test('cloud startup reuses complete offline receipt state before constructing th
   assert.deepEqual(h.calls.rewardRequests.map(options => options.url.split('/').at(-1)), ['offline']);
   assert.deepEqual(JSON.parse(app.cloudSave.localSave).money, settled.money);
   assert.equal(app.cloudSave.rewardPending, false); assert.equal(app.cloudSave.dirty, false);
+  assert.equal(h.calls.startupRequests?.length ?? 0, aggregateStartup ? 1 : 0);
   app.onDestroy();
+});
+
+test('aggregate startup verifies a new account once and still durably uploads its initial save before entry', async () => {
+  let write;
+  const h=bootstrapHarness({wechat:true,aggregateStartup:true,deferHiddenHuds:true,
+    saveRequest:options=>{assert.equal(options.method,'POST');write=options;}}),app=h.create(),start=app.start();
+  await new Promise(setImmediate);
+  assert.equal(h.calls.loginCodes,1);assert.equal(h.calls.loginRequests,1);
+  assert.equal(h.calls.startupRequests.length,1);assert.equal(h.calls.rewardRequests?.length??0,0);
+  assert.ok(write);assert.ok(app.session);assert.equal(app.ready,false);assert.equal(h.calls.worlds,0);
+  assert.ok(app.session.verifiedDailyCheck);assert.ok(app.session.getDailyShareState());
+  write.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:'1',current_revision:'1',
+    request_id:write.data.request_id,saved_at_ms:Date.now()}});
+  await start;
+  assert.equal(app.ready,true);assert.equal(app.cloudSave.dirty,false);
+  assert.equal(app.cloudSave.currentRevision,'1');assert.equal(h.calls.startupRequests.length,1);
+  assert.equal(h.calls.rewardRequests?.length??0,0);app.onDestroy();
 });
 
 test('cloud startup expired receipt state failure retries state without repeating an already-settled offline claim', async () => {
@@ -1374,6 +1406,35 @@ test('WeChat startup waits for verified login before loading the local session o
   app.onDestroy();
 });
 
+for (const failFirst of [false,true]) test(`Bootstrap adopts packaged pre-engine login without duplicate authentication (retry=${failFirst})`,async()=>{
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true,aggregateStartup:true}),app=h.create();
+  let codes=0,auth=0,reads=0,writes=0;
+  h.context.wx={login:o=>{codes++;o.success({code:'primed-code-'+codes});},request:o=>{
+    if(o.url.endsWith('/auth/wechat')){auth++;o.success(failFirst&&auth===1
+      ?{statusCode:401,data:{code:'WECHAT_CODE_INVALID'}}:{statusCode:200,data:bootstrapLoginResponse()});}
+    else if(o.url.endsWith('/startup')){reads++;o.success({statusCode:200,data:{player_id:'101',namespace:'production',
+      revision:'0',save:null,saved_at_ms:0,...bootstrapRewardState(null,'0',Date.now())}});}
+    else if(o.url.endsWith('/save')){writes++;assert.equal(o.method,'POST');o.success({statusCode:200,data:{player_id:'101',
+      namespace:'production',revision:'1',current_revision:'1',request_id:o.data.request_id,saved_at_ms:Date.now()}});}
+    else throw Error('Unexpected early-login startup request: '+o.url);
+    return{abort(){}};
+  }};
+  const module={exports:{}};
+  vm.runInNewContext(require('../tools/install-early-login.cjs').buildEarlyLogin(),{module,exports:module.exports,setTimeout,clearTimeout,console});
+  module.exports.beginEarlyWechatLogin(h.context);await new Promise(setImmediate);
+  const early=h.context.__FOREST_GUNNER_EARLY_LOGIN__;assert.ok(early);assert.equal(auth,1);
+  const start=app.start();await new Promise(setImmediate);
+  if(failFirst){assert.equal(app.session,undefined);assert.equal(reads,0);
+    assert.match(app.loading.getComponent(h.cc.Label).string,/微信登录凭证已失效/);
+    app.startupInputBlock.emit(h.cc.Node.EventType.TOUCH_END);}
+  await start;
+  assert.equal(app.ready,true);assert.equal(app.gameLogin,early.client);
+  assert.equal(codes,failFirst?2:1);assert.equal(auth,codes);assert.equal(reads,1);assert.equal(writes,1);
+  assert.equal(h.context.__FOREST_GUNNER_EARLY_LOGIN__,undefined);
+  assert.equal(app.resourceLoadingSnapshot().startup.timeline.phases.login.attempts,codes);
+  app.onDestroy();
+});
+
 test('WeChat login failure stays on the startup cover and a tap retries with a new code', async () => {
   let requests = 0;
   const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, loginRequest: options => {
@@ -1584,7 +1645,7 @@ test('expired startup targets keep waiting for equipment and challenge, includin
     let now=0;const pending=deferred(),h=bootstrapHarness({manualStartup:true,contentOverrides:{thresholds:{challengePowerLevel:0}},weaponLoad:()=>pending.promise});h.context.Date={now:()=>now};
     if(returning)h.cc.sys.localStorage.setItem('forest-gunner-production-returning-player-v1','1');
     const app=h.create(),started=app.start();await reachStartupPreparation(app);
-    const preparing=app.loadDeferredHud('weapons',true);await Promise.resolve();assert.equal(h.calls.weaponAssets,1);
+    const preparing=app.loadDeferredHud('weapons',true);await new Promise(setImmediate);assert.equal(h.calls.weaponAssets,1);
     now=returning?3000:10000;app.onHide();app.update(0);assert.equal(app.ready,false);
     app.onShow();app.update(0);assert.equal(app.ready,false);assert.equal(app.weaponsHud,undefined);
     assert.equal(app.startupBudgetMs,returning?3000:10000);assert.equal(app.resourceModules.snapshot().weapons.persistence,'unknown');
@@ -1648,7 +1709,7 @@ test('startup finite retries stay blocked, then shield retry reuses completed vi
 
 test('destroying a pending startup cannot publish stale panels or restart its queue',async()=>{
   const pending=deferred(),h=bootstrapHarness({manualStartup:true,contentOverrides:{thresholds:{challengePowerLevel:0}},weaponLoad:()=>pending.promise}),app=h.create(),started=app.start();
-  await reachStartupPreparation(app);app.update(0);await Promise.resolve();assert.equal(h.calls.weaponAssets,1);
+  await reachStartupPreparation(app);app.update(0);await new Promise(setImmediate);assert.equal(h.calls.weaponAssets,1);
   app.onDestroy();pending.resolve({});await started;await new Promise(setImmediate);
   assert.equal(app.ready,false);assert.equal(app.weaponsHud,undefined);assert.equal(app.speedRunHud,undefined);assert.equal(h.calls.speedRunAssets,0);
   assert.equal(h.errors.length,0);
@@ -1658,7 +1719,7 @@ test('adventure deferred open joins one request, cancels stale opening on hide, 
   const pending=deferred(),h=bootstrapHarness({deferHiddenHuds:true,environment:'test',adventureLoad:()=>pending.promise}),app=h.create();
   await app.start();
   const first=app.openFeature('adventure'),second=app.openFeature('adventure');
-  await Promise.resolve();assert.equal(h.calls.adventureAssets,1);
+  await new Promise(setImmediate);assert.equal(h.calls.adventureAssets,1);
   app.onHide();pending.resolve({});await new Promise(setImmediate);
   assert.equal(app.adventureHud,undefined,'a background completion cannot build the view');
   app.onShow();await drainPreparation(app,Promise.all([first,second]));
@@ -1862,7 +1923,7 @@ test('Bootstrap disposal also guards the new money resource await and ignores it
 test('deferred rebirth resources ignore teardown and clean partial construction without stopping battle', async () => {
   for (const fail of [false, true]) {
     const pending = deferred(), h = bootstrapHarness({deferHiddenHuds:true,rebirthWait:pending.promise}), app=h.create();
-    await app.start(); const request=app.loadDeferredHud('rebirth');await Promise.resolve();
+    await app.start(); const request=app.loadDeferredHud('rebirth');await new Promise(setImmediate);
     assert.equal(h.calls.rebirthAssets,1); app.onDestroy();
     if(fail)pending.reject(new Error('late resource error'));else pending.resolve({});
     await drainPreparation(app, request);assert.equal(h.calls.rebirthCreated,0);assert.equal(app.rebirthHud,undefined);assert.equal(h.errors.length,0);
@@ -1892,7 +1953,7 @@ test('Bootstrap startup resize failure releases partial views but retains a visi
 test('deferred skins resources ignore teardown and clean partial construction without stopping battle', async () => {
   for (const fail of [false, true]) {
     const pending = deferred(), h = bootstrapHarness({deferHiddenHuds:true,skinWait:pending.promise}), app=h.create();
-    await app.start(); const request=app.loadDeferredHud('skins');await Promise.resolve();
+    await app.start(); const request=app.loadDeferredHud('skins');await new Promise(setImmediate);
     assert.equal(h.calls.skinAssets,1); app.onDestroy();
     if(fail)pending.reject(new Error('late resource error'));else pending.resolve({});
     await drainPreparation(app, request);assert.equal(h.calls.skinCreated,0);assert.equal(app.skinHud,undefined);assert.equal(h.errors.length,0);
@@ -2197,7 +2258,7 @@ test('foreground feature requests share the progressing resource pipeline and on
   let now = 0;
   const pending = deferred(), h = bootstrapHarness({ deferHiddenHuds: true, weaponLoad: () => pending.promise }), app = h.create();
   h.context.Date = { now: () => now }; await app.start(); app.session.contentProgress.weaponsUnlocked = true;
-  const opened = app.openFeature('weapons');await Promise.resolve();
+  const opened = app.openFeature('weapons');await new Promise(setImmediate);
   assert.equal(h.calls.weaponAssets, 1); assert.equal(app.deferredHudNotice, undefined);
   now = 199; app.update(0); assert.equal(app.deferredHudNotice, undefined);
   now = 200; app.update(0); assert.match(app.deferredHudNotice.getComponent(h.cc.Label).string, /正在准备武器/);
@@ -2328,7 +2389,7 @@ test('one pending background HUD cannot block other ready panels before their fi
   await app.start();app.session.contentProgress.challengeUnlocked=true;let challengeReady=false;
   app.resourcePreloader.isFeatureReady=name=>name==='weapons'||(challengeReady&&name==='speedrun');
   app.prepareBackgroundHuds();const weapons=app.backgroundHudRequests.get('weapons');
-  assert.ok(weapons);await Promise.resolve();assert.equal(h.calls.weaponAssets,1);
+  assert.ok(weapons);await new Promise(setImmediate);assert.equal(h.calls.weaponAssets,1);
   challengeReady=true;
   await preparationFrames(app);
   assert.ok(app.speedRunHud,'challenge must prepare while the unrelated weapon request is still pending');
@@ -2358,7 +2419,7 @@ test('a click joins background panel preparation and background failure stays si
   app.prepareBackgroundHuds();assert.equal(attempts,1);
   now=app.deferredHudStates.weapons.retryAt;app.prepareBackgroundHuds();
   app.session.contentProgress.weaponsUnlocked=true;const opened=app.openFeature('weapons');
-  await Promise.resolve();assert.equal(attempts,2);pending.resolve({});await drainPreparation(app, opened);await drainPreparation(app, Promise.all(app.backgroundHudRequests.values()));
+  await new Promise(setImmediate);assert.equal(attempts,2);pending.resolve({});await drainPreparation(app, opened);await drainPreparation(app, Promise.all(app.backgroundHudRequests.values()));
   assert.equal(app.weaponsHud.isOpen,true);assert.equal(attempts,2);app.onDestroy();
 });
 
@@ -2489,7 +2550,7 @@ test('an unlocked panel prepares automatically after the open compositor is rele
   app.session.tutorial.complete();
   app.resourcePreloader.isFeatureReady=name=>name==='fish';
   app.prepareBackgroundHuds();assert.equal(h.calls.fishAssets,0);
-  app.settingsHud.close();app.prepareBackgroundHuds();await Promise.resolve();assert.equal(h.calls.fishAssets,1,'an unlocked panel starts before its first click');
+  app.settingsHud.close();app.prepareBackgroundHuds();await new Promise(setImmediate);assert.equal(h.calls.fishAssets,1,'an unlocked panel starts before its first click');
   const fish=app.loadDeferredHud('fish',true);assert.equal(h.calls.fishAssets,1);
   await drainPreparation(app, app.openSettings());pending.resolve({});await new Promise(setImmediate);
   app.update(0);assert.equal(h.calls.fishCreated,0,'never capture another panel\'s temporary camera target');
@@ -2575,7 +2636,7 @@ test('challenge first click shares one load while combat runs and opens only aft
   const pending=deferred(),h=bootstrapHarness({deferHiddenHuds:true,speedRunLoad:()=>pending.promise}),app=h.create();
   await app.start();app.update(0);app.session.contentProgress.challengeUnlocked=true;app.updateDeferredHuds();
   await Promise.all(Array.from(app.entryRequests.values()));assert.ok(app.featureEntries.has('speedrun'));assert.equal(h.calls.speedRunAssets,0);
-  const opened=app.openFeature('speedrun'),again=app.openFeature('speedrun');await Promise.resolve();
+  const opened=app.openFeature('speedrun'),again=app.openFeature('speedrun');await new Promise(setImmediate);
   app.update(.05);assert.equal(h.calls.speedRunAssets,1);assert.ok(app.world.simulationTime>0);assert.equal(app.startSpeedRun().ok,false);
   pending.resolve({});await drainPreparation(app, Promise.all([opened, again]));assert.equal(app.speedRunHud.isOpen,true);
   assert.equal(app.startSpeedRun().ok,true);assert.equal(app.session.mode,'SpeedRun');app.onDestroy();
@@ -2587,7 +2648,7 @@ test('fish entry stays lightweight and duplicate first clicks share a panel load
   await app.start(); app.update(0); app.session.tutorial.complete(); app.updateDeferredHuds();
   await Promise.all(Array.from(app.entryRequests.values()));
   assert.ok(app.featureEntries.has('fish')); assert.equal(app.fishHud, undefined); assert.equal(h.calls.fishAssets, 0);
-  const opened = app.openFeature('fish'), again = app.openFeature('fish');await Promise.resolve();
+  const opened = app.openFeature('fish'), again = app.openFeature('fish');await new Promise(setImmediate);
   app.update(.05);
   assert.equal(h.calls.fishAssets, 1); assert.equal(h.calls.fishCreated, 0);
   assert.ok(app.world.simulationTime > 0); assert.equal(app.hud.modalOpen, true);
@@ -2672,7 +2733,7 @@ test('weapon first open preserves tutorial target and overlay ordering while loa
   await app.start();app.update(0);app.session.contentProgress.weaponsUnlocked=true;app.updateDeferredHuds();
   await Promise.all(Array.from(app.entryRequests.values()));app.updateTutorial(0);
   assert.equal(app.tutorialHud.updates.at(-1).targets.entry,app.featureEntries.get('weapons').entry);
-  assert.equal(h.calls.weaponAssets,0);const opened=app.openFeature('weapons');await Promise.resolve();app.update(.05);
+  assert.equal(h.calls.weaponAssets,0);const opened=app.openFeature('weapons');await new Promise(setImmediate);app.update(.05);
   assert.equal(h.calls.weaponAssets,1);assert.ok(app.world.simulationTime>0);assert.equal(app.hud.modalOpen,true);
   pending.resolve({});await drainPreparation(app, opened);assert.equal(app.weaponsHud.isOpen,true);assert.equal(app.featureEntries.get('weapons').node.active,false);
   assert.ok(app.weaponsHud.node.getSiblingIndex()<app.tutorialHud.node.getSiblingIndex());app.onDestroy();
@@ -2692,7 +2753,7 @@ test('panel completion after background, mode change or teardown cannot open sta
     const pending=deferred(),h=bootstrapHarness({deferHiddenHuds:true,weaponLoad:()=>pending.promise}),app=h.create();
     await app.start();app.session.contentProgress.weaponsUnlocked=true;
     app.onHide();await drainPreparation(app, app.openFeature('weapons'));assert.equal(h.calls.weaponAssets,0);app.onShow();
-    const opened=app.openFeature('weapons');await Promise.resolve();assert.equal(h.calls.weaponAssets,1);
+    const opened=app.openFeature('weapons');await new Promise(setImmediate);assert.equal(h.calls.weaponAssets,1);
     if(action==='background')app.onHide();else if(action==='mode')app.session.setMode('Mine');else app.onDestroy();
     pending.resolve({});await new Promise(setImmediate);app.update(0);
     if(action!=='destroy'){

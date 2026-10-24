@@ -17,7 +17,7 @@ function removePreviousBlock(source, platform) {
   const ends = source.split(END).length - 1;
   if (!starts && !ends) return source;
   if (starts !== 1 || ends !== 1) throw new Error('Invalid or duplicate Forest Gunner environment markers.');
-  const expression = platform === 'web'
+  const expression = platform !== 'wechat'
     ? /<!-- FOREST_GUNNER_ENV_START -->\r?\n[\s\S]*?<!-- FOREST_GUNNER_ENV_END -->\r?\n?/
     : /\/\* FOREST_GUNNER_ENV_START \*\/\r?\n[\s\S]*?\/\* FOREST_GUNNER_ENV_END \*\/\r?\n?/;
   if (!expression.test(source)) throw new Error('Malformed Forest Gunner environment block.');
@@ -26,10 +26,11 @@ function removePreviousBlock(source, platform) {
 
 function makeEnvironmentEntry(source, platform, environment) {
   validateEnvironment(environment);
-  if (platform !== 'web' && platform !== 'wechat') throw new Error('Platform must be web or wechat.');
+  if (!['web', 'wechat', 'taptap-h5'].includes(platform)) throw new Error('Platform must be web, wechat or taptap-h5.');
   const original = removePreviousBlock(source, platform);
   const newline = original.includes('\r\n') ? '\r\n' : '\n';
-  const assignment = `globalThis.__FOREST_GUNNER_ENV__ = ${JSON.stringify({ environment })};`;
+  const assignment = `globalThis.__FOREST_GUNNER_ENV__ = ${JSON.stringify({ environment })};` +
+    (platform === 'taptap-h5' ? `${newline}globalThis.__FOREST_GUNNER_PLATFORM__ = {"channel":"taptap-h5"};` : '');
   if (platform === 'wechat') {
     const block = [`/* ${START} */`, assignment, `/* ${END} */`, ''].join(newline);
     return original.startsWith('\uFEFF')
@@ -46,8 +47,8 @@ function makeEnvironmentEntry(source, platform, environment) {
 
 function injectEnvironment(outputDirectory, platform, environment) {
   validateEnvironment(environment);
-  if (platform !== 'web' && platform !== 'wechat') throw new Error('Platform must be web or wechat.');
-  const entry = path.join(outputDirectory, platform === 'web' ? 'index.html' : 'game.js');
+  if (!['web', 'wechat', 'taptap-h5'].includes(platform)) throw new Error('Platform must be web, wechat or taptap-h5.');
+  const entry = path.join(outputDirectory, platform === 'wechat' ? 'game.js' : 'index.html');
   if (!fs.statSync(entry).isFile()) throw new Error(`Build entry is not a file: ${entry}`);
   const source = fs.readFileSync(entry, 'utf8');
   const injected = makeEnvironmentEntry(source, platform, environment);
@@ -59,7 +60,7 @@ function injectEnvironment(outputDirectory, platform, environment) {
 if (require.main === module) {
   try {
     const [platform, outputDirectory, environment, ...extra] = process.argv.slice(2);
-    if (!outputDirectory || extra.length) throw new Error('Usage: node tools/inject-environment.cjs <web|wechat> <output-directory> <test|production>');
+    if (!outputDirectory || extra.length) throw new Error('Usage: node tools/inject-environment.cjs <web|wechat|taptap-h5> <output-directory> <test|production>');
     const entry = injectEnvironment(outputDirectory, platform, environment);
     console.log(`Forest Gunner environment: ${environment} (${entry})`);
   } catch (error) {

@@ -8,6 +8,7 @@ import type { DailyShareSnapshot } from './DailyShareSystem';
 import { validDailyShareSnapshot } from './DailyShareSystem';
 
 export interface CloudSaveApi {
+  startupRequest?(ownerId: string): Promise<Record<string, any>>;
   saveRequest(method: 'GET' | 'POST', ownerId: string, data?: unknown): Promise<Record<string, any>>;
   rewardRequest?(kind: 'state' | RewardKind, ownerId: string, data?: unknown): Promise<Record<string, any>>;
 }
@@ -115,6 +116,7 @@ export class CloudSaveStorage implements EconomyStorage {
   private savedAt = 0;
   lastReward?: RewardReceipt;
   private rewardStateReceipt?: { receipt: RewardReceipt; startedAt: number; receivedAt: number };
+  private startupStateReceipt?: { receipt: Record<string, any> & CloudSnapshot; startedAt: number; receivedAt: number };
 
   constructor(private readonly persistent: EconomyStorage, private readonly api: CloudSaveApi,
     readonly ownerId: string, private readonly economyKey: string, backendScope: string,
@@ -175,7 +177,7 @@ export class CloudSaveStorage implements EconomyStorage {
         }
       }
     }
-    const remote = await this.readRemote();
+    const remote = await this.readRemote(true);
     if (!this.journal) {
       this.commit({ version: 1, revision: remote.revision, confirmed: remote.save, local: remote.save });
     } else if (this.conflict || remote.revision !== this.journal.revision || remote.save !== this.journal.confirmed) {
@@ -238,7 +240,16 @@ export class CloudSaveStorage implements EconomyStorage {
     // Ordinary foreground refreshes always read the server; never persist this hint.
     const hint = this.rewardStateReceipt;
     this.rewardStateReceipt = undefined;
+    const startup = this.startupStateReceipt;
+    this.startupStateReceipt = undefined;
     const now = this.now();
+    if (!startupReceipt && startup && !this.dirty && !this.blocked && !this.sealed && !this.rewardPending
+      && startup.receipt.player_id === this.ownerId && startup.receipt.namespace === this.namespace
+      && startup.receipt.revision === this.currentRevision && startup.receipt.save === this.localSave
+      && now >= startup.receivedAt && startup.receivedAt >= startup.startedAt && now - startup.receivedAt <= 1000
+      && startup.receipt.next_daily_reset_ms - startup.receipt.server_time_ms > now - startup.startedAt) {
+      return { ...startup.receipt, responseAgeMs: now - startup.startedAt };
+    }
     if (startupReceipt && hint?.receipt === startupReceipt && startupReceipt === this.lastReward
       && startupReceipt.reward.kind === 'offline' && !this.dirty && !this.blocked && !this.sealed && !this.rewardPending
       && startupReceipt.revision === this.currentRevision && startupReceipt.save === this.localSave
@@ -282,6 +293,7 @@ export class CloudSaveStorage implements EconomyStorage {
     const { kind, ...body } = pending;
     this.rewardStateReceipt = undefined;
     const startedAt = this.now();
+    this.startupStateReceipt = undefined;
     let value: Record<string, any>;
     try { value = await this.api.rewardRequest(kind, this.ownerId, body); }
     catch (error) {
@@ -397,11 +409,18 @@ export class CloudSaveStorage implements EconomyStorage {
     if (result.current_revision !== result.revision) this.makeConflict(await this.readRemote());
   }
 
-  private async readRemote(): Promise<CloudSnapshot> {
-    const v = await this.api.saveRequest('GET', this.ownerId); this.assertActive();
+  private async readRemote(startup = false): Promise<CloudSnapshot> {
+    const startedAt = this.now(), aggregate = startup && !!this.api.startupRequest;
+    if (startup) this.startupStateReceipt = undefined;
+    const v = aggregate ? await this.api.startupRequest!(this.ownerId) : await this.api.saveRequest('GET', this.ownerId);
+    this.assertActive();
     if (v.player_id !== this.ownerId || v.namespace !== this.namespace || !revisionValid(v.revision)
       || !Number.isSafeInteger(v.saved_at_ms) || (v.revision === '0' ? v.save !== null : typeof v.save !== 'string')) throw new Error('云端存档响应异常，未覆盖本机数据');
     if (v.save !== null) validateCloudSave(v.save);
+    if (aggregate) {
+      if (!completeRewardState(v)) throw new Error('启动状态响应异常，未覆盖本机数据');
+      this.startupStateReceipt = { receipt: v as Record<string, any> & CloudSnapshot, startedAt, receivedAt: this.now() };
+    }
     this.lastRemoteReadAt = this.now();
     return v as CloudSnapshot;
   }

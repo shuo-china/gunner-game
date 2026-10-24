@@ -395,6 +395,7 @@ test('the release manifest includes the main-package index and accounts only laz
     process: { argv: ['node', 'package-wechat-release.cjs', fixture.input, target, '0.1.12'], env: {} },
     console: { log() {} },
     require(name) {
+      if (name === './wechat-code-package.cjs') return { packageFeatureCode: () => ({ packages: [] }) };
       if (name === 'node:child_process') return { spawnSync(_command, args) {
         assert.equal(args.includes('--apply'), false, 'packaging must run the PNG encoder in read-only mode after Creator hashes exist');
         fs.writeFileSync(args[args.indexOf('--report') + 1], JSON.stringify({ applied: false, before: 100, after: 80, saved: 20, rgbaPixelsEqual: true, colorProfileEqual: true }));

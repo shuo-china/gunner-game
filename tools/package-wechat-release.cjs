@@ -7,6 +7,7 @@ const { spawnSync } = require('node:child_process');
 const { packageStartupMetadata, installStartupErrorHandler } = require('./wechat-startup-package.cjs');
 const { packageMapResources } = require('./wechat-map-package.cjs');
 const { packageFeatureResources } = require('./wechat-feature-package.cjs');
+const { packageFeatureCode } = require('./wechat-code-package.cjs');
 const [built, destination, version = '0.1.0'] = process.argv.slice(2);
 if (!built || !destination || process.argv.length > 5 || !/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Usage: node tools/package-wechat-release.cjs BUILD RELEASE [VERSION]');
 const input = path.resolve(built), output = path.resolve(destination);
@@ -54,7 +55,8 @@ const mapResources = packageMapResources(input, code,
 const featureResources = packageFeatureResources(input, code,
   JSON.parse(fs.readFileSync(path.join(input, remoteConfig), 'utf8')), settings.assets.server,
   path.join(output, 'feature-package-index.json'), startupMetadata.packages, mapResources.nativeFiles);
-const subpackages = Array.from(new Map([...startupMetadata.packages, ...mapResources.packages, ...featureResources.packages]
+const featureCode = packageFeatureCode(code);
+const subpackages = Array.from(new Map([...startupMetadata.packages, ...mapResources.packages, ...featureResources.packages, ...featureCode.packages]
   .map(item => [item.name, item])).values());
 // Match the installed official builder's default MaxSubPackageLimit. The
 // platform's account-specific compiler remains the final authority at upload.
@@ -114,6 +116,6 @@ if (codeBytes > 30 * 1024 * 1024) throw new Error(`Total package exceeds 30 MiB:
 const report = { appid: project.appid, version, environment: 'production', adsEnabled: false, cocosSplashRemoved: true, server: settings.assets.server, remoteConfig, startupMetadata, mapResources, featureResources,
   pngOptimization: { applied: false, before: pngOptimization.before, after: pngOptimization.before, saved: 0,
     potentialSaved: pngOptimization.saved, rgbaPixelsEqual: pngOptimization.rgbaPixelsEqual, colorProfileEqual: pngOptimization.colorProfileEqual },
-  mainPackageBytes, subpackageBudgets, codeBytes, remoteBytes: remoteFiles.reduce((sum, x) => sum + x.bytes, 0), codeFiles, remoteFiles };
+  featureCode, mainPackageBytes, subpackageBudgets, codeBytes, remoteBytes: remoteFiles.reduce((sum, x) => sum + x.bytes, 0), codeFiles, remoteFiles };
 fs.writeFileSync(path.join(output, 'release-manifest.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify({ codeBytes, remoteBytes: report.remoteBytes, remoteConfig, code, server }));

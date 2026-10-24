@@ -7,6 +7,8 @@ export const PLATFORM_CHANNELS: Readonly<Record<GameChannel, PlatformChannelConf
   'wechat-mini': { channel: 'wechat-mini', label: '微信', appId: 'wx3dd63318911f5012',
     ads: { provider: 'unavailable', unitIds: {} } },
   'douyin-mini': { channel: 'douyin-mini', label: '抖音', appId: '', ads: { provider: 'unavailable', unitIds: {} } },
+  'taptap-h5': { channel: 'taptap-h5', label: 'TapTap', appId: 'tapmcg8evaubisjmzc',
+    ads: { provider: 'unavailable', unitIds: {} } },
   'taptap-mini': { channel: 'taptap-mini', label: 'TapTap 小游戏', appId: '', ads: { provider: 'unavailable', unitIds: {} } },
   'taptap-android': { channel: 'taptap-android', label: 'TapTap 安卓', appId: '', ads: { provider: 'unavailable', unitIds: {} } },
 };
