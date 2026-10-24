@@ -59,9 +59,10 @@ test('fish and pet advertisements block each other, hunts, rebirth and concurren
   s.cancelPetAd();assert.equal(s.startHunt().ok,true);assert.equal(s.completePetAd(pet.token,'success').reason,'staleAd');
 });
 
-test('legacy pet dates migrate as already claimed and daily counts above a reduced limit remain valid',()=>{
-  const f=fixture(s=>{delete s.pets.dailyAdCount;s.pets.lastDailyAdDate='2026-10-15';});assert.equal(f.session.getPetState().dailyAdRemaining,0);
-  const p=new PetSystem();const saved=f.session.getPetState();p.restore({...saved,dailyAdCount:5});assert.equal(p.dailyAdRemaining('2026-10-15'),0);assert.equal(p.dailyAdRemaining('2026-10-16'),1);
+test('pet saves require daily counts and counts above a reduced limit remain valid',()=>{
+  const p=new PetSystem(),saved=p.serialize();saved.lastDailyAdDate='2026-10-15';
+  const missing={...saved};delete missing.dailyAdCount;assert.throws(()=>p.restore(missing),/Invalid pet save/);
+  p.restore({...saved,dailyAdCount:5});assert.equal(p.dailyAdRemaining('2026-10-15'),0);assert.equal(p.dailyAdRemaining('2026-10-16'),1);
   assert.throws(()=>p.restore({...saved,lastDailyAdDate:'2026-02-31'}));
 });
 

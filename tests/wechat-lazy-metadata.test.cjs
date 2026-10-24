@@ -68,8 +68,6 @@ async function fixture(context, customize = () => {}) {
       },
     }; } },
   });
-  const preparing = runtime.exports.prepareStartupMetadata();
-  packages[0].success(); assert.equal(await preparing, true);
   const stats = runtime.exports.installStartupMetadata(cc);
   assert.equal(stats.installed, true);
   const load = (file, options = {}) => new Promise((resolve, reject) => downloader.handlers['.json'](BASE + file, options,
@@ -128,13 +126,13 @@ test('required core and starter weapon metadata share a deterministic bounded pa
     assert.deepEqual(fs.readFileSync(path.join(f.code, file)), fs.readFileSync(path.join(again.code, file)));
   }
   const loading = Promise.all(required.map(file => f.load(file)));
-  assert.equal(f.packages.length, 2, 'one index and one core platform request');
-  f.packages[1].success();
+  assert.equal(f.packages.length, 1, 'one core platform request; main-package index needs none');
+  f.packages[0].success();
   (await loading).forEach((value, index) => assert.deepEqual(plain(value), f.expected[required[index]]));
   assert.equal(f.fallbacks.length, 0);
   for (const [file, value] of Object.entries(f.expected)) {
     assert.equal(fs.readFileSync(path.join(f.input, file), 'utf8'), JSON.stringify(value));
-    const owning = f.report.packages.slice(1).filter(item => Object.hasOwn(f.readPayload(item.path).files, file));
+    const owning = f.report.packages.filter(item => Object.hasOwn(f.readPayload(item.path).files, file));
     assert.equal(owning.length, 1, 'every original import keeps exactly one route');
   }
 });
@@ -151,7 +149,7 @@ test('core coalescing respects expanded ASCII and compressed byte budgets indepe
     assert.equal(f.report.corePackagesMerged, 0, mode);
     assert.notEqual(f.index.routes[importPath(ids[0])], f.index.routes[importPath(ids[1])]);
     const loading = Promise.all(ids.slice(0, 2).map(id => f.load(importPath(id))));
-    f.packages.slice(1).forEach(request => request.success());
+    f.packages.forEach(request => request.success());
     (await loading).forEach((value, index) => assert.deepEqual(plain(value), f.expected[importPath(ids[index])]));
     assert.equal(f.fallbacks.length, 0);
   }
@@ -165,8 +163,8 @@ test('boot reads only the index; a requested feature shares one lazy download an
   const weaponPath = importPath(ids[0]), fishPath = importPath(ids[1]);
   assert.notEqual(f.index.routes[weaponPath], f.index.routes[fishPath]);
   const first = f.load(weaponPath), second = f.load(weaponPath);
-  assert.equal(f.packages.length, 2);
-  f.packages[1].success();
+  assert.equal(f.packages.length, 1);
+  f.packages[0].success();
   const [a, b] = await Promise.all([first, second]);
   a.nested.count = 100;
   assert.equal(b.nested.count, 1);
@@ -174,7 +172,7 @@ test('boot reads only the index; a requested feature shares one lazy download an
   assert.equal(f.reads.length, 2);
   assert.equal(f.reads.includes(f.index.groups[f.index.routes[fishPath]].path), false);
   assert.deepEqual(plain(await f.load(weaponPath)), f.expected[weaponPath]);
-  assert.equal(f.packages.length, 2); assert.equal(f.reads.length, 2);
+  assert.equal(f.packages.length, 1); assert.equal(f.reads.length, 2);
   assert.equal(f.fallbacks.length, 0);
 });
 
@@ -184,7 +182,7 @@ test('a cross-feature Creator import pack remains complete and has one shared ro
   const waiting = f.load(file);
   f.packages.at(-1).success();
   assert.deepEqual(plain(await waiting), f.expected[file]);
-  const occurrences = f.report.packages.slice(1).filter(group => Object.hasOwn(f.readPayload(group.path).files, file));
+  const occurrences = f.report.packages.filter(group => Object.hasOwn(f.readPayload(group.path).files, file));
   assert.equal(occurrences.length, 1);
 });
 
@@ -203,14 +201,14 @@ test('feature metadata and its native image share an in-flight and completed pla
   assert.equal(featureModule.exports.installFeatureResources(f.cc), true);
   const image = () => new Promise((resolve, reject) => f.downloader.handlers['.png'](BASE + png, {}, (e, d) => e ? reject(e) : resolve(d)));
   const metadata = f.load(file), native = image();
-  assert.equal(f.packages.length, 2);
+  assert.equal(f.packages.length, 1);
   f.packages.at(-1).success();
   assert.deepEqual(plain(await metadata), f.expected[file]);
   assert.equal(await native, 'subpackages/' + packageName + '/' + png.slice('remote/resources/'.length));
   await Promise.all([f.load(file), image()]);
-  assert.equal(f.packages.length, 2);
+  assert.equal(f.packages.length, 1);
   const timing = f.timing.api.snapshot();
-  assert.equal(timing.phases.platformSubpackage.started, 2, 'index plus one shared feature download');
+  assert.equal(timing.phases.platformSubpackage.started, 1, 'only the shared feature needs a platform download');
   assert.equal(timing.phases.platformSubpackage.active, 0);
   assert.equal(timing.packages.find(item => item.name === packageName).attempts, 1);
   assert.ok(timing.reuse.inFlight >= 1, 'native and metadata share the pending broker request');
@@ -246,10 +244,10 @@ test('lazy package failure preserves original URL/options/receiver, shares coold
   assert.equal(f.fallbacks[0].options, options);
   assert.equal(f.fallbacks[0].receiver, f.downloader);
   assert.deepEqual(await f.load(file), { fallback: true });
-  assert.equal(f.packages.length, 2);
+  assert.equal(f.packages.length, 1);
   f.advance(); const recovered = f.load(file); f.packages.at(-1).success();
   assert.deepEqual(plain(await recovered), f.expected[file]);
-  assert.equal(f.packages.length, 3); assert.equal(f.stats.groupFallbacks, 2);
+  assert.equal(f.packages.length, 2); assert.equal(f.stats.groupFallbacks, 2);
 });
 
 test('missing lazy callbacks time out before the outer watchdog and ignore late completion', async context => {
@@ -318,7 +316,7 @@ test('battle definition and its sprite metadata do not request complete weapon o
   assert.notEqual(f.index.routes[visual], f.index.routes[importPath(panel)]);
   assert.notEqual(f.index.routes[importPath(skin)], f.index.routes[importPath(skinPanel)]);
   const loading = Promise.all([f.load(visual), f.load(sprite)]); f.packages.at(-1).success(); await loading;
-  assert.equal(f.packages.length, 2);
+  assert.equal(f.packages.length, 1);
   assert.equal(f.reads.includes(f.index.groups[f.index.routes[importPath(panel)]].path), false);
   const skinLoading = f.load(importPath(skin)); f.packages.at(-1).success(); await skinLoading;
   assert.equal(f.reads.includes(f.index.groups[f.index.routes[importPath(skinPanel)]].path), false);
@@ -349,7 +347,7 @@ test('the real settings background shares image imports without downloading the 
   for (const file of requested.slice(1)) assert.equal(f.index.routes[file], 'forest-metadata-shared-0', file);
   assert.notEqual(f.index.routes[importPath(ids[0])], f.index.routes[importPath(ids[1])]);
   const loading = Promise.all(requested.map(file => f.load(file)));
-  f.packages.slice(1).forEach(request => request.success());
+  f.packages.forEach(request => request.success());
   const restored = await loading;
   restored.forEach((value, i) => assert.deepEqual(plain(value), f.expected[requested[i]]));
   assert.equal(f.packages.some(request => request.name.startsWith('forest-feature-fish-')), false);
@@ -358,7 +356,7 @@ test('the real settings background shares image imports without downloading the 
   assert.deepEqual(plain(restored[3]), f.expected[importPath(texturePack)], 'the entire compiled Texture2D pack is retained');
   for (const [file, expected] of Object.entries(f.expected)) {
     assert.equal(fs.readFileSync(path.join(f.input, file), 'utf8'), JSON.stringify(expected), 'hashed source bytes remain unchanged');
-    const occurrences = f.report.packages.slice(1).filter(group => Object.hasOwn(f.readPayload(group.path).files, file));
+    const occurrences = f.report.packages.filter(group => Object.hasOwn(f.readPayload(group.path).files, file));
     assert.equal(occurrences.length, 1, 'one unchanged URL route per import');
   }
 });
@@ -411,7 +409,7 @@ test('split weapon runtime categories remain independent of the original authori
   assert.equal(f.index.routes[importPath(shell)], f.index.routes[importPath(cannon)]);
   const wanted = [importPath(ids[1]), importPath(archery), importPath(arrow)];
   const loading = Promise.all(wanted.map(file => f.load(file)));
-  f.packages.slice(1).forEach(request => request.success());
+  f.packages.forEach(request => request.success());
   (await loading).forEach((value, i) => assert.deepEqual(plain(value), f.expected[wanted[i]]));
   assert.equal(f.packages.some(request => request.name.includes('authoring') || request.name.includes('cannon')), false);
   assert.equal(f.fallbacks.length, 0);

@@ -132,7 +132,7 @@ test('piercing shuriken flashes and ordinary impacts use the same visual throttl
   const field = Object.create(BattlefieldView.prototype);
   Object.assign(field, { world: { simulationTime: 1, stage: {} }, art: {}, impactTimeOffset: 0, lastImpactSourceTime: 0,
     impactFx: { beginFrame() {}, canSpawn(id, position) { throttleCalls.push(id); return position.x > 0 && position.x < 3; } },
-    trees: new Map([1, 2, 3, 4, 5].map(id => [id, { hit: () => damagedTargets.push(id) }])),
+    trees: new Map([1, 2, 3, 4, 5].map(id => [id, { hit: () => damagedTargets.push(id), impactPosition: point => point }])),
     projectiles: { hitTrigger: id => id === 4 ? 'hit' : 'impact', hit: (...args) => flashes.push(args) },
     numbers: { spawn: (...args) => numbers.push(args) },
   });

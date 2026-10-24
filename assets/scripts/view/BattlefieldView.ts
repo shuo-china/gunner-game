@@ -176,19 +176,26 @@ export class BattlefieldView {
         }
         this.projectiles.shot(event.bulletId,event.weaponId);
       }
-      if(event.type==='impact'&&(this.projectiles.hitTrigger?.(event.weaponId)??'impact')==='impact'&&
-        this.impactFx.canSpawn(event.weaponId,event.position,event.height,
-          this.impactTimeOffset+(event.sourceTime??sourceTime)))
-        this.projectiles.hit(event.position,event.weaponId,event.radius,event.height);
+      if(event.type==='impact') {
+        const position=this.trees.get(event.treeId!)?.impactPosition(event.position,event.height)??event.position;
+        // Contact visibility is independent of flash throttling. The real shot
+        // reaches the same painted surface even when a duplicate flash is culled.
+        if(event.bulletId!==undefined)this.projectiles.contact?.(event.bulletId,event.weaponId,position,event.height);
+        if((this.projectiles.hitTrigger?.(event.weaponId)??'impact')==='impact'&&
+          this.impactFx.canSpawn(event.weaponId,position,event.height,
+            this.impactTimeOffset+(event.sourceTime??sourceTime)))
+          this.projectiles.hit(position,event.weaponId,event.radius,event.height);
+      }
       if(event.type==='hit') {
         // Per-target throwing-star flashes share the source FXThrottle with
         // ordinary impacts. Only rendering is suppressed; every hit still lands.
         // Their terminal impact remains excluded above to avoid a second flash.
         if(this.projectiles.hitTrigger?.(event.weaponId)==='hit') {
           const height=event.height??WEAPON_CONFIG.bulletHeight;
-          if(this.impactFx.canSpawn(event.weaponId,event.position,height,
+          const position=this.trees.get(event.treeId)?.impactPosition(event.position,height)??event.position;
+          if(this.impactFx.canSpawn(event.weaponId,position,height,
             this.impactTimeOffset+(event.sourceTime??sourceTime)))
-            this.projectiles.hit(event.position,event.weaponId,0,height);
+            this.projectiles.hit(position,event.weaponId,0,height);
         }
         this.trees.get(event.treeId)?.hit();
         this.huntView?.hit(event.treeId);

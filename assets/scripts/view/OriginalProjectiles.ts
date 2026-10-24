@@ -47,6 +47,9 @@ export class OriginalProjectiles {
     const library=this.art.weaponVisuals;if(!library)return 'impact';
     return library.config.customProjectiles?.[library.appearance(weaponId).projectileSkin]?.hitTrigger??'impact';
   }
+  contact(id:number,weaponId:number,position:{x:number;z:number},height:number):void {
+    this.skinFor(weaponId).custom?.contact(id,position,height);
+  }
   hit(position:{x:number;z:number},weaponId=0,radius=0,height?:number):void {
     const skin=this.skinFor(weaponId);
     // Bootstrap drains every event before update: submit the final state once,

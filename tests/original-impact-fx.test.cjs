@@ -73,6 +73,26 @@ test('Battlefield filters only impact rendering, retains all damage numbers and 
   view.handleEvents([events.at(-1)], []); assert.deepEqual(sounds, [8,8]);
 });
 
+test('building surface mapping is shared by the arrow tip and its single flash, even when flash throttling rejects it', () => {
+  const { BattlefieldView } = load('BattlefieldView');
+  const view = Object.create(BattlefieldView.prototype), contacts = [], effects = [], mappings = [];
+  const painted = { x: 2, z: 3 }, physical = { x: 6, z: 7 };
+  let allowed = true;
+  Object.assign(view, { world: { simulationTime: 1, stage: {} }, impactTimeOffset: 0, lastImpactSourceTime: 0,
+    impactFx: { beginFrame() {}, canSpawn() { return allowed; } },
+    trees: new Map([[12, { impactPosition(point, height) { mappings.push([point, height]); return painted; } }]]),
+    projectiles: { contact: (...args) => contacts.push(args), hit: (...args) => effects.push(args), hitTrigger: () => 'impact' },
+  });
+  const event = { type: 'impact', bulletId: 7, treeId: 12, weaponId: 0, position: physical, height: 2, radius: 0, sourceTime: 1 };
+  view.handleEvents([event], []);
+  assert.deepEqual(contacts, [[7, 0, painted, 2]]); assert.deepEqual(effects, [[painted, 0, 0, 2]]);
+  allowed = false; view.handleEvents([event], []);
+  assert.equal(contacts.length, 2, 'suppressed flash still supplies the actual arrow contact');
+  assert.equal(effects.length, 1, 'surface correction never duplicates flashes');
+  assert.equal(event.position, physical, 'view cannot mutate the gameplay event or its damage position');
+  assert.deepEqual(mappings, [[physical, 2], [physical, 2]]);
+});
+
 test('ordinary impacts and piercing hits share one three-FX frame budget across the squad without dropping feedback or rewards', () => {
   const core = require('./.build/core/index.js');
   const { BattlefieldView } = load('BattlefieldView', { '../core': core });
@@ -83,7 +103,7 @@ test('ordinary impacts and piercing hits share one three-FX frame budget across 
   Object.assign(view, { world: { simulationTime: 1, stage: {} }, impactFx: gate,
     impactTimeOffset: 0, lastImpactSourceTime: 0,
     projectiles: { hitTrigger: id => [4, 7].includes(id) ? 'hit' : 'impact', hit: (...args) => effects.push(args) },
-    trees: new Map([1, 2, 3, 4].map(id => [id, { hit: () => damagedTargets.push(id) }])),
+    trees: new Map([1, 2, 3, 4].map(id => [id, { hit: () => damagedTargets.push(id), impactPosition: point => point }])),
     numbers: { spawn: (...args) => numbers.push(args), spawnMoney: (...args) => moneyNumbers.push(args) },
     moneyBurst: { spawn: (...args) => moneyBursts.push(args) },
   });

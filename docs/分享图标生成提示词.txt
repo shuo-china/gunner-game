@@ -1,0 +1,13 @@
+Mode: built-in image_gen (transparent_background: true)
+Style references: assets/resources/art/mine-system/images/entry-mine.png; assets/resources/art/boss-system/images/s904.png
+Final asset: assets/resources/art/share-system/images/entry-share.png
+
+Use case: stylized-concept.
+Asset type: a single transparent raster icon for the right-side menu in an existing Chinese idle game.
+Primary request: create ONE unified icon that immediately communicates 'share to receive diamonds', without any text or reward number.
+Input images: the mine icon is a style reference only (its thick dark brown stepped outlines, crisp chunky painted pixel-art shading and compact silhouette); the blue diamond is a color and currency-shape reference only. Create a new design, do not reproduce the pickaxe.
+Subject: a large bright azure faceted diamond with a bold warm ivory/gold curved outgoing share arrow sweeping around its upper side and pointing up-right. The diamond and arrow form one integrated, easily recognized emblem. Make the diamond visibly the reward and the arrow unambiguously a share/forward symbol.
+Style: match the supplied game's 2D chunky pixel-edged art, deep brown outlines of consistent thickness, a few large flat blue facets and warm cream/gold arrow planes. Small clean cyan/white highlights. No fine details.
+Composition: centered square icon, fill about 85% of canvas with balanced transparent margins; clear at a small 32px menu size. Arrow and diamond must remain distinct and legible when reduced. No button plate.
+Background: genuinely transparent alpha, including all empty space.
+Constraints: exactly one icon; no text, no letters, no digits, no +80, no label, no watermark, no border or background tile, no pickaxe, no additional decorative objects, no glow, no photorealism, no 3D rendering, no thin smooth vector lines.

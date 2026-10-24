@@ -55,7 +55,6 @@ export class BossSystem {
   get loadingElapsed(): number | null { return this.phaseValue === 'entering' || this.phaseValue === 'exiting' ? this.loading : null; }
   serialize(): BossSave { return { stage: this.stageValue }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const data = value as Partial<BossSave> | null;
     if (!data || !validStage(data.stage)) throw new Error('Invalid Boss save');
     this.stageValue = data.stage;

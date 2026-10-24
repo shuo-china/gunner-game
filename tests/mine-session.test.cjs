@@ -130,12 +130,49 @@ test('clearing the actual smaller map settles immediately and stale rounds canno
   assert.equal(s.requestMineAd('entry').reason, 'dailyLimit');
 });
 
-test('early exit pays nothing and keeps its spent ticket; empty generated map ends with zero reward', () => {
+test('early exit settles earned diamonds once, floors fractions, and keeps its spent ticket', () => {
   const f = fixture(), s = f.session;
-  enter(s, 100); kill(s, ores(0, 10)); exit(s);
-  assert.equal(s.weapons.diamonds, 0); assert.equal(s.getMineState().usedEntries, 1); assert.equal(s.getMineState().bestReward, 0);
+  const roundId = enter(s, 100); kill(s, ores(9, 1)); s.advanceFrame(7);
+  assert.equal(s.getMineState().score, 38); assert.equal(s.weapons.diamonds, 0);
+  f.writes.length = 0;
+  assert.equal(s.exitMine().ok, true);
+  assert.equal(s.getMineState().phase, 'exiting'); assert.equal(s.getMineState().timeRemaining, 53);
+  assert.equal(s.weapons.diamonds, 3); assert.equal(s.getMineState().usedEntries, 1); assert.equal(s.getMineState().bestReward, 3);
+  assert.equal(f.writes.length, 1); assert.equal(f.writes[0].weapons.diamonds, 3); assert.equal(f.writes[0].mine.bestReward, 3);
+  assert.equal(s.exitMine().reason, 'inactive'); assert.equal(s.retryMineSettlement().reason, 'inactive');
+  kill(s, ores(0, 10, 100), roundId);
+  assert.equal(s.getMineState().score, 38); assert.equal(s.requestMineAd('reward').reason, 'unavailable');
+  assert.equal(s.weapons.diamonds, 3); assert.equal(f.writes.length, 1);
+  const restored = f.create(); assert.equal(restored.weapons.diamonds, 3); assert.equal(restored.getMineState().usedEntries, 1);
+  s.advanceFrame(1.5); assert.equal(s.mode, 'Main'); assert.equal(s.exitMine().reason, 'mode');
   enter(s, 0); assert.equal(s.getMineState().rewardDiamonds, 0); assert.equal(s.getMineState().bonusAdAvailable, false);
-  exit(s); assert.equal(f.create().getMineState().usedEntries, 2);
+  exit(s); assert.equal(f.create().getMineState().usedEntries, 2); assert.equal(s.weapons.diamonds, 3);
+});
+
+test('early exits with no whole diamond or during loading cannot create rewards or refund entry', () => {
+  const f = fixture(), s = f.session;
+  enter(s, 100); kill(s, ores(4)); exit(s);
+  assert.equal(s.weapons.diamonds, 0); assert.equal(s.getMineState().bestReward, 0);
+  assert.equal(s.getMineState().usedEntries, 1);
+  s.openMine(); assert.equal(s.startMine().ok, true); exit(s);
+  assert.equal(s.weapons.diamonds, 0); assert.equal(s.getMineState().usedEntries, 2);
+  const restored = f.create(); assert.equal(restored.weapons.diamonds, 0); assert.equal(restored.getMineState().usedEntries, 2);
+});
+
+test('early-exit settlement failures freeze credit, preserve pending rewards and retry exactly once', () => {
+  const f = fixture(), s = f.session; enter(s, 100); kill(s, ores(9, 1));
+  f.writes.length = 0; f.fail('before');
+  assert.equal(s.exitMine().reason, 'saveFailed'); assert.equal(s.getMineState().phase, 'result');
+  assert.equal(s.getMineState().settlementPending, true); assert.equal(s.canFight, false);
+  assert.equal(s.weapons.diamonds, 0); assert.equal(s.getMineState().bestReward, 0);
+  kill(s, ores(0, 10, 100)); assert.equal(s.getMineState().score, 38);
+  assert.equal(s.requestMineAd('reward').reason, 'unavailable'); assert.equal(s.exitMine().reason, 'saveFailed');
+  f.fail('after'); assert.equal(s.exitMine().ok, true);
+  assert.equal(s.getMineState().settlementPending, false); assert.equal(s.weapons.diamonds, 3);
+  assert.equal(s.getMineState().bestReward, 3); assert.equal(f.writes.length, 1);
+  assert.equal(s.exitMine().reason, 'inactive'); assert.equal(f.writes.length, 1);
+  f.fail(''); s.advanceFrame(1.5);
+  const restored = f.create(); assert.equal(restored.weapons.diamonds, 3); assert.equal(restored.getMineState().usedEntries, 1);
 });
 
 test('entry ad cancellation, failure, close, stale and duplicate callbacks cannot spend tickets or grant a buff', () => {
@@ -245,14 +282,17 @@ test('attack-speed buff expires dynamically across Main, Mine, Boss, SpeedRun, H
   }
 });
 
-test('old v3 saves without Mine/buffs migrate additively, valid reduced-cap ledgers retain uses and wallet', () => {
+test('missing Mine/buff saves are rejected; valid reduced-cap ledgers retain uses and wallet', t => {
+  t.mock.method(console, 'warn', () => {});
   const f = fixture(), save = JSON.parse(f.data.get(f.key));
-  delete save.mine; delete save.buffs; save.weapons.diamonds = 123;
-  f.data.set(f.key, JSON.stringify(save)); const old = f.create();
-  assert.equal(old.weapons.diamonds, 123); assert.equal(old.getMineState().remainingTickets, 2);
-  assert.equal(old.attackSpeedBuffRemainingSeconds, 0);
-  const upgraded = JSON.parse(f.data.get(f.key)); upgraded.mine.usedEntries = 9; upgraded.mine.bestReward = 190;
-  f.data.set(f.key, JSON.stringify(upgraded)); const reduced = f.create();
+  save.weapons.diamonds = 123;
+  for (const block of ['mine', 'buffs']) {
+    const missing = structuredClone(save); delete missing[block]; const raw = JSON.stringify(missing);
+    f.data.set(f.key, raw); const old = f.create();
+    assert.equal(old.persistenceBlocked, true); old.save(); assert.equal(f.data.get(f.key), raw);
+  }
+  save.mine.usedEntries = 9; save.mine.bestReward = 190;
+  f.data.set(f.key, JSON.stringify(save)); const reduced = f.create();
   assert.equal(reduced.getMineState().usedEntries, 9); assert.equal(reduced.getMineState().remainingTickets, 0);
   assert.equal(reduced.getMineState().bestReward, 190); assert.equal(reduced.weapons.diamonds, 123);
 });

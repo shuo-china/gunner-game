@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { OriginalInfVal: I } = require('./.build/session/core/OriginalInfVal.js');
 const { DecimalAmount: D, ORIGINAL_NUMBER_UNITS: units } = require('./.build/session/core/DecimalAmount.js');
 const { BattleSession, economyStorageKey, MAX_SAVED_DECIMAL_SPAN } = require('./.build/session/session/BattleSession.js');
 const { UPGRADE_TYPES, MAX_UPGRADE_LEVEL, getUpgradePrice, getUpgradeValue, fullUpgradeBudget } = require('./.build/session/session/UpgradeEconomy.js');
@@ -10,7 +11,7 @@ function storage() {
 function seeded(money, levels = [0, 0, 0], environment = 'production') {
   const store = storage(); new BattleSession({ environment, storage: store });
   const saved = JSON.parse(store.getItem(economyStorageKey(environment)));
-  store.setItem(economyStorageKey(environment), JSON.stringify({ ...saved, money: D.from(money), levels }));
+  store.setItem(economyStorageKey(environment), JSON.stringify({ ...saved, money: I.fromAmount(D.from(money), Math.max(1, D.from(money).digits.replace('-', '').length)), levels }));
   return { store, session: new BattleSession({ environment, storage: store }) };
 }
 function snapshot(session) { return session.snapshot(stats, false); }
@@ -203,16 +204,40 @@ test('Malformed saves fall back safely and unavailable storage warns once while 
 test('High-stage v3 wallets retain safe large exponents and progress without expanding their coefficient', () => {
   const { store } = seeded(0), key = economyStorageKey('production');
   const saved = JSON.parse(store.getItem(key));
-  saved.money = { digits: '27', exponent: 120000 };
+  saved.money = { digits: '27', exponent: 120000, precision: 2 };
   saved.progress = { stageIndex: 250000, waveIndex: 4 };
   saved.weapons.stageValueMax = 2500004;
   store.setItem(key, JSON.stringify(saved));
   const session = new BattleSession({ storage: store });
-  assert.deepEqual(session.moneyBalance.toJSON(), saved.money);
+  assert.deepEqual(session.moneyBalance.toJSON(), { digits: saved.money.digits, exponent: saved.money.exponent });
   assert.equal(session.round.stageIndex, 250000); assert.equal(session.round.waveIndex, 4);
   assert.equal(session.weapons.snapshot().stageValueMax, 2500004);
   session.save();
   const again = new BattleSession({ storage: store });
-  assert.deepEqual(again.moneyBalance.toJSON(), saved.money);
+  assert.deepEqual(again.moneyBalance.toJSON(), { digits: saved.money.digits, exponent: saved.money.exponent });
   assert.equal(again.round.stageIndex, 250000); assert.equal(again.round.waveIndex, 4);
+});
+
+test('only complete current saves are restored; missing blocks and wallet precision stay untouched', () => {
+  const { store } = seeded(50), key = economyStorageKey('production'), saved = JSON.parse(store.getItem(key));
+  const invalid = [];
+  for (const field of ['weapons', 'skins', 'pets', 'fish', 'hunt', 'mine', 'buffs', 'progress', 'rebirth', 'speedRun', 'boss', 'raid',
+    'content', 'tutorial', 'redeemedCodes', 'offline', 'dailyCheck', 'dailyShare', 'adventure', 'relics']) {
+    const source = structuredClone(saved); delete source[field]; invalid.push(source);
+  }
+  for (const precision of [undefined, null, 0, 100001, '2']) {
+    const source = structuredClone(saved); source.money.precision = precision; invalid.push(source);
+  }
+  for (const content of [null, {}, { challengeUnlocked: true, weaponsUnlocked: true }]) invalid.push({ ...saved, content });
+  const warn = console.warn; console.warn = () => {};
+  try {
+    for (const source of invalid) {
+      const raw = JSON.stringify(source); store.setItem(key, raw);
+      const session = new BattleSession({ storage: store });
+      assert.equal(session.persistenceBlocked, true); session.save(); assert.equal(store.getItem(key), raw);
+    }
+  } finally { console.warn = warn; }
+  store.setItem(key, JSON.stringify(saved));
+  const current = new BattleSession({ storage: store });
+  assert.equal(current.persistenceBlocked, false); assert.equal(current.moneyBalance.toString(), '50');
 });

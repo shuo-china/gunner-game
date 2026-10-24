@@ -73,8 +73,8 @@ test('cold startup freezes the restored snapshot, automatically commits the simu
   assert.equal((await reload.initializeOfflineProgress()).result, null); assert.deepEqual(stateOf(reload), settled);
 });
 
-test('legacy v3, malformed or future checkpoints do not manufacture an absence or discard valid progress', async () => {
-  for (const offline of [undefined, null, {}, { lastSavedAtMs: 'yesterday' }, { lastSavedAtMs: -1 },
+test('malformed or future checkpoints do not manufacture an absence or discard valid progress', async () => {
+  for (const offline of [null, {}, { lastSavedAtMs: 'yesterday' }, { lastSavedAtMs: -1 },
     { lastSavedAtMs: NOW + 3600001 }, { lastSavedAtMs: 1.5 }]) {
     const f = fixture(), saved = savedOf(f);
     saved.offline = offline; saved.levels = [3, 4, 5]; saved.progress = { stageIndex: 6, waveIndex: 2 };
@@ -85,6 +85,15 @@ test('legacy v3, malformed or future checkpoints do not manufacture an absence o
     assert.equal(s.round.stageIndex, 6); assert.equal(s.round.waveIndex, 2);
     assert.equal(savedOf(f).offline.lastSavedAtMs, NOW + 3600000);
   }
+});
+
+test('missing checkpoint block is unsupported and never replaced with a new timestamp', async t => {
+  t.mock.method(console, 'warn', () => {});
+  const f = fixture(), saved = savedOf(f); delete saved.offline;
+  const raw = JSON.stringify(saved); f.data.set(f.key, raw); f.setNow(NOW + 3600000);
+  const s = f.create(); assert.equal(s.persistenceBlocked, true); assert.equal(s.offlineInitializationPending, false);
+  assert.equal((await s.initializeOfflineProgress()).result, null);
+  s.save(); s.checkpointForeground(); assert.equal(f.data.get(f.key), raw); assert.equal(f.writes.length, 0);
 });
 
 test('the source thirty-second minimum and eight-hour cap reach session initialization', async () => {

@@ -147,6 +147,49 @@ test('commit failure has no flight or balance change and close keeps the origina
   h.hud.destroy();h.entry.destroy();
 });
 
+test('server-verified daily claim waits for success and rejects repeat clicks until it settles', async () => {
+  const h = harness(), grant = h.callbacks.claim;
+  let finish, requests = 0;
+  h.callbacks.claim = index => { requests++; return new Promise(resolve => { finish = () => resolve(grant(index)); }); };
+  h.hud.open(); h.click(ids.cards[0].root); h.click(ids.cards[0].root); h.click(ids.cards[1].root);
+  assert.equal(requests, 1); assert.equal(h.wallet.diamonds, 42);
+  assert.equal(h.hud.particles.count, 0); assert.deepEqual(h.records.sounds, []);
+  finish(); await Promise.resolve();
+  assert.equal(h.wallet.diamonds, 182); assert.equal(h.text('diamondText'), '182');
+  assert.equal(h.node(ids.cards[0].claimed).active, true); assert.equal(h.hud.particles.count, 8);
+  assert.deepEqual(h.records.sounds, [7]);
+  h.click(ids.cards[0].root); assert.equal(requests, 2); finish(); await Promise.resolve();
+  assert.equal(h.wallet.diamonds, 182);
+  h.hud.destroy(); h.entry.destroy();
+});
+
+test('daily verification rejection and synchronous exceptions show Chinese feedback and allow retry', async () => {
+  const h = harness(), grant = h.callbacks.claim;
+  h.hud.open();
+  for (const fail of [() => Promise.reject(new Error('network unavailable')), () => { throw new Error('network unavailable'); }]) {
+    h.callbacks.claim = fail; h.click(ids.cards[0].root); await Promise.resolve();
+    assert.equal(h.records.alerts.at(-1), '签到核验失败，请检查网络后重试。');
+    assert.equal(h.wallet.diamonds, 42); assert.equal(h.hud.particles.count, 0);
+  }
+  h.callbacks.claim = () => Promise.resolve({ ok: false, reason: 'notLoggedIn', message: '请先登录后再签到。' });
+  h.click(ids.cards[0].root); await Promise.resolve();
+  assert.equal(h.records.alerts.at(-1), '请先登录后再签到。');
+  h.callbacks.claim = grant; h.click(ids.cards[0].root); assert.equal(h.wallet.diamonds, 182);
+  h.hud.destroy(); h.entry.destroy();
+});
+
+test('daily verification completion cannot update a destroyed HUD', async () => {
+  for (const reject of [false, true]) {
+    const h = harness(); let settle;
+    h.callbacks.claim = () => new Promise((resolve, fail) => { settle = reject ? () => fail(new Error('network unavailable')) : () => resolve({ ok: true, dayIndex: 0, diamonds: 140 }); });
+    h.hud.open(); h.click(ids.cards[0].root); h.hud.destroy(); h.entry.destroy();
+    const sounds = h.records.sounds.length, alerts = h.records.alerts.length;
+    h.hud.refresh = () => assert.fail('destroyed HUD must not refresh');
+    settle(); await Promise.resolve();
+    assert.equal(h.records.sounds.length, sounds); assert.equal(h.records.alerts.length, alerts);
+  }
+});
+
 test('entry keeps original top coordinates at safe-area sizes',()=>{
   assert.deepEqual(config.nodes[ids.entry].entryLayout.parentSizeDelta,[-980,-1820]);
   const h=harness();h.entry.resize(1080,1920,48,30);const e=h.entry.entry;

@@ -40,16 +40,11 @@ test('claim atomically saves exact reward and both counters before one notificat
   f.setNow(new Date(2026, 9, 16, 23).getTime()); assert.equal(restored.claimDailyCheck(2).reason, 'notClaimable');
 });
 
-test('old v3 without daily block preserves the complete economy and unrelated progression on first claim', () => {
-  const f = fixture(); const session = f.patch(raw => { delete raw.dailyCheck; raw.weapons.diamonds = 517;
-    raw.weapons.starGems = 39; raw.levels = [7, 8, 9]; raw.progress = { stageIndex: 3, waveIndex: 2 };
-    raw.skins.owned[1] = true; raw.skins.selectedId = 1; raw.redeemedCodes = ['historic']; });
-  const before = JSON.parse(f.data.get(f.key));
-  assert.equal(session.claimDailyCheck(0).ok, true);
-  const expected = structuredClone(before); expected.weapons.diamonds += 140;
-  expected.dailyCheck = { lastClaimDay: '2026-10-16', checkNum: 1, totalCheckNum: 1 };
-  assert.deepEqual(JSON.parse(f.data.get(f.key)), expected);
-  assert.equal(f.make().weapons.diamonds, 657);
+test('missing current daily ledger is rejected without rewriting the save or granting rewards', () => {
+  const f = fixture(), session = f.patch(raw => { delete raw.dailyCheck; raw.weapons.diamonds = 517; });
+  const saved = f.data.get(f.key); f.writes.length = 0;
+  assert.equal(session.persistenceBlocked, true); assert.equal(session.claimDailyCheck(0).ok, false);
+  session.save(); assert.equal(f.data.get(f.key), saved); assert.equal(f.writes.length, 0);
 });
 
 test('a complete seven-day cycle remains durable across reloads and restarts only on the following day', () => {

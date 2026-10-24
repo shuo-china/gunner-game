@@ -123,12 +123,15 @@ test('fish same-grade index shifts cannot apply stale drag/drop or release confi
   assert.equal(s.mergeFish(0, 1, 0, false, before.revision).grade, 1); assert.deepEqual(f.make().getFishState().inventory, [0, 1]);
 });
 
-test('fish saves are optional and isolated, survive rebirth, and do not cross production/test wallets', () => {
+test('missing or invalid fish saves block overwrites; current saves survive rebirth and keep wallets isolated', () => {
   silent(() => {
     for (const fish of [undefined, null, {}, fishSave([13]), fishSave([], { freeDrawCount: -1 })]) {
       const f = fixture({ environment: 'production', patch: s => { s.fish = fish; s.weapons.diamonds = 731; s.levels = [7, 8, 9]; } });
-      assert.equal(f.session.weapons.diamonds, 731); assert.deepEqual(f.session.getFishState().inventory, []);
+      const raw = f.data.get(f.key); assert.equal(f.session.persistenceBlocked, true);
+      if (fish !== undefined) assert.equal(f.session.weapons.diamonds, 731);
+      assert.deepEqual(f.session.getFishState().inventory, []);
       assert.deepEqual(JSON.parse(f.data.get(f.key)).levels, [7, 8, 9]);
+      f.session.save(); assert.equal(f.data.get(f.key), raw);
     }
   });
   const f = fixture({ patch: s => { s.fish = fishSave([4, 7], { autoEnabled: true, freeDrawDate: DAY, freeDrawCount: 4 }); } });

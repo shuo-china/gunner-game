@@ -50,7 +50,7 @@ test('compiled Latin atlases ship locally for boot and every feature without pac
       'rebirth-system': { roots: { normal: 'normal', ad: 'ad' } },
       'speedrun-system': { treeIcons: [] },
       'raid-system': { bossSprites: [], images: { shared: { path: 'art/cross-feature/shared' } } },
-      'boss-system': { bossHeads: [], images: { shared: { path: 'art/cross-feature/shared' } } },
+      'boss-system': { bossHeads: [], images: { shared: { path: 'art/cross-feature/shared' }, plate: { path: 'art/boss-system/images/s803' } } },
       'skin-system': { roots: { list: 'list' }, skinCount: 25, previewMode: 'battle-parts' },
       'pet-system': { roots: { newPet: 'newPet' }, portraits: [] },
       'fish-system': { fishSprites: [] },
@@ -75,6 +75,16 @@ test('compiled Latin atlases ship locally for boot and every feature without pac
     for (const name of ['art/hud/joystick_background', 'art/hud/joystick_handle', 'art/weapon-system/icon', 'art/weapon-system/entry', 'art/settings-system/panel', 'art/offline-system/cat', 'art/daily-check-system/entry', 'art/daily-check-system/card']) add(name + '/spriteFrame', 1);
     const adventureImage = add('art/adventure-system/forest/spriteFrame', 1);
     const sharedImage = add('art/cross-feature/shared/spriteFrame', 1);
+    const shareIcon = add('art/share-system/images/entry-share/spriteFrame', 1);
+    const sharePlate = add('art/boss-system/images/s803/spriteFrame', 1);
+    const bootImages = ['art/effects/number-atlas/atlas', 'art/effects/money-burst/cash_atlas',
+      'art/tutorial-system/cat-hand'].map(asset => add(asset + '/spriteFrame', 1));
+    const otherImages = ['art/boss-system/encounter-one', 'art/boss-system/encounter-two']
+      .map(asset => add(asset + '/spriteFrame', 1));
+    for (const file of otherImages) write(file, Buffer.alloc(350 * 1024, 7));
+    const generatedAtlas = 'remote/resources/native/aa/aa1234567.abcd.png';
+    write(generatedAtlas, Buffer.from('Creator generated atlas without a direct asset path'));
+    const mapImage = add('art/stages/map-one/spriteFrame', 1);
     const skinPaths = ['art/skin-system/characters/0/body', 'art/skin-system/characters/1/body', 'art/skin-system/characters/0/head'];
     const skinVisuals = { sharedRig: 'art/characters/cat_basic/rig', bodyContour: { path: 'art/skin-system/body-contour', sizePx: [149, 99] }, skins: [
       { parts: [skinPaths[0], skinPaths[2]].map(path => ({ path, sizeUnits: [1, 1] })) },
@@ -86,7 +96,7 @@ test('compiled Latin atlases ship locally for boot and every feature without pac
     const skinNatives = [...skinPaths, facePath, skinVisuals.bodyContour.path].map(name => add(name + '/spriteFrame', 1));
     add('art/settings-system/font317', 2); add('art/weapon-system/original', 2);
     const evidence = path.join(temporary, 'evidence.json');
-    const result = packageFeatureResources(input, code, config, 'https://nurse.kylinsit.com/forest-gunner/', evidence);
+    const result = packageFeatureResources(input, code, config, 'https://nurse.kylinsit.com/forest-gunner/', evidence, [], [mapImage]);
     assert.equal(result.packages.some(item => item.name === 'forest-ui-fonts-0'), false);
     assert.ok(result.packages.some(item => item.name.startsWith('forest-ui-fonts-shared-')));
     assert.ok(result.packages.filter(item => item.name.includes('-fonts-')).every(item => item.bytes <= 512 * 1024));
@@ -100,9 +110,28 @@ test('compiled Latin atlases ship locally for boot and every feature without pac
     assert.equal(sharedImages.length, 1, 'cross-feature deduplication keeps one native image copy');
     assert.match(sharedImages[0].package, /^forest-ui-images-shared-[0-9a-f]{8}-0$/,
       'shared dependencies are routed by actual config paths, independent of their resource directory');
-    assert.equal(files.filter(item => item.package === null).length, 1, 'Loading and HUD glyphs must be in the main package');
+    assert.equal(files.filter(item => item.package === null).length, 6, 'Boot glyphs, HUD input and fixed startup textures ship in main');
+    for (const remote of bootImages) {
+      const item = files.find(file => file.remote === remote);
+      assert.equal(item.package, null);
+      assert.deepEqual(fs.readFileSync(path.join(code, item.local)), fs.readFileSync(path.join(input, remote)));
+    }
+    const remaining = otherImages.map(remote => files.find(file => file.remote === remote));
+    assert.ok(remaining.every(item => item.package.startsWith('forest-ui-images-boss-system-')));
+    assert.notEqual(remaining[0].package, remaining[1].package, 'Remaining battle images split at the small package budget');
+    assert.match(files.find(item => item.remote === generatedAtlas).package, /^forest-ui-images-atlas-/);
+    assert.equal(files.some(item => item.remote === mapImage), false, 'An already packaged map image must not get a second copy');
+    assert.equal(new Set(files.map(item => item.remote)).size, files.length);
+    assert.equal(result.imageCoverage.mappedPngs, result.imageCoverage.totalPngs);
+    assert.deepEqual(result.imageCoverage.missing, []);
     assert.equal(files.filter(item => item.remote.endsWith('.ttf')).length, 0);
     assert.equal(files.filter(item => item.package === 'forest-ui-entry-weapons-0').length, 1);
+    assert.equal(files.find(item => item.remote === shareIcon).package, 'forest-ui-entry-share-0',
+      'The generated share emblem ships locally without requiring a panel catalog');
+    const sharePlates = files.filter(item => item.remote === sharePlate);
+    assert.equal(sharePlates.length, 1, 'The share entry and boss panel reuse one local menu plate');
+    assert.match(sharePlates[0].package, /^forest-ui-images-shared-/,
+      'The small share entry must not require the full boss panel');
     assert.equal(files.filter(item => item.package === 'forest-ui-offline-0').length, 1, 'Offline art is independent of shared lettering');
     assert.equal(files.find(item => item.remote === adventureImage).package, 'forest-ui-adventure-0', 'Travel art participates in local feature packages');
     assert.equal(files.filter(item => item.package === 'forest-ui-daily-check-0').length, 2, 'Daily entry and reward art remain packaged');
@@ -148,6 +177,14 @@ test('compiled Latin atlases ship locally for boot and every feature without pac
     const legacy = packageFeatureResources(input, code, config, 'https://nurse.kylinsit.com/forest-gunner/', evidence);
     assert.equal(legacy.packages.some(item => item.name.startsWith('forest-ui-daily-check-')), false);
     config.paths[dailyPath] = dailyCatalog;
+    const sharePath = Object.keys(config.paths).find(key => config.paths[key][0] === 'art/share-system/images/entry-share/spriteFrame');
+    const shareAsset = config.paths[sharePath]; delete config.paths[sharePath];
+    const withoutShare = packageFeatureResources(input, code, config, 'https://nurse.kylinsit.com/forest-gunner/', evidence);
+    assert.equal(withoutShare.packages.some(item => item.name.startsWith('forest-ui-entry-share-')), false,
+      'Older builds without the optional share emblem remain packageable');
+    assert.equal(JSON.parse(fs.readFileSync(evidence)).files.some(item => item.remote === shareIcon), true,
+      'Every emitted PNG stays local even if Creator removes its direct logical alias');
+    config.paths[sharePath] = shareAsset;
     delete panels['settings-system'].input.bitmapFont;
     write(imports['settings-system'], JSON.stringify(panels['settings-system']));
     assert.throws(() => packageFeatureResources(input, code, config, 'https://nurse.kylinsit.com/forest-gunner/', evidence), /Latin bitmap font conversion is missing/);

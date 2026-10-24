@@ -47,7 +47,6 @@ export class SkinSystem {
   }
   serialize(): SkinSave { return { owned: [...this.owned], selectedId: this.selectedId }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const data = value as Partial<SkinSave> | null;
     if (!data || !Array.isArray(data.owned) || data.owned.length !== SKIN_COUNT || data.owned.some(v => typeof v !== 'boolean')
       || data.owned[0] !== true || !isSkinId(data.selectedId) || !data.owned[data.selectedId]) throw new Error('Invalid skin save');

@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { BattleSession, economyStorageKey } = require('./.build/session/session/BattleSession.js');
 const { DecimalAmount: D } = require('./.build/session/core/DecimalAmount.js');
-const { getWeapon, LEGACY_WEAPON_ID_MAP } = require('./.build/session/core/WeaponCatalog.js');
+const { getWeapon } = require('./.build/session/core/WeaponCatalog.js');
 const { getStarPercent, getStarMultiplier } = require('./.build/session/session/WeaponInventory.js');
 const { createStageDefinition, CombatWorld } = require('./.build/core/index.js');
 const fixture = require('./fixtures/rebirth-golden.json');
@@ -23,9 +23,8 @@ function amount(saved) { return D.from({ digits: saved.digits, exponent: saved.e
 
 test('live rebirth damage matches independent Cat and StarUpgrade native arithmetic, including huge values', () => {
   for (const row of fixture.combatDamage) {
-    // This native arithmetic fixture needs the original 80-damage input; the
-    // replacement D crossbow retains that input while the old D pistol migrates to the bow.
-    const weaponId = row.weaponId === 1 ? 1 : LEGACY_WEAPON_ID_MAP[row.weaponId];
+    // Native fixture source 22 is the current 800-damage staff; other fixture IDs already match.
+    const weaponId = row.weaponId === 22 ? 16 : row.weaponId;
     const { session, storage } = sessionFor({ ...row, weaponId });
     assert.equal(getWeapon(weaponId).damage, row.serializedBase);
     assert.equal(session.combatLoadout[0].damage.compare(amount(row.damage)), 0, JSON.stringify(row));
@@ -60,7 +59,7 @@ test('generated tree precision survives into rebirth gold settlement and wallet 
     assert.equal(session.moneyBalance.compare(amount(row.payout)), 0);
     assert.equal(session.consume([event], [tree]).length, 0, 'same tree cannot pay twice');
     const saved = JSON.parse(data.get(key));
-    assert.deepEqual(D.from(saved.money).toJSON(), reward[0].amount.toJSON(), 'wallet amount survives the optional precision field');
+    assert.deepEqual(D.from(saved.money).toJSON(), reward[0].amount.toJSON(), 'wallet amount survives the precision field');
     assert.equal(saved.money.precision, row.payout.precision, 'wallet also retains the original reward precision');
     assert.equal(new BattleSession({ storage }).moneyBalance.compare(reward[0].amount), 0);
   }

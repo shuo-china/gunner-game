@@ -64,7 +64,6 @@ export class FishSystem {
   }
   serialize(): FishSave { return { ...this.data, inventory: [...this.data.inventory], collected: [...this.data.collected] }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const d = value as FishSave;
     if (!d || !Array.isArray(d.inventory) || d.inventory.length > FISH_CAPACITY || d.inventory.some(v => !isFishGrade(v))
       || !Array.isArray(d.collected) || d.collected.length !== FISH_COUNT || d.collected.some(v => typeof v !== 'boolean')

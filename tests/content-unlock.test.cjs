@@ -4,6 +4,7 @@ const { BattleSession, economyStorageKey } = require('./.build/session/session/B
 const { ContentUnlockManager } = require('./.build/session/session/ContentUnlockManager.js');
 const { resolveContentConfig } = require('./.build/session/session/ContentConfig.js');
 const { DecimalAmount: D } = require('./.build/session/core/DecimalAmount.js');
+const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
 const { remainingRebirthUpgradeBudget } = require('./.build/session/session/RebirthEconomy.js');
 
 function storage() {
@@ -95,7 +96,7 @@ test('production thresholds use displayed stages and ads override both environme
 });
 
 test('new production unlocks weapons with challenges at Lv3 and persists the first panel top-up once', () => {
-  const { session, store } = seedProduction(save => { save.money = D.from(1000); });
+  const { session, store } = seedProduction(save => { save.money = OriginalInfVal.fromInt(1000); });
   assert.equal(session.getSpeedRunState().unlocked, false);
   assert.equal(session.startSpeedRun().reason, 'locked');
   assert.equal(session.weapons.snapshot().unlocked, false);
@@ -181,17 +182,19 @@ test('both content entries share the configured power threshold and either perma
   }
 });
 
-test('legacy v3 entries remain open without another grant and retired auto entitlement is discarded', () => {
+test('missing content progress is rejected without opening entries, granting rewards or rewriting the source save', t => {
+  t.mock.method(console, 'warn', () => {});
   const { session, store } = seedProduction(save => {
     delete save.content; save.weapons.diamonds = 7; save.weapons.autoExpiresAt = Number.MAX_SAFE_INTEGER;
   });
-  assert.equal(session.getSpeedRunState().unlocked, true);
-  assert.equal(session.weapons.snapshot().unlocked, true);
-  assert.equal(session.weapons.diamonds, 7);
-  assert.equal(session.weapons.snapshot().auto.unlocked, false, 'old entitlement cannot bypass stage 20');
-  const saved = JSON.parse(store.getItem(economyStorageKey('production')));
-  assert.equal('autoExpiresAt' in saved.weapons, false);
-  assert.deepEqual(saved.content, { challengeUnlocked: true, weaponsUnlocked: true, firstDrawGranted: true });
+  const raw = store.getItem(economyStorageKey('production')), writes = store.writes;
+  assert.equal(session.persistenceBlocked, true);
+  assert.equal(session.getSpeedRunState().unlocked, false);
+  assert.equal(session.weapons.snapshot().unlocked, false);
+  session.save(); assert.equal(store.writes, writes); assert.equal(store.getItem(economyStorageKey('production')), raw);
+  const saved = JSON.parse(raw);
+  assert.equal(saved.weapons.diamonds, 7); assert.equal(saved.content, undefined);
+  assert.equal(saved.weapons.autoExpiresAt, Number.MAX_SAFE_INTEGER);
 });
 
 test('test environment opens non-ad content at stage 1 with resources but no free guns or altered history', () => {

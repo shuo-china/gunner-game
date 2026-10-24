@@ -77,12 +77,12 @@ test('tutorial state survives save/reload at every step, including the first suc
 test('malformed saves cannot alter valid teaching progress', () => {
   const manager = new TutorialManager(true); manager.restore({ step: 'gunEquip', drawCount: 2 });
   for (const saved of [null, [], {}, true, 3, 'done', { step: null }, { step: 5 }, { step: 'invalid' },
-    { step: 'challenge', drawCount: 0 }, { step: 'gunBuy', drawCount: -1 }, { step: 'gunBuy', drawCount: 1.5 },
+    { step: 'gunBuy' }, { step: 'challenge', drawCount: 0 }, { step: 'gunBuy', drawCount: -1 }, { step: 'gunBuy', drawCount: 1.5 },
     { step: 'gunBuy', drawCount: 3 }, { step: 'gunBuy', drawCount: '1' }, { step: 'gunBuy', drawCount: null }]) {
     assert.throws(() => manager.restore(saved), /Invalid tutorial save/);
     assert.deepEqual(manager.serialize(), { step: 'gunEquip', drawCount: 2 });
   }
-  manager.restore(undefined);
+  assert.throws(() => manager.restore(undefined), /Invalid tutorial save/);
   assert.equal(manager.snapshot().step, 'gunEquip');
 });
 

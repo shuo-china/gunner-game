@@ -28,6 +28,7 @@ function harness() {
       this.weapon=makeNode('Weapon',this.overlayNode);this.hand=makeNode('Hand',this.overlayNode);
     }
     get sortingDepth(){return nodeDepth(this.node);}
+    impactPosition(point){return point;}
     setWeapon(id){this.weaponId=id;} setSkin(){} setAimTarget(){} setAttackState(){}
     updatePose(){this.overlayNode.setPosition(this.node.position.x,this.node.position.y);}
     setFacing(){} getBulletSpawnOffset(){return {x:0,z:0};} updateEffects(){} fire(){}

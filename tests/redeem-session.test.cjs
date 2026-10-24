@@ -63,23 +63,11 @@ test('claim survives reload and later wallet saves; repeated redemption never gr
   assert.deepEqual(JSON.parse(f.data.get(f.key)).redeemedCodes, ['950424']);
 });
 
-test('older v3 saves without a claim ledger retain economy and progression when first redeemed', () => {
-  const f = fixture();
-  const s = f.patch(saved => {
-    delete saved.redeemedCodes;
-    saved.money = { digits: '12345', exponent: 2, precision: 5 }; saved.levels = [7, 8, 9];
-    saved.weapons.diamonds = 517; saved.weapons.starGems = 39; saved.weapons.stageValueMax = 34;
-    saved.weapons.equipment[0].weaponId = 3; saved.weapons.collection[3] = true;
-    saved.progress = { stageIndex: 3, waveIndex: 2 };
-    saved.skins.owned[1] = true; saved.skins.selectedId = 1;
-  });
-  const before = JSON.parse(f.data.get(f.key)); f.writes.length = 0;
-  assert.deepEqual(s.redeemCode('950424'), { ok: true, diamonds: 2000 });
-  const expected = structuredClone(before); expected.weapons.diamonds += 2000; expected.redeemedCodes = ['950424'];
-  assert.deepEqual(JSON.parse(f.data.get(f.key)), expected); assert.equal(f.writes.length, 1);
-  const restored = f.make(); assert.equal(restored.weapons.diamonds, 2517);
-  assert.equal(restored.moneyBalance.toString(), '1234500'); assert.equal(restored.getSkinState().selectedId, 1);
-  assert.equal(restored.round.stageIndex, 3); assert.equal(restored.round.waveIndex, 2);
+test('save without the current claim ledger is rejected and never overwritten or rewarded', () => {
+  const f = fixture(), session = f.patch(saved => { delete saved.redeemedCodes; saved.weapons.diamonds = 517; });
+  const raw = f.data.get(f.key); f.writes.length = 0;
+  assert.equal(session.persistenceBlocked, true); assert.equal(session.redeemCode('950424').ok, false);
+  session.save(); assert.equal(f.data.get(f.key), raw); assert.equal(f.writes.length, 0);
 });
 
 test('claim ledger is environment-isolated and preserves unknown valid code markers', () => {

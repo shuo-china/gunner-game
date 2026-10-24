@@ -27,6 +27,8 @@ const settings = {
   // 原版七天钻石 [70, 200, 400, 600, 800, 1000, 1500] 的两倍最终值；领满七天后次日循环。
   // 保持七项按天排序；dailyLimit 仅支持 0（暂停领取）或 1，不重置已有签到进度。
   dailyCheck: { diamondsByDay: [140, 400, 800, 1200, 1600, 2000, 3000], dailyLimit: 1 },
+  // 每日分享到账后隐藏入口；北京时间零点刷新，dailyLimit 仅支持 0（暂停）或 1。
+  dailyShare: { diamonds: 80, dailyLimit: 1 },
   mine: {
     freeEntriesPerDay: 2, normalScore: 2, rareScore: 20, scorePerDiamond: 10,
     rareOreCount: 100, adAdditionalMultiplier: 3,
@@ -186,7 +188,8 @@ const settings = {
     freeBaseGrade: 0, premiumBaseGrade: 1,
     drawGradePercents: [60, 30, 10, 0], // 原场景 Fish_manager.GachaChances；结果 = 基础品质 + 下标
   },
-  redeemCodes: [{ code: '950424', diamonds: 2000 }], // 每个码每份存档限领一次
+  // per_player：每个账号一次；global_once：全服仅一个账号一次。修改后导出后端配置。
+  redeemCodes: [{ code: '950424', diamonds: 2000, mode: 'per_player' as 'per_player' | 'global_once' }],
   testResources: {
     diamonds: 2000000, starGems: 1000000, fundGoldUpgrades: true, fundRebirthUpgrades: true,
     rebirthRewardFloorStage: 3,
@@ -220,6 +223,8 @@ export function validateEconomyConfig(config: EconomyConfig): void {
   if (config.dailyCheck.diamondsByDay.length !== 7) throw new Error('Invalid economy configuration: dailyCheck.diamondsByDay');
   config.dailyCheck.diamondsByDay.forEach(value => integer('dailyCheck.diamondsByDay', value));
   integer('dailyCheck.dailyLimit', config.dailyCheck.dailyLimit, 0, 1);
+  integer('dailyShare.diamonds', config.dailyShare.diamonds);
+  integer('dailyShare.dailyLimit', config.dailyShare.dailyLimit, 0, 1);
   for (const [name, reward] of Object.entries({ speedRun: config.speedRun, boss: config.boss })) {
     integer(`${name}.baseDiamonds`, reward.baseDiamonds);
     integer(`${name}.additionalDiamonds`, reward.additionalDiamonds);
@@ -300,6 +305,7 @@ export function validateEconomyConfig(config: EconomyConfig): void {
   config.fish.drawGradePercents.forEach(value => integer('fish.drawGradePercents', value, 0, 100));
   const codes = new Set<string>();
   config.redeemCodes.forEach(reward => {
+    if (!['per_player', 'global_once'].includes(reward.mode)) throw new Error('Invalid economy configuration: redeemCodes.mode');
     if (!reward.code.trim() || reward.code !== reward.code.trim() || codes.has(reward.code)) throw new Error('Invalid economy configuration: redeemCodes');
     codes.add(reward.code); integer('redeemCodes.diamonds', reward.diamonds);
   });

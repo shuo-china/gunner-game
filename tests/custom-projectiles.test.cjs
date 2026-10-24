@@ -92,19 +92,19 @@ test('all five installed arrows shrink body and pressure by another 10 percent a
   }
 });
 
-test('all twelve installed shuriken shrink body, afterimage and ribbon width by 25 percent around the unchanged flight center', () => {
+test('all twelve installed shuriken shrink body, afterimage and ribbon width by another 10 percent around the unchanged flight center', () => {
   const installed = require('../assets/resources/art/weapon-system/visuals.json').customProjectiles;
   const keys = Object.keys(installed).filter(key => key.startsWith('shuriken-'));
   assert.deepEqual(keys.sort(), ['C', 'B', 'A', 'S', 'SS', 'SSS', 'X', 'XX', 'XXX', 'Z', 'ZZ', 'ZZZ'].map(grade => `shuriken-${grade}`).sort());
   for (const key of keys) {
-    const current = installed[key], original = { ...current, bodyLength: 4.2 };
-    close(current.bodyLength, 3.15);
+    const current = installed[key], original = { ...current, bodyLength: 3.15 };
+    close(current.bodyLength, 2.835);
     assert.equal(current.anchor, 'center'); assert.equal(current.hitTrigger, 'hit');
     for (const age of [0, .05, .19, .26, .36, .5]) for (const direction of [.6, 2.5]) {
       const bullet = head(age, direction), before = JSON.stringify(bullet);
       const pose = math.projectileBodyPose(current, bullet), oldPose = math.projectileBodyPose(original, bullet);
       close(pose.x, oldPose.x); close(pose.y, oldPose.y); close(pose.angle, oldPose.angle);
-      close(pose.width, oldPose.width * .75); close(pose.height, oldPose.height * .75);
+      close(pose.width, oldPose.width * .9); close(pose.height, oldPose.height * .9);
       for (const ghost of [false, true]) {
         const geometry = math.projectileGeometry(4, [0, 1, 2, 2, 1, 3]);
         const oldGeometry = math.projectileGeometry(4, [0, 1, 2, 2, 1, 3]);
@@ -113,8 +113,8 @@ test('all twelve installed shuriken shrink body, afterimage and ribbon width by 
         math.fillProjectileBody(geometry, current, pose, alpha, angle);
         math.fillProjectileBody(oldGeometry, original, oldPose, alpha, angle);
         for (let i = 0; i < geometry.positions.length; i++) {
-          close(geometry.positions[i][0] - pose.x, (oldGeometry.positions[i][0] - pose.x) * .75);
-          close(geometry.positions[i][1] - pose.y, (oldGeometry.positions[i][1] - pose.y) * .75);
+          close(geometry.positions[i][0] - pose.x, (oldGeometry.positions[i][0] - pose.x) * .9);
+          close(geometry.positions[i][1] - pose.y, (oldGeometry.positions[i][1] - pose.y) * .9);
         }
         assert.deepEqual(geometry.uv, oldGeometry.uv); assert.deepEqual(geometry.colors, oldGeometry.colors);
       }
@@ -128,13 +128,13 @@ test('all twelve installed shuriken shrink body, afterimage and ribbon width by 
     for (let i = 0; i < count; i++) {
       const j = oldOuter.slice(0, oldCount).findIndex(point => Math.hypot(point.x - outer[i].x, point.y - outer[i].y) < 1e-8);
       if (j < 0) continue; // The final point follows the resized body attachment.
-      close(outer[i].width, oldOuter[j].width * .75); close(core[i].width, oldCore[j].width * .75);
+      close(outer[i].width, oldOuter[j].width * .9); close(core[i].width, oldCore[j].width * .9);
       close(outer[i].alpha, oldOuter[j].alpha); compared++;
     }
     assert.ok(compared > 10, `${key}: compare widths at the same trail positions`);
     const center = math.projectedPoint(bullet);
     const gap = point => Math.hypot(point.x - center[0], point.y - center[1]);
-    close(gap(outer[count - 1]), gap(oldOuter[oldCount - 1]) * .75);
+    close(gap(outer[count - 1]), gap(oldOuter[oldCount - 1]) * .9);
     assert.equal(math.sampleRibbon(current, bullet, history, current.cometTrail.lifetime, outer, core, {}), 0);
   }
 });
@@ -188,4 +188,31 @@ test('projectile hit routing requests per-target shuriken flashes without changi
     config: { customProjectiles: { 'shuriken-C': profile('shuriken'), 'arrow-C': profile('arrow') } } } };
   const renderer = new OriginalProjectiles(art, {});
   assert.equal(renderer.hitTrigger(1), 'hit'); assert.equal(renderer.hitTrigger(2), 'impact');
+});
+
+test('arrows show one short surface contact, including hits between render frames, but never on timeout or reused shots', () => {
+  class Material { initialize() {} setProperty() {} destroy() {} }
+  class Sprite {}
+  class Vec4 {}
+  class Mesh { constructor(sprite, geometry) { this.geometry = geometry; } updateProjected() { allFinite(this.geometry); } }
+  const art = { image() { return { isValid: true, active: false, getComponent: () => ({}), destroy() {} }; } };
+  const { CustomProjectiles } = load('CustomProjectiles', { cc: { Material, Sprite, Vec4 }, './OriginalParticleMesh': { OriginalParticleMesh: Mesh }, './CustomProjectileMotion': math });
+  const runtime = new CustomProjectiles(art, profile('arrow'), () => ({}), {});
+  const b = { id: 7, active: true, damaging: false, position: { x: 1, z: 4.4 }, direction: { x: 0, z: 1 },
+    height: 2, age: .1, traveled: 7, speed: 70 };
+  runtime.update(.02, [b]); assert.equal(runtime.diagnostics().active, 0, 'expired unseen shot stays hidden');
+  runtime.contact(7, { x: 1, z: 5 }, 2);
+  runtime.update(.02, [b]);
+  const emitter = runtime.emitters.get(7), point = projection.projectWorld({ x: 1, z: 5 }, 2);
+  assert.equal(runtime.diagnostics().active, 1, 'only arrow body; no new pressure or flash');
+  const mesh = emitter.body.geometry.positions;
+  close((mesh[1][0] + mesh[3][0]) / 2, point.x); close((mesh[1][1] + mesh[3][1]) / 2, point.y);
+  runtime.update(.02, [b]); runtime.update(.02, [b]); runtime.update(.02, [b]);
+  assert.equal(runtime.diagnostics().active, 0, 'contact cannot leave a stuck arrow');
+  runtime.contact(7, { x: 1, z: 5 }, 2); runtime.shot(7);
+  runtime.update(.02, [b]); assert.equal(runtime.diagnostics().active, 0, 'pool reuse clears previous contact');
+  runtime.contact(7, { x: 1, z: 5 }, 2);
+  runtime.update(.02, [{ ...b, damaging: true }]);
+  assert.equal(emitter.contact, undefined, 'penetrating shot keeps its true flight pose');
+  runtime.update(.02, [b]); assert.equal(runtime.diagnostics().active, 0, 'a later timeout cannot replay an earlier hit');
 });

@@ -9,7 +9,7 @@ const zlib = require('node:zlib');
 const { projectPath, fixturePath } = require('./support/paths.cjs');
 const {createTiming}=require('./support/wechat-resource-timing.cjs');
 const { packageStartupMetadata, installStartupErrorHandler } = require('../tools/wechat-startup-package.cjs');
-const { STARTUP_METADATA_PACKAGE } = require('../tools/wechat-startup-runtime.cjs');
+const { STARTUP_METADATA_PATH } = require('../tools/wechat-startup-runtime.cjs');
 
 const BASE = 'https://nurse.kylinsit.com/forest-gunner/';
 const VERSION = '8de24';
@@ -64,7 +64,7 @@ function fixture(options = {}) {
   }, { exports: {} }, {});
   if (options.subpackages) cc.assetManager.init();
   const config = options.rawConfig === undefined ? JSON.stringify({ name: 'resources', paths: {} }) : options.rawConfig;
-  const metadata = { version: 1, base: BASE, files: options.files || { [CONFIG_PATH]: config } };
+  const metadata = { version: 2, routes: {}, groups: {}, base: BASE, files: options.files || { [CONFIG_PATH]: config } };
   const compressed = zlib.deflateSync(Buffer.from(JSON.stringify(metadata), 'ascii'));
   const runtimeModule = { exports: {} };
   const timing=createTiming();
@@ -79,6 +79,7 @@ function fixture(options = {}) {
     }, getFileSystemManager: () => ({
       readFileSync(file) {
         events.metadataReads.push(file);
+        if (options.readError) throw options.readError;
         return compressed.buffer.slice(compressed.byteOffset, compressed.byteOffset + compressed.byteLength);
       },
       writeFileSync(file, source, encoding) {
@@ -89,7 +90,7 @@ function fixture(options = {}) {
     }) },
   });
   return { cc, downloader, cache, disk, events, timing:timing.api, timingScope:timing.scope,
-    prepare: () => runtimeModule.exports.prepareStartupMetadata(),
+    timingExports: timing.exports,
     install: () => runtimeModule.exports.installStartupMetadata(cc),
     load(name = 'resources', requestOptions = {}) {
       return new Promise((resolve, reject) => downloader.handlers.bundle(name, requestOptions,
@@ -208,108 +209,26 @@ test('adapter script and callback exceptions are never swallowed or invoked twic
   assert.equal(count, 1);
 });
 
-function fakeTimers() {
-  const pending = new Map(), delays = [], cleared = [];
-  let nextId = 0;
-  return { pending, delays, cleared,
-    setTimeout(callback, delay) {
-      const timer = ++nextId;
-      pending.set(timer, callback);
-      delays.push(delay);
-      return timer;
-    },
-    clearTimeout(timer) { cleared.push(timer); pending.delete(timer); },
-    fire() { for (const callback of [...pending.values()]) callback(); },
-  };
-}
-
-test('earliest metadata package diagnostics survive timeout, shared retry and late callbacks before Cocos initialization',async()=>{
-  const timers=fakeTimers(),f=fixture({timers,loadSubpackage(){}});
-  const first=f.prepare(),shared=f.prepare();assert.equal(first,shared);
-  assert.equal(f.timingScope.__forestGunnerLoading.snapshot().startup.phase,'platform-loader');
-  assert.equal(f.timing.snapshot().phases.platformSubpackage.active,1);
-  timers.fire();assert.equal(await first,false);assert.equal(await shared,false);
-  const retry=f.prepare();f.events.packages[0].success();f.events.packages[0].fail(Error('late'));
-  assert.equal(f.timing.snapshot().phases.platformSubpackage.active,1,'late callbacks cannot finish a new attempt');
-  f.events.packages[1].success();assert.equal(await retry,true);assert.equal(await f.prepare(),true);
-  const s=f.timing.snapshot();assert.equal(s.phases.platformSubpackage.started,2);assert.equal(s.phases.platformSubpackage.active,0);
-  assert.equal(s.phases.platformSubpackage.failed,1);assert.equal(s.packages[0].timedOut,1);assert.equal(s.lateCallbacks,2);
-  assert.equal(s.reuse.inFlight,1);assert.equal(s.reuse.ready,1);assert.equal(s.packages[0].outcome,'success');
-  assert.equal(f.install().installed,true);assert.equal(f.timing.snapshot().phases.metadataInflate.started,1);
-});
-
-test('metadata preparation shares one official subpackage request and never reads before success', async () => {
-  const timers = fakeTimers(), context = fixture({ timers, loadSubpackage() {} });
-  const first = context.prepare(), concurrent = context.prepare();
-  assert.equal(first, concurrent);
-  assert.equal(context.events.packages.length, 1);
-  assert.equal(context.events.packages[0].name, STARTUP_METADATA_PACKAGE.name);
-  assert.equal(context.install().installed, false);
-  assert.deepEqual(context.events.metadataReads, []);
-  context.events.packages[0].success();
-  assert.equal(await first, true);
-  assert.equal(context.prepare(), first);
-  assert.equal(timers.pending.size, 0);
-  assert.equal(timers.cleared.length, 1);
-  const stats = context.install();
-  assert.deepEqual(context.events.metadataReads, [STARTUP_METADATA_PACKAGE.path]);
-  assert.equal((await context.load()).name, 'resources');
-  assert.equal(stats.bundleHits, 1);
-  assert.deepEqual(context.events.downloads, []);
-});
-
-test('subpackage failure clears the shared request and preserves CDN fallback before explicit recovery', async () => {
-  const timers = fakeTimers(), context = fixture({ timers, loadSubpackage() {} });
-  const first = context.prepare();
-  context.events.packages[0].fail({ errMsg: 'download failed' });
-  assert.equal(await first, false);
-  assert.equal(timers.pending.size, 0);
-  assert.equal(context.install().reason, 'metadata-unavailable');
-  await assert.rejects(context.load(), /CDN unavailable/);
-  assert.deepEqual(context.events.downloads, [CONFIG_URL]);
-  assert.deepEqual(context.events.metadataReads, []);
-  const retried = context.prepare();
-  assert.notEqual(retried, first);
-  assert.equal(context.events.packages.length, 2);
-  context.events.packages[1].success();
-  assert.equal(await retried, true);
-  assert.equal(context.install().installed, true);
-  assert.equal((await context.load()).name, 'resources');
-});
-
-test('missing APIs and synchronous subpackage errors fall back without retaining timers or rejected promises', async () => {
-  for (const options of [{ subpackageUnavailable: true }, { loadSubpackage() { throw new Error('host failure'); } }]) {
-    const timers = fakeTimers(), context = fixture({ ...options, timers });
-    const first = context.prepare();
-    assert.equal(await first, false);
-    assert.equal(timers.pending.size, 0);
-    assert.equal(context.install().installed, false);
-    assert.deepEqual(context.events.metadataReads, []);
-    const retry = context.prepare();
-    assert.notEqual(retry, first);
-    assert.equal(await retry, false);
-    await assert.rejects(context.load(), /CDN unavailable/);
+test('the main-package index installs without a subpackage API, timer, or platform request', async () => {
+  for (const options of [{ subpackageUnavailable: true }, { loadSubpackage() { assert.fail('index must stay local'); } }]) {
+    const f = fixture(options), stats = f.install();
+    assert.equal(stats.installed, true);
+    assert.deepEqual(f.events.metadataReads, [STARTUP_METADATA_PATH]);
+    assert.deepEqual(f.events.packages, []);
+    assert.equal(f.timing.snapshot().phases.platformSubpackage.started, 0);
+    assert.equal(f.timing.snapshot().phases.metadataInflate.started, 1);
+    assert.equal((await f.load()).name, 'resources');
+    assert.deepEqual(f.events.downloads, []);
   }
 });
 
-test('a silent subpackage times out, ignores late callbacks and permits a clean retry', async () => {
-  const timers = fakeTimers(), context = fixture({ timers, loadSubpackage() {} });
-  const request = context.prepare();
-  assert.deepEqual(timers.delays, [120000]);
-  timers.fire();
-  assert.equal(await request, false);
-  assert.equal(timers.pending.size, 0);
-  const retry = context.prepare();
-  context.events.packages[0].success();
-  context.events.packages[0].fail();
-  assert.equal(context.install().installed, false);
-  assert.deepEqual(context.events.metadataReads, []);
-  context.events.packages[1].success();
-  context.events.packages[1].fail();
-  assert.equal(await retry, true);
-  assert.equal(timers.pending.size, 0);
-  assert.equal(context.install().installed, true);
-  assert.deepEqual(context.events.metadataReads, [STARTUP_METADATA_PACKAGE.path]);
+test('a missing main-package index keeps the original CDN error behavior', async () => {
+  const f = fixture({ readError: new Error('missing local index') });
+  assert.equal(f.install().reason, 'metadata-unavailable');
+  await assert.rejects(f.load(), /CDN unavailable/);
+  assert.deepEqual(f.events.metadataReads, [STARTUP_METADATA_PATH]);
+  assert.deepEqual(f.events.packages, []);
+  assert.deepEqual(f.events.downloads, [CONFIG_URL]);
 });
 
 const ENTRY = `/* FOREST_GUNNER_ENV_START */
@@ -363,21 +282,21 @@ test('packaging keeps only the bundle index at boot and routes every intact impo
     }
   }
   assert.deepEqual(reconstructed, fixture.sources);
-  assert.equal(result.packages.length, 2);
+  assert.equal(result.packages.length, 1);
   assert.equal(result.files, Object.keys(fixture.sources).length);
   assert.equal(result.sourceBytes, Object.values(fixture.sources).reduce((total, source) => total + Buffer.byteLength(source), 0));
   assert.equal(result.compressedBytes, data.length);
   assert.equal(result.sha256, crypto.createHash('sha256').update(data).digest('hex'));
-  assert.equal(result.package.name, STARTUP_METADATA_PACKAGE.name);
-  assert.equal(result.package.root, STARTUP_METADATA_PACKAGE.root);
-  assert.equal(result.package.bytes, data.length + fs.statSync(path.join(fixture.code, result.package.root, 'game.js')).size);
-  assert.ok(result.package.bytes <= 4 * 1024 * 1024);
-  assert.equal(fs.existsSync(path.join(fixture.code, 'startup-metadata.bin')), false);
+  assert.equal(result.location, 'main-package');
+  assert.equal(result.path, STARTUP_METADATA_PATH);
+  assert.equal(result.mainPackageBytes, data.length);
+  assert.ok(result.mainPackageBytes <= 4 * 1024 * 1024);
+  assert.equal(fs.existsSync(path.join(fixture.code, 'subpackages/forest-startup-metadata')), false);
   for (const [file, source] of Object.entries(fixture.sources)) assert.equal(fs.readFileSync(path.join(fixture.input, file), 'utf8'), source);
   assert.equal(fs.readFileSync(path.join(fixture.code, 'startup-metadata.js'), 'utf8'), SOURCE);
 });
 
-test('the generated game entry awaits metadata and installs every resource hook before application init', async context => {
+test('the generated entry starts without a subpackage callback and installs hooks before application init', async context => {
   const fixture = packagedFixture(context), order = [];
   packageStartupMetadata(fixture.input, fixture.code, BASE);
   const entryPath = path.join(fixture.code, 'game.js');
@@ -395,13 +314,11 @@ test('the generated game entry awaits metadata and installs every resource hook 
     require: runtime.require,
   };
   vm.runInNewContext(fs.readFileSync(entryPath, 'utf8'), scope);
-  await new Promise(setImmediate);
-  assert.deepEqual(order, ['subpackage', 'adapter']);
-  assert.deepEqual(runtime.events.metadataReads, []);
-  runtime.events.packages[0].success();
   await scope.startup;
-  assert.deepEqual(order, ['subpackage', 'adapter', 'metadata', 'features', 'maps', 'init', 'start']);
-  assert.deepEqual(runtime.events.metadataReads, [STARTUP_METADATA_PACKAGE.path]);
+  assert.deepEqual(order, ['diagnostics', 'adapter', 'metadata', 'features', 'maps', 'init', 'start']);
+  assert.deepEqual(runtime.events.metadataReads, [STARTUP_METADATA_PATH]);
+  assert.deepEqual(runtime.events.packages, []);
+  assert.equal(runtime.timing.snapshot().phases.platformSubpackage.started, 0);
   assert.deepEqual(runtime.events.downloads, []);
 });
 
@@ -409,8 +326,11 @@ function fixtureRuntime(order, options = {}) {
   const runtime = fixture({ ...options, loadSubpackage() { order.push('subpackage'); } });
   return { ...runtime, require(name) {
     if (name === './engine-adapter.abc123.js') { order.push('adapter'); return {}; }
+    if (name === './wechat-resource-timing.js') return { publishEarlySnapshot() {
+      order.push('diagnostics'); runtime.timingExports.publishEarlySnapshot();
+      assert.equal(runtime.timingScope.__forestGunnerLoading.snapshot().startup.phase, 'platform-loader');
+    } };
     if (name === './startup-metadata') return {
-      prepareStartupMetadata: runtime.prepare,
       installStartupMetadata(cc) { assert.equal(cc, runtime.cc); order.push('metadata'); return runtime.install(); },
     };
     if (name === './startup-features') return { installFeatureResources() { order.push('features'); } };
@@ -420,25 +340,24 @@ function fixtureRuntime(order, options = {}) {
   } };
 }
 
-test('subpackage failure continues into normal startup and its CDN rejection reaches the existing error hook', async context => {
-  const fixture = packagedFixture(context), order = [], runtime = fixtureRuntime(order);
+test('missing local metadata continues into startup and its CDN rejection reaches the existing error hook', async context => {
+  const fixture = packagedFixture(context), order = [], runtime = fixtureRuntime(order, { readError: Error('missing index') });
   packageStartupMetadata(fixture.input, fixture.code, BASE);
   installStartupErrorHandler(fixture.code);
   const scope = { engine: runtime.cc, require: runtime.require,
     application: { init() { order.push('init'); return runtime.load(); }, start() { order.push('start'); } } };
   vm.runInNewContext(fs.readFileSync(path.join(fixture.code, 'game.js'), 'utf8'), scope);
-  await new Promise(setImmediate);
-  runtime.events.packages[0].fail({ errMsg: 'offline' });
   await scope.startup;
-  assert.deepEqual(order, ['subpackage', 'adapter', 'metadata', 'init', 'error:CDN unavailable: ' + CONFIG_URL]);
-  assert.deepEqual(runtime.events.metadataReads, []);
+  assert.deepEqual(order, ['diagnostics', 'adapter', 'metadata', 'init', 'error:CDN unavailable: ' + CONFIG_URL]);
+  assert.deepEqual(runtime.events.metadataReads, [STARTUP_METADATA_PATH]);
+  assert.deepEqual(runtime.events.packages, []);
 });
 
 test('packaging rejects oversized metadata and ambiguous startup order without changing the entry', context => {
   const fixture = packagedFixture(context);
   fixture.write(fixture.input, Object.keys(fixture.sources)[1], JSON.stringify({ data: crypto.randomBytes(5 * 1024 * 1024).toString('base64') }));
   assert.throws(() => packageStartupMetadata(fixture.input, fixture.code, BASE), /metadata subpackage exceeds 4 MiB/);
-  assert.equal(fs.existsSync(path.join(fixture.code, STARTUP_METADATA_PACKAGE.root)), false);
+  assert.equal(fs.existsSync(path.join(fixture.code, STARTUP_METADATA_PATH)), false);
   assert.equal(fs.readFileSync(path.join(fixture.code, 'game.js'), 'utf8'), ENTRY);
   fixture.write(fixture.input, Object.keys(fixture.sources)[1], '{}');
   for (const entry of [ENTRY.replace('return application.init(cc);', ''), ENTRY + 'return application.init(cc);',
@@ -450,7 +369,7 @@ test('packaging rejects oversized metadata and ambiguous startup order without c
   }
 });
 
-test('the release manifest, include list and game declaration agree on metadata subpackage accounting', context => {
+test('the release manifest includes the main-package index and accounts only lazy metadata as subpackages', context => {
   const fixture = packagedFixture(context), destination = path.join(fixture.temporary, 'release');
   fixture.write(fixture.input, 'game.js', ENTRY);
   fixture.write(fixture.input, 'game.json', JSON.stringify({ deviceOrientation: 'landscape' }));
@@ -471,9 +390,9 @@ test('the release manifest, include list and game declaration agree on metadata 
     fs.writeFileSync(entryPath, entry.replace(marker, marker + '\n' + hook));
     return { packages: [{ name, root, bytes: 14, files: 0 }] };
   };
-  vm.runInNewContext(fs.readFileSync(projectPath('tools/package-wechat-release.cjs'), 'utf8'), {
+  const release = target => vm.runInNewContext(fs.readFileSync(projectPath('tools/package-wechat-release.cjs'), 'utf8'), {
     __dirname: projectPath('tools'), Buffer,
-    process: { argv: ['node', 'package-wechat-release.cjs', fixture.input, destination, '0.1.12'], env: {} },
+    process: { argv: ['node', 'package-wechat-release.cjs', fixture.input, target, '0.1.12'], env: {} },
     console: { log() {} },
     require(name) {
       if (name === 'node:child_process') return { spawnSync(_command, args) {
@@ -487,18 +406,19 @@ test('the release manifest, include list and game declaration agree on metadata 
       return require(name);
     },
   });
+  release(destination);
   const outputCode = path.join(destination, 'wechatgame');
   const report = JSON.parse(fs.readFileSync(path.join(destination, 'release-manifest.json'), 'utf8'));
   const game = JSON.parse(fs.readFileSync(path.join(outputCode, 'game.json'), 'utf8'));
   const project = JSON.parse(fs.readFileSync(path.join(outputCode, 'project.config.json'), 'utf8'));
-  assert.deepEqual(game.subpackages[0], { name: STARTUP_METADATA_PACKAGE.name, root: STARTUP_METADATA_PACKAGE.root });
-  assert.equal(game.subpackages.length, 4);
+  assert.equal(game.subpackages.some(item => item.name === 'forest-startup-metadata'), false);
+  assert.equal(game.subpackages.length, 3);
   for (const item of report.startupMetadata.packages) {
-    assert.ok(project.packOptions.include.some(include => include.value === (item.path || report.startupMetadata.path)));
+    assert.ok(project.packOptions.include.some(include => include.value === item.path));
   }
-  assert.ok(project.packOptions.include.some(item => item.type === 'file' && item.value === STARTUP_METADATA_PACKAGE.path));
-  assert.equal(project.packOptions.include.some(item => item.value === 'startup-metadata.bin'), false);
-  assert.equal(report.startupMetadata.path, STARTUP_METADATA_PACKAGE.path);
+  assert.ok(project.packOptions.include.some(item => item.type === 'file' && item.value === STARTUP_METADATA_PATH));
+  assert.equal(project.packOptions.include.filter(item => item.value === 'startup-metadata.bin').length, 1);
+  assert.equal(report.startupMetadata.path, STARTUP_METADATA_PATH);
   assert.deepEqual(report.pngOptimization, { applied: false, before: 100, after: 100, saved: 0, potentialSaved: 20,
     rgbaPixelsEqual: true, colorProfileEqual: true });
   assert.deepEqual(fs.readFileSync(path.join(fixture.input, hashedImage)), hashedBytes);
@@ -508,10 +428,21 @@ test('the release manifest, include list and game declaration agree on metadata 
     assert.equal(budget.bytes, report.codeFiles.filter(file => file.path.startsWith(budget.root)).reduce((total, file) => total + file.bytes, 0));
     assert.ok(budget.bytes <= budget.limitBytes);
   }
-  assert.equal(report.startupMetadata.package.bytes, report.subpackageBudgets[0].bytes);
+  assert.equal(report.startupMetadata.location, 'main-package');
+  assert.equal(report.startupMetadata.mainPackageBytes, fs.statSync(path.join(outputCode, STARTUP_METADATA_PATH)).size);
+  assert.equal(report.mainPackageBytes, report.codeFiles.filter(file => !game.subpackages.some(item => file.path.startsWith(item.root))).reduce((total, file) => total + file.bytes, 0));
   assert.equal(report.codeBytes, report.mainPackageBytes + report.subpackageBudgets.reduce((total, item) => total + item.bytes, 0));
   assert.equal(report.codeFiles.some(file => file.path.startsWith('remote/')), false);
   assert.equal(game.networkTimeout.downloadFile, 120000);
   assert.match(fs.readFileSync(path.join(outputCode, 'game.js'), 'utf8'), /__FOREST_GUNNER_RELEASE__ = "0\.1\.12"/);
   assert.ok(fs.readFileSync(path.join(outputCode, 'game.js'), 'utf8').startsWith('globalThis.__FOREST_GUNNER_BOOT_STARTED_AT__ = Date.now();\n'));
+  // A growing main package must fail instead of silently moving the index back
+  // into a subpackage. One byte beyond the complete release budget is enough.
+  fixture.write(fixture.input, 'main-budget-padding.bin', Buffer.alloc(4 * 1024 * 1024 - report.mainPackageBytes + 1));
+  const oversized = path.join(fixture.temporary, 'oversized');
+  assert.throws(() => release(oversized), /Main package exceeds 4 MiB: 4194305/);
+  assert.equal(fs.existsSync(path.join(oversized, 'release-manifest.json')), false);
+  assert.equal(fs.existsSync(path.join(oversized, 'wechatgame', STARTUP_METADATA_PATH)), true);
+  assert.equal(fs.existsSync(path.join(oversized, 'wechatgame/subpackages/forest-startup-metadata')), false);
+
 });

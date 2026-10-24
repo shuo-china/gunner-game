@@ -27,7 +27,7 @@ export interface DailyCheckUiConfig extends WeaponUiConfig {
 export interface DailyCheckHudAssets extends WeaponHudAssets { config: DailyCheckUiConfig; }
 export interface DailyCheckHudCallbacks {
   getState(): DailyCheckSnapshot;
-  claim(dayIndex: number): DailyCheckResult;
+  claim(dayIndex: number): DailyCheckResult | Promise<DailyCheckResult>;
   getWallet(): { money: string; diamonds: number | string };
   getFallbackDiamondTarget?(): Node | null;
   onBeforeOpen?(): void;
@@ -179,6 +179,7 @@ export class DailyCheckHud {
   private particles?: OriginalDiamondAttraction;
   private blocked = false;
   private destroyed = false;
+  private claimPending = false;
   private refreshKey = '';
   private readonly glowElapsed = new Map<string, number>();
   constructor(parent: Node, art: ArtLibrary, private readonly assets: DailyCheckHudAssets,
@@ -194,7 +195,7 @@ export class DailyCheckHud {
       this.root = yield* this.ui.createSteps(config.roots.panel, this.colors?.content ?? this.node);
       this.root.active = false; this.root.addComponent(BlockInputEvents); this.ui.node(ids.background).addComponent(BlockInputEvents);
       this.buttons.bind(ids.close, () => this.isOpen, () => { this.callbacks.playSfx?.(1); this.close(); });
-      for (const card of ids.cards) { this.buttons.bind(card.root, () => this.isOpen, () => this.claim(card.index)); yield; }
+      for (const card of ids.cards) { this.buttons.bind(card.root, () => this.isOpen && !this.claimPending, () => this.claim(card.index)); yield; }
       this.particles = new OriginalDiamondAttraction(art, this.node, config.images[config.diamondFx.image], config.diamondFx,
         ids.diamondBounce, () => this.isOpen ? this.ui.node(ids.diamondTarget) : callbacks.getFallbackDiamondTarget?.() ?? null,
         () => callbacks.playSfx?.(14), Math.random,
@@ -285,14 +286,33 @@ export class DailyCheckHud {
     this.colors?.invalidate();
   }
   private claim(index: number): void {
-    const result = this.callbacks.claim(index);
+    if (!this.isOpen || this.claimPending) return;
+    this.claimPending = true;
+    try {
+      const result = this.callbacks.claim(index);
+      if ('then' in result) {
+        void result.then(value => this.finishClaim(index, value), () => this.failClaim());
+      } else this.finishClaim(index, result);
+    } catch { this.failClaim(); }
+  }
+  private failClaim(): void {
+    this.claimPending = false;
+    if (this.destroyed) return;
+    this.callbacks.playSfx?.(5);
+    this.callbacks.alert?.('签到核验失败，请检查网络后重试。');
+  }
+  private finishClaim(index: number, result: DailyCheckResult): void {
+    this.claimPending = false;
+    if (this.destroyed) return;
     if (result.ok) {
       this.particles?.spawn(this.ui.node(this.assets.config.dailyCheckUi.cards[index].root));
       this.callbacks.playSfx?.(7); this.refresh();
     } else {
       this.callbacks.playSfx?.(5);
-      if (result.reason === 'saveFailed' || result.reason === 'invalidSave') this.callbacks.alert?.('保存失败，本次领取未生效。');
+      if (result.message) this.callbacks.alert?.(result.message);
+      else if (result.reason === 'saveFailed' || result.reason === 'invalidSave') this.callbacks.alert?.('保存失败，本次领取未生效。');
       else if (result.reason === 'walletLimit' || result.reason === 'counterLimit') this.callbacks.alert?.('已达到保存上限，暂时无法领取。');
+      else if (result.reason !== 'invalidDay' && result.reason !== 'notClaimable') this.callbacks.alert?.('签到核验失败，请检查网络后重试。');
     }
   }
 }

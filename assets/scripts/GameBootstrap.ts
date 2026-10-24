@@ -2,8 +2,9 @@ import { MineHud, loadMineHudAssets } from './view/MineHud';
 import { OfflineHud, loadOfflineHudAssets } from './view/OfflineHud';
 import type { OfflineHudState } from './view/OfflineHud';
 import { DailyCheckEntry, DailyCheckHud, loadDailyCheckEntryAssets, loadDailyCheckHudAssets } from './view/DailyCheckHud';
+import { DailyShareEntry, DAILY_SHARE_ENTRY_IMAGES, loadDailyShareEntryAssets } from './view/DailyShareEntry';
 import { MinePlacement } from './core/MineMap';
-import { leftMenuOffsets, rightMenuOffsets } from './view/FeatureEntry';
+import { leftMenuOffsets, rightMenuOffsets, rightMenuShareOffset } from './view/FeatureEntry';
 import { FishHud, loadFishHudAssets } from './view/FishHud';
 import type { FishActionResult, FishDrawKind } from './session/FishSystem';
 import { AdventureHud, loadAdventureHudAssets } from './view/AdventureHud';
@@ -11,14 +12,19 @@ import { PetHud, loadPetHudAssets } from './view/PetHud';
 import { PetVisualAssets } from './view/PetView';
 import type { PetActionResult, PetSlotRef } from './session/PetSystem';
 import { _decorator, assetManager, BlockInputEvents, Camera, Color, Component, director, Game, game, Graphics, Label, Node, profiler, ResolutionPolicy, sys, UITransform, view } from 'cc';
-import { DEBUG, PREVIEW, WECHAT } from 'cc/env';
+import { BYTEDANCE, DEBUG, NATIVE, PREVIEW, WECHAT } from 'cc/env';
 import { COMBAT_CONFIG, CombatWorld, createStageDefinition } from './core';
 import { ArtLibrary, makeNode } from './view/ArtLibrary';
 import { BattleAssetLoader } from './view/BattleAssetLoader';
 import { GameResourcePreloader } from './view/GameResourcePreloader';
 import { ResourceModuleManager } from './view/ResourceModuleManager';
 import { StartupPreparationBudget } from './view/StartupPreparationBudget';
+import { StartupTimeline } from './view/StartupTimeline';
 import { StartupLoadingScreen } from './view/StartupLoadingScreen';
+import { CloudSavePanel } from './view/CloudSavePanel';
+import { CloudSaveStorage, rewardLedgersMatch } from './session/CloudSaveStorage';
+import type { CloudSaveChoice, CloudSaveConflict } from './session/CloudSaveStorage';
+import type { SavePriority } from './session/BattleSession';
 import { RESOURCE_MODULE_ORDER, isAutomaticModule, isStartupModule, collectBackgroundResources, weaponPanelImagePaths } from './view/FeatureResourceManifest';
 import type { BackgroundFeature } from './view/FeatureResourceManifest';
 import { UiPreparationQueue } from './view/UiPreparationQueue';
@@ -39,6 +45,10 @@ import { OriginalColorPipeline } from './view/OriginalColorPipeline';
 import { ORIGINAL_CAMERA_CLEAR } from './view/OriginalColorMath';
 import { BattleMode, BattleSession, economyStorageKey, UpgradeType } from './session/BattleSession';
 import { resolveRuntimeEnvironment } from './session/RuntimeEnvironment';
+import { resolveGameBackendConfig } from './session/GameBackendConfig';
+import { GameLoginClient, GameLoginError } from './session/GameLogin';
+import { createGamePlatform } from './platform/PlatformServices';
+import type { PlatformShareProvider } from './platform/PlatformTypes';
 import { TutorialPreviewController } from './session/TutorialPreview';
 import { loadTutorialHudAssets, TutorialHud } from './view/TutorialHud';
 import { loadOriginalHudAssets } from './view/OriginalHudAssets';
@@ -66,7 +76,7 @@ import { createBossDefinition } from './core/BossMap';
 import { loadBossHudAssets, BossHud } from './view/BossHud';
 import { loadSkinHudAssets, SkinHud } from './view/SkinHud';
 import { SkinVisualAssets } from './view/SkinVisualAssets';
-import { RewardedAdService, SimulatedRewardedAdProvider, UnavailableRewardedAdProvider } from './session/RewardedAds';
+import { RewardedAdService, SimulatedRewardedAdProvider } from './session/RewardedAds';
 import type { RewardedAdProvider } from './session/RewardedAds';
 import type { ContentId } from './session/ContentUnlockManager';
 import { RewardedAdModal } from './view/RewardedAdModal';
@@ -97,6 +107,10 @@ export class GameBootstrap extends Component {
   private readonly moduleGuards=new Map<string,()=>boolean>();
   private preparationReady=false;
   private startupStartedAt=Date.now();
+  private bootStartedAt=Date.now();
+  private startupTimeline?:StartupTimeline;
+  private finishStartupCore?:ReturnType<StartupTimeline['begin']>;
+  private finishStartupPanels?:ReturnType<StartupTimeline['begin']>;
   private startupBudgetMs:number=RESOURCE_LOADING_POLICY.startup.coldBudgetMs;
   private startupRelease?:()=>void;
   private startupModules:BackgroundFeature[]=[];
@@ -110,6 +124,9 @@ export class GameBootstrap extends Component {
   private startupGeneration=0;
   private startupCoreReadyAt=0;
   private startupInteractiveAt=0;
+  private startupEntryReady=false;
+  private startupDataReadyAt?:number;
+  private startupResourcesReadyAt?:number;
   private startupReturning=false;
   private startupBudget?:StartupPreparationBudget;
   private readonly moduleAssetPaths=new Map<string,Set<string>>();
@@ -163,6 +180,14 @@ export class GameBootstrap extends Component {
   private debugApi?:object;
   private loadingDiagnosticsApi?:object;
   private session!:BattleSession;
+  private gameLogin?:GameLoginClient;
+  private cloudSave?:CloudSaveStorage;
+  private rewardStateRequest?:Promise<void>;
+  private rewardStateRefreshAt=0;
+  private cloudPanel?:CloudSavePanel;
+  private cloudDecisionPending=false;
+  private cloudForegroundCheck=false;
+  private cloudForegroundVersion=0;
   private weaponsHud?:WeaponHud;
   private readonly visibleUsedFeatures=new Set<string>();
   private rebirthHud?:RebirthHud;
@@ -182,6 +207,14 @@ export class GameBootstrap extends Component {
   private dailyCheckEntry?:DailyCheckEntry;
   private dailyCheckEntryRequest?:Promise<void>;
   private dailyCheckEntryRetryAt=0;
+  private shareProvider?:PlatformShareProvider;
+  private dailyShareEntry?:DailyShareEntry;
+  private dailyShareEntryRequest?:Promise<void>;
+  private dailyShareEntryRetryAt=0;
+  private shareBusy=false;
+  private shareClaimReady=false;
+  private shareClaimRetryAt=0;
+  private shareClaimNoticeShown=false;
   private dailyCheckHudLoader?:()=>Promise<DailyCheckHud|undefined>;
   private dailyCheckHudRequest?:Promise<DailyCheckHud|undefined>;
   private dailyCheckOpening=false;
@@ -232,6 +265,8 @@ export class GameBootstrap extends Component {
   async start():Promise<void> {
     const bootScope=globalThis as typeof globalThis & {__FOREST_GUNNER_BOOT_STARTED_AT__?:number};
     this.startupStartedAt=bootScope.__FOREST_GUNNER_BOOT_STARTED_AT__??Date.now();
+    this.bootStartedAt=this.startupStartedAt;
+    this.startupTimeline=new StartupTimeline(this.bootStartedAt);
     view.setDesignResolutionSize(720,1280,ResolutionPolicy.FIXED_WIDTH);
     profiler.hideStats();
     this.canvasTransform=this.node.getComponent(UITransform)!;
@@ -259,64 +294,31 @@ export class GameBootstrap extends Component {
       document.addEventListener('resume',this.onDocumentResume);
     }
     view.on('canvas-resize',this.resize,this);
-    let loadingAssets=true,versionLine='',failedModule='基础资源',moduleFailed=false;
+    let loadingAssets=true,versionLine='',failedModule='基础资源',failedAssetModule:string|undefined;
     try {
-      const scope=globalThis as typeof globalThis & {__FOREST_GUNNER_ENV__?:unknown;__FOREST_GUNNER_RELEASE__?:unknown};
+      const scope=globalThis as typeof globalThis & {__FOREST_GUNNER_ENV__?:unknown;__FOREST_GUNNER_RELEASE__?:unknown;__FOREST_GUNNER_BACKEND__?:unknown};
       versionLine=typeof scope.__FOREST_GUNNER_RELEASE__==='string'?`版本 ${scope.__FOREST_GUNNER_RELEASE__}\n`:'';
       const environment=resolveRuntimeEnvironment(scope.__FOREST_GUNNER_ENV__,PREVIEW);
-      const launchKey=`forest-gunner-${environment}-returning-player-v1`;
-      // This marker selects a waiting budget only. Cache availability is always
-      // determined by the platform/files, never by a previous successful launch.
-      try {this.startupReturning=sys.localStorage.getItem(launchKey)==='1';}catch{}
-      this.startupBudgetMs=this.startupReturning?RESOURCE_LOADING_POLICY.startup.warmBudgetMs:RESOURCE_LOADING_POLICY.startup.coldBudgetMs;
-      this.startupBudget=new StartupPreparationBudget(this.startupStartedAt,this.startupReturning,()=>Date.now());
-      this.audioPreferences=new AudioPreferences({environment,storage:sys.localStorage});
-      const tutorialPreview=new TutorialPreviewController(environment,sys.localStorage,economyStorageKey(environment));
-      const storage=tutorialPreview.storage;
-      const measuredStorage=storage?{getItem:(key:string)=>storage.getItem(key),setItem:(key:string,value:string)=>
-        this.loadingTrace.measure('session','storageWrite',()=>storage.setItem(key,value))}:storage;
-      this.session=new BattleSession({environment,storage:measuredStorage,contentConfig:tutorialPreview.contentConfig,onWeaponsChanged:force=>this.syncLoadout(force?'equipment':'inventory')});
-      if(this.session.offlineInitializationPending){
-        failedModule='离线进度';
-        while(!this.disposed){
-          message.string=versionLine+'正在计算离线进度…';
-          const initialized=await this.session.initializeOfflineProgress(async()=>{
-            await new Promise<void>(resolve=>setTimeout(resolve,0));
-            if(this.disposed)throw new Error('Offline initialization disposed');
-          });
-          if(this.disposed)return;
-          if(initialized.ok)break;
-          message.string=versionLine+'离线进度保存失败，请检查存储空间\n点击这里重试';
-          if(!await this.waitOfflineRetry())return;
-        }
-        if(this.disposed)return;
-      }
-      this.offlineSummaryPending=!!this.session.offlineResult;
-      this.dailyCheckAutoPending=this.session.getDailyCheckState().claimableIndex!==null;
+      failedModule='平台服务';
+      const platform=createGamePlatform(scope,{wechat:WECHAT,douyin:BYTEDANCE,native:NATIVE});
+      this.shareProvider=platform.createShare();
       installWeChatFontFallback(assetManager.parser);
       if(WECHAT){
         // Leave headroom for WeChat subpackage delivery and avoid a burst of
         // simultaneous remote image/audio requests on mobile connections.
         Object.assign(assetManager.downloader,RESOURCE_LOADING_POLICY.wechat);
       }
-      message.string=versionLine+'正在准备森林资源…';
       const art=this.artLibrary=new ArtLibrary();
       art.resourceLoader.setStartupPhase(true);
-      // Offline settlement has fixed the required set. Warm its first panels
-      // during core loading, using the same low-priority download cache later.
-      this.startupModules=RESOURCE_MODULE_ORDER.filter(name=>isStartupModule(name,
-        name==='settings'||name==='offline'||this.session.getContentState(name).unlocked,this.offlineSummaryPending));
-      this.resourcePreloader=new GameResourcePreloader(art.resourceLoader,()=>Date.now(),sys.localStorage,`forest-gunner-${environment}-feature-usage-v1`);
-      this.resourcePreloader.start(true);
-      this.startupScreen.resourceStatus=()=>art.resourceLoader.loadingStatus();
+      this.loadingDiagnosticsApi=Object.freeze({snapshot:()=>this.resourceLoadingSnapshot()});
+      (globalThis as typeof globalThis & {__forestGunnerLoading?:object}).__forestGunnerLoading=this.loadingDiagnosticsApi;
+      this.finishStartupCore=this.startupTimeline.begin('core');
       let completedAssets=0;
-      this.startupScreen?.setProgress(.20);
       const totalGroups=14;
-      // CatView starts with weapon 0 before applying the saved squad loadout.
-      const initialWeaponIds=Array.from(new Set([0,...this.session.combatLoadout.map(actor=>actor.weapon.id)]));
       let completedGroups=0;
       const pendingGroups=new Map<string,number>();
       const showModules=():void=>{
+        if(!loadingAssets||this.disposed||this.backgrounded||!this.startupEntryReady)return;
         this.startupScreen?.setProgress(.20+.50*completedGroups/totalGroups);
         if(loadingAssets&&!this.disposed&&!this.backgrounded&&message.isValid){
           let waiting:{name:string;started:number}|undefined;
@@ -334,35 +336,180 @@ export class GameBootstrap extends Component {
           completedGroups++;pendingGroups.delete(name);showModules();return value;
         },error=>{
           // The longest pending module is not necessarily the one that failed.
-          if(!moduleFailed){moduleFailed=true;failedModule=name;}
+          if(!failedAssetModule)failedAssetModule=name;
           throw error;
         });
       };
-      // Independent resource groups overlap from the start. Only the map waits
-      // for ArtLibrary's catalog; its loader writes stageTrees into that catalog.
-      // All promises join the same barrier so a failure cannot leave an
-      // unhandled rejection or publish a partially initialized battlefield.
+      // Fixed assets are independent of account state. Observe failures immediately:
+      // login may wait for a user retry long before this outcome is consumed.
       const baseReady=loadGroup('基础美术',art.load());
       const fontReady=loadGroup('启动字体',(async()=>{
-        const fontConfig=await art.json<OriginalHudConfig>('art/hud/config');
-        await Promise.all(fontConfig.bitmapFont.pages.map(path=>art.loadFrame(path)));
-        if(this.disposed||!loadingAssets)return;
-        if(!this.startupScreen?.available)this.loadingText=attachFontPolicyLabel(message,art,fontConfig.bitmapFont);
+        const config=await art.json<OriginalHudConfig>('art/hud/config');
+        await Promise.all(config.bitmapFont.pages.map(path=>art.loadFrame(path)));
+        return config;
       })());
+      const fixedAssets=Promise.all([
+        loadGroup('战斗反馈',loadOriginalFeedback(art)),loadGroup('画面渲染',OriginalColorPipeline.load(art)),
+        loadGroup('主界面',loadOriginalHudAssets(art)),loadGroup('金币效果',loadOriginalMoneyBurst(art)),
+        loadGroup('伤害数字',loadOriginalMoneyNumbers(art)),loadGroup('提示消息',loadOriginalAlertAssets(art)),
+        loadGroup('游戏音效',loadOriginalSfxAssets(art,[])),loadGroup('新手引导',loadTutorialHudAssets(art)),
+        baseReady,fontReady,
+      ]).then(value=>({ok:true as const,value}),error=>({ok:false as const,error}));
+      if(platform.requiresLogin){
+        failedModule=`${platform.label}登录`;
+        this.gameLogin=new GameLoginClient(platform.createLogin(),resolveGameBackendConfig(scope.__FOREST_GUNNER_BACKEND__,environment));
+        while(!this.disposed){
+          message.string=versionLine+`正在登录${platform.label}…`;
+          try{
+            const account=await this.startupTimeline.measureAsync('login',()=>this.gameLogin!.login());
+            if(this.disposed)return;
+            console.info(`[ForestGunner] ${platform.label}登录成功，玩家 ${account.player.id}`);
+            break;
+          }catch(error){
+            if(this.disposed)return;
+            message.string=versionLine+(error instanceof GameLoginError?error.message:'平台登录失败，请重试')+'\n点击这里重试';
+            if(!await this.waitOfflineRetry())return;
+          }
+        }
+        if(this.disposed)return;
+        // Resource preparation gets its full budget after login or a manual network retry.
+        this.startupStartedAt=Date.now();
+      }
+      failedModule='基础资源';
+      const launchKey=`forest-gunner-${environment}-returning-player-v1`;
+      // This marker selects a waiting budget only. Cache availability is always
+      // determined by the platform/files, never by a previous successful launch.
+      try {this.startupReturning=sys.localStorage.getItem(launchKey)==='1';}catch{}
+      this.startupBudgetMs=this.startupReturning?RESOURCE_LOADING_POLICY.startup.warmBudgetMs:RESOURCE_LOADING_POLICY.startup.coldBudgetMs;
+      this.startupBudget=new StartupPreparationBudget(this.startupStartedAt,this.startupReturning,()=>Date.now());
+      this.audioPreferences=new AudioPreferences({environment,storage:sys.localStorage});
+      const tutorialPreview=new TutorialPreviewController(environment,sys.localStorage,economyStorageKey(environment));
+      let storage=tutorialPreview.storage;
+      // Test resources and tutorial replay stay local. Only authenticated production accounts sync.
+      if(this.gameLogin&&environment==='production'){
+        failedModule='云存档';
+        this.cloudPanel=new CloudSavePanel(this.node,()=>!this.disposed&&!this.backgrounded);
+        this.cloudPanel.resize(this.viewport.width,this.viewport.height,this.layoutInsets.top);
+        this.cloudSave=new CloudSaveStorage(sys.localStorage,this.gameLogin,this.gameLogin.player!.id,
+          economyStorageKey(environment),this.gameLogin.backendScope);
+        while(!this.disposed){
+          message.string=versionLine+'正在读取云端进度…';
+          try{
+            await this.startupTimeline.measureAsync('cloudRead',()=>this.cloudSave!.open(value=>this.chooseCloudSave(value)));
+            break;
+          }catch(error){
+            if(this.disposed)return;
+            message.string=versionLine+(error instanceof Error?error.message:'云端进度读取失败')+'\n点击这里重试';
+            if(!await this.waitOfflineRetry())return;
+          }
+        }
+        if(this.disposed)return;
+        storage=this.cloudSave;
+        this.startupStartedAt=Date.now();
+        this.startupBudget=new StartupPreparationBudget(this.startupStartedAt,this.startupReturning,()=>Date.now());
+      }
+      const measuredStorage=storage?{getItem:(key:string)=>storage.getItem(key),setItem:(key:string,value:string,priority?:SavePriority)=>
+        this.loadingTrace.measure('session','storageWrite',()=>storage.setItem(key,value,priority))}:storage;
+      let verifiedState:Record<string,any>|undefined;
+      let verifiedOffline=this.cloudSave?.lastReward;
+      let offlineSettled=false;
+      if(this.cloudSave){
+        failedModule='奖励核验';
+        while(!this.disposed){
+          message.string=versionLine+'正在核验离线收益与签到…';
+          try{
+            let startupReceipt;
+            if(this.cloudSave.rewardPending)await this.cloudSave.recoverPendingReward();
+            if(this.cloudSave.lastReward?.reward.kind==='offline'&&this.cloudSave.lastReward.reward.result)
+              verifiedOffline=this.cloudSave.lastReward;
+            if(this.cloudSave.dirty)await this.cloudSave.flushResume();
+            if(this.cloudSave.localSave!==null&&!offlineSettled){
+              const receipt=await this.cloudSave.claimReward('offline');offlineSettled=true;
+              startupReceipt=receipt;
+              if(receipt.reward.result||!verifiedOffline)verifiedOffline=receipt;
+            }
+            verifiedState=await this.cloudSave.rewardState(startupReceipt);
+            break;
+          }catch(error){
+            if(this.disposed)return;
+            if(this.cloudSave.blocked&&!this.cloudSave.rewardPending){await this.handleCloudDecision();return;}
+            message.string=versionLine+(error instanceof Error?error.message:'奖励核验失败')+'\n点击这里重试';
+            if(!await this.waitOfflineRetry())return;
+          }
+        }
+        if(this.disposed)return;
+      }
+      this.session=new BattleSession({environment,storage:measuredStorage,contentConfig:tutorialPreview.contentConfig,
+        rewardAuthority:this.cloudSave?'server':environment==='test'?'local':'unavailable',
+        rewardBackend:this.cloudSave?{claim:(kind,payload)=>this.cloudSave!.claimReward(kind,payload),
+          requireReload:message=>this.cloudSave!.requireReload(message)}:undefined,
+        onWeaponsChanged:force=>this.syncLoadout(force?'equipment':'inventory')});
+      if(verifiedState)this.session.setVerifiedDailyCheck(verifiedState.daily_check);
+      this.session.setVerifiedDailyShare(verifiedState?.daily_share);
+      if(verifiedOffline?.reward.kind==='offline')this.session.setVerifiedOffline(verifiedOffline.reward);
+      this.rewardStateRefreshAt=Date.now()+this.rewardRefreshDelay(verifiedState);
+      if(this.cloudSave&&this.session.persistenceBlocked)throw new Error('存档恢复或备份失败，原始进度已保留，请检查存储空间后重试');
+      if(this.session.offlineInitializationPending){
+        failedModule='离线进度';
+        while(!this.disposed){
+          message.string=versionLine+'正在计算离线进度…';
+          const finishOffline=this.startupTimeline.begin('offline');
+          const initialized=await this.session.initializeOfflineProgress(async()=>{
+            await new Promise<void>(resolve=>setTimeout(resolve,0));
+            if(this.disposed)throw new Error('Offline initialization disposed');
+          }).then(result=>{finishOffline(result.ok?'success':'failed');return result;},error=>{
+            finishOffline('failed');throw error;
+          });
+          if(this.disposed)return;
+          if(initialized.ok)break;
+          message.string=versionLine+'离线进度保存失败，请检查存储空间\n点击这里重试';
+          if(!await this.waitOfflineRetry())return;
+        }
+        if(this.disposed)return;
+      }
+      if(this.cloudSave){
+        failedModule='保存初始进度';
+        while(!this.disposed&&(this.cloudSave.dirty||this.cloudSave.blocked)){
+          message.string=versionLine+'正在保存进度…';
+          try{
+            if(this.cloudSave.blocked){await this.handleCloudDecision();return;}
+            await this.startupTimeline.measureAsync('cloudWrite',()=>this.cloudSave!.flush());
+          }catch(error){
+            if(this.disposed)return;
+            message.string=versionLine+(error instanceof Error?error.message:'进度同步失败')+'\n点击这里重试';
+            if(!await this.waitOfflineRetry())return;
+          }
+        }
+        if(this.disposed)return;
+        this.startupStartedAt=Date.now();
+        this.startupBudget=new StartupPreparationBudget(this.startupStartedAt,this.startupReturning,()=>Date.now());
+      }
+      this.offlineSummaryPending=!!this.session.offlineResult;
+      this.dailyCheckAutoPending=this.session.getDailyCheckState().claimableIndex!==null;
+      // Save initialization gates state-dependent assets. Enter automatically
+      // once those assets and every required panel are ready in the foreground.
+      this.startupEntryReady=true;this.startupDataReadyAt=Date.now();
+      this.startupScreen.resourceStatus=()=>art.resourceLoader.loadingStatus();
+      message.string=versionLine+'正在准备森林资源…';
+      // Account and offline settlement determine the current map and loadout.
+      this.startupModules=RESOURCE_MODULE_ORDER.filter(name=>isStartupModule(name,
+        name==='settings'||name==='offline'||this.session.getContentState(name).unlocked,this.offlineSummaryPending));
+      this.resourcePreloader=new GameResourcePreloader(art.resourceLoader,()=>Date.now(),sys.localStorage,`forest-gunner-${environment}-feature-usage-v1`);
+      this.resourcePreloader.start(true);
+      showModules();
+      // CatView starts with weapon 0 before applying the saved squad loadout.
+      const initialWeaponIds=Array.from(new Set([0,...this.session.combatLoadout.map(actor=>actor.weapon.id)]));
       const petVisuals=this.petVisuals=new PetVisualAssets(art);
-      const [feedback,map,colorEffects,hudAssets,moneyBurst,moneyNumbers,,alertAssets,sfxAssets,tutorialAssets,skinVisuals]=await Promise.all([
-        loadGroup('战斗反馈',loadOriginalFeedback(art)),loadGroup('森林地图',baseReady.then(()=>{
-          if(this.disposed||!loadingAssets)throw new Error('Startup preparation cancelled');
-          return OriginalMapView.load(art,this.session.round.stageIndex);
-        })),loadGroup('画面渲染',OriginalColorPipeline.load(art)),
-        loadGroup('主界面',loadOriginalHudAssets(art)),loadGroup('金币效果',loadOriginalMoneyBurst(art)),loadGroup('伤害数字',loadOriginalMoneyNumbers(art)),
-        loadGroup('武器外观',WeaponVisualAssets.load(art,initialWeaponIds)),loadGroup('提示消息',loadOriginalAlertAssets(art)),
-        loadGroup('游戏音效',loadOriginalSfxAssets(art,[])),
-        loadGroup('新手引导',loadTutorialHudAssets(art)),
+      const [fixed,map,,skinVisuals]=await Promise.all([
+        fixedAssets.then(result=>{if(!result.ok)throw result.error;return result.value;}),
+        loadGroup('森林地图',OriginalMapView.load(art,this.session.round.stageIndex)),
+        loadGroup('武器外观',WeaponVisualAssets.load(art,initialWeaponIds)),
         loadGroup('当前皮肤外观',SkinVisualAssets.load(art,this.session.getSkinState().selectedId)),
         loadGroup('当前宠物外观',petVisuals.prepare(this.session.getPetState().selected)),
-        baseReady,fontReady,
-      ]);
+      ]).catch(error=>{failedModule=failedAssetModule??'基础资源';throw error;});
+      const [feedback,colorEffects,hudAssets,moneyBurst,moneyNumbers,alertAssets,sfxAssets,tutorialAssets,,fontConfig]=fixed;
+      if(this.disposed)return;
+      if(!this.startupScreen?.available)this.loadingText=attachFontPolicyLabel(message,art,fontConfig.bitmapFont);
       loadingAssets=false;art.onAssetLoaded=undefined;
       if(this.disposed)return;
       failedModule='创建战场';
@@ -391,14 +538,14 @@ export class GameBootstrap extends Component {
       // Release policy controls construction as well as each business entry.
       // Production never offers the test modal's manual success button.
       if(this.session.content.config.adsEnabled) {
-        let adProvider:RewardedAdProvider=new UnavailableRewardedAdProvider();
+        let adProvider:RewardedAdProvider;
         if(environment==='test') {
           const simulated=new SimulatedRewardedAdProvider({
             open:id=>this.rewardedAdModal!.open(id),dismiss:()=>this.rewardedAdModal?.dismiss(),
           });
           this.rewardedAdModal=new RewardedAdModal(this.hudRoot,(id,outcome)=>simulated.resolve(id,outcome));
           adProvider=simulated;
-        }
+        }else adProvider=platform.createRewardedAds();
         this.rewardedAds=new RewardedAdService(adProvider,()=>this.syncModalState(),placement=>this.session.content.isAdEnabled(placement));
       }
       const prepareWeaponChoices=async():Promise<void>=>{
@@ -638,6 +785,7 @@ export class GameBootstrap extends Component {
       });
       this.startupInputBlock!.setSiblingIndex(this.node.children.length-1);
       this.resize();this.preparationReady=true;this.startupCoreReadyAt=Date.now();
+      this.finishStartupCore?.();this.finishStartupPanels=this.startupTimeline?.begin('panels');
       this.coreResourcePaths=new Set(art.frames.keys());
       this.backgroundPreparation.reset(0);
       this.resourcePreloader.setDemand('offline',this.offlineSummaryPending);
@@ -648,21 +796,19 @@ export class GameBootstrap extends Component {
         const name=this.startupCurrent,label=name==='settings'?'设置界面':name==='dailyCheck'?'签到界面':name==='offline'?'离线收益界面':name?DEFERRED_HUD_LABELS[name]:'常用界面';
         if(message.isValid)message.string=this.startupFailure?
           `${versionLine}${label}准备失败\n${this.startupFailure}\n点击这里重试（已完成 ${completed}/${this.startupModules.length}）`:
+          completed===this.startupModules.length?`${versionLine}准备就绪，正在进入游戏…`:
           `${versionLine}正在准备${label} ${completed}/${this.startupModules.length}…`;
       };
       this.loading.on(Node.EventType.TOUCH_END,this.retryStartupPreparation,this);
       this.startupInputBlock?.on(Node.EventType.TOUCH_END,this.retryStartupPreparation,this);
-      // Read-only loading evidence is also available in production experience
-      // builds. Do not expose the test API's gameplay or reward commands here.
-      this.loadingDiagnosticsApi=Object.freeze({snapshot:()=>this.resourceLoadingSnapshot()});
-      (globalThis as typeof globalThis & {__forestGunnerLoading?:object}).__forestGunnerLoading=this.loadingDiagnosticsApi;
       this.startupProgress();
       // Deadlines are diagnostics only. Every required view must be operable
       // before the shield is removed, including on a returning player's launch.
+      // Readiness releases startup automatically while the app is foregrounded.
       await new Promise<void>(resolve=>{this.startupRelease=resolve;this.checkStartupRelease();});
       if(this.disposed)return;
       art.resourceLoader.setStartupPhase(false);
-      this.startupProgress=undefined;this.ready=true;this.startupInteractiveAt=Date.now();
+      this.startupProgress=undefined;this.ready=true;this.startupInteractiveAt=Date.now();this.startupTimeline?.complete();
       try {sys.localStorage.setItem(launchKey,'1');}catch{}
       this.installMemoryWarning();
       this.prefetchAt=Date.now()+RESOURCE_LOADING_POLICY.nextStageDelayMs;this.warmCombatSounds();this.updateDeferredHuds();
@@ -837,6 +983,7 @@ export class GameBootstrap extends Component {
       this.bgmAssetsLoader=()=>loadOriginalBgmAssets(art,this.session.mode==='Main'?'main':'contents');
       void this.loadBgm();
     } catch(error) {
+      this.finishStartupCore?.('failed');this.finishStartupPanels?.('failed');
       loadingAssets=false;
       if(this.disposed)return;
       this.clearViews();
@@ -880,6 +1027,49 @@ export class GameBootstrap extends Component {
     });
   }
 
+  private saveSummary(raw:string|null):string {
+    if(!raw)return '尚无进度';
+    try{const v=JSON.parse(raw);return `第 ${v.progress.stageIndex+1} 关 · 第 ${v.progress.waveIndex+1} 波`;}catch{return '已保留存档';}
+  }
+
+  private async chooseCloudSave(value:CloudSaveConflict):Promise<CloudSaveChoice> {
+    if(!rewardLedgersMatch(value.local,value.cloud.save)){
+      const answer=await this.cloudPanel!.prompt('云端奖励记录已更新','本机进度不包含最新领取记录。请恢复云端进度，两份存档都会保留备份。',['使用云端进度']);
+      if(answer<0||this.disposed)throw new Error('已取消');return 'cloud';
+    }
+    const answer=await this.cloudPanel!.prompt('发现两份进度',`云端：${this.saveSummary(value.cloud.save)}\n本机：${this.saveSummary(this.cloudSave!.localSave)}\n请选择继续使用的进度，两份存档都会保留备份。`,['使用云端进度','使用本机进度']);
+    if(answer<0||this.disposed)throw new Error('已取消');
+    if(answer===0)return 'cloud';
+    const confirm=await this.cloudPanel!.prompt('确认使用本机进度',`将用本机进度更新云端。\n${this.saveSummary(this.cloudSave!.localSave)}\n云端原有进度会保留备份。`,['确认使用本机进度','返回重新选择']);
+    if(confirm<0||this.disposed)throw new Error('已取消');
+    return confirm===0?'local':this.chooseCloudSave(value);
+  }
+
+  private async handleCloudDecision():Promise<void> {
+    if(!this.cloudSave||!this.cloudPanel||this.cloudDecisionPending||this.disposed)return;
+    this.cloudDecisionPending=true;
+    this.hud?.cancelInteractions();
+    if(this.ready)this.world.pause();
+    try{
+      while(!this.disposed){
+        try{
+          if(this.cloudSave.conflict)await this.cloudSave.resolveConflict(await this.chooseCloudSave(this.cloudSave.conflict));
+          else if(await this.cloudPanel.prompt('存档同步暂停',this.cloudSave.errorMessage+'\n本机进度已保留，请重新进入后重试。',['重新进入'])<0)return;
+          if(this.disposed)return;
+          const scene=director.getScene()?.name;
+          // Release panel interactions while their nodes are still valid, before scene teardown.
+          this.clearViews();
+          this.cloudPanel.showProgress('正在恢复进度','已保存你的选择，正在重新进入游戏…');
+          if(!scene||!director.loadScene(scene,error=>{if(error&&!this.disposed)void this.cloudPanel?.prompt('重新进入失败','请关闭后重新打开游戏，存档仍保留在本机。',['知道了']);}))throw new Error('重新进入失败，请重新打开游戏');
+          return;
+        }catch(error){
+          if(this.disposed)return;
+          if(await this.cloudPanel.prompt('进度处理失败',error instanceof Error?error.message:'请检查网络后重试',['重试'])<0)return;
+        }
+      }
+    }finally{if(this.disposed)this.cloudDecisionPending=false;}
+  }
+
   private offlineState():OfflineHudState|null {
     const result=this.session?.offlineResult,before=this.session?.offlineBefore;
     if(!result||!before)return null;
@@ -921,8 +1111,116 @@ export class GameBootstrap extends Component {
     this.dailyCheckHudRequest=request;return request;
   }
 
+  private rewardRefreshDelay(value?:Record<string,any>):number {
+    const remaining=value?value.next_daily_reset_ms-value.server_time_ms-(value.responseAgeMs??0):NaN;
+    // This is presentation data. Actual claims are always checked by the server.
+    return Number.isFinite(remaining)?Math.max(1000,Math.min(15*60000,remaining)):15*60000;
+  }
+
+  private refreshRewardState():Promise<void> {
+    if(this.rewardStateRequest)return this.rewardStateRequest;
+    if(!this.cloudSave||this.cloudSave.blocked||this.cloudSave.rewardPending)return Promise.resolve();
+    if(Date.now()<this.rewardStateRefreshAt)return Promise.resolve();
+    const cloud=this.cloudSave;
+    let delay=15*60000;
+    const request=cloud.rewardState().then(value=>{
+      if(!this.disposed&&cloud===this.cloudSave){
+        // A state request started before a reward/save must not restore an old daily quota.
+        if(value.revision!==cloud.currentRevision||this.session?.backendRewardPending){delay=1000;return;}
+        this.session?.setVerifiedDailyCheck(value.daily_check);
+        this.session?.setVerifiedDailyShare(value.daily_share);
+        if(!value.daily_share?.canClaim)this.shareClaimReady=false;
+        this.syncModalState();
+      }
+      delay=this.rewardRefreshDelay(value);
+    }).catch(()=>{/* Cached presentation is safe: every actual claim is still checked by the server. */}).then(()=>{
+      this.rewardStateRefreshAt=Date.now()+delay;
+      if(this.rewardStateRequest===request)this.rewardStateRequest=undefined;
+    });
+    this.rewardStateRequest=request;return request;
+  }
+
+  private canStartDailyShare():boolean {
+    if(!this.ready||this.disposed||this.shareBusy||this.isPaused||this.session.mode!=='Main'||
+      !this.session.getContentState('dailyCheck').unlocked||this.session.getTutorialState().active||
+      this.offlineSummaryPending||this.dailyCheckOpening||this.dailyCheckHud?.isOpen||
+      this.session.rebirthAnimating||this.modeRevealElapsed!==null||this.openingFeature||this.settingsOpening)return false;
+    const state=this.hudState();
+    return state.phase==='playing'&&!state.stageTransition&&!state.stageSkip&&
+      !this.weaponsHud?.isOpen&&!this.rebirthHud?.isOpen&&!this.settingsHud?.isOpen&&!this.skinHud?.isOpen&&
+      !this.petHud?.isOpen&&!this.fishHud?.isOpen&&!this.adventureHud?.isOpen&&!this.speedRunHud?.blocksUpgrades&&
+      !this.raidHud?.blocksUpgrades&&!this.bossHud?.blocksUpgrades&&!this.huntHud?.blocksUpgrades&&!this.mineHud?.blocksUpgrades;
+  }
+
+  private async beginDailyShare():Promise<void> {
+    const provider=this.shareProvider,state=this.session?.getDailyShareState();
+    if(!provider?.supported||!state?.canClaim||state.blocked||!this.canStartDailyShare())return;
+    this.shareBusy=true;this.syncModalState();
+    try{
+      if(!this.shareClaimReady){
+        const result=await provider.share();
+        if(this.disposed||provider!==this.shareProvider)return;
+        if(result.status!=='confirmed'&&result.status!=='unverified'){
+          if(result.status!=='cancelled')this.alerts?.show(result.message??'分享未完成，请重试');
+          return;
+        }
+        this.shareClaimReady=true;this.shareClaimNoticeShown=false;
+      }
+      // The platform show event is forwarded after foreground cloud reconciliation.
+      // Failed transport before a durable claim is retried without asking for another share.
+      if(this.backgrounded||this.cloudForegroundCheck||this.cloudSave?.blocked)return;
+      const reward=await this.session.claimDailyShare();
+      if(this.disposed||provider!==this.shareProvider)return;
+      if(reward.ok){
+        this.shareClaimReady=false;this.alerts?.show(`分享奖励 +${reward.diamonds}钻石`);
+      }else{
+        this.shareClaimReady=reward.reason==='saveFailed';
+        if(!this.shareClaimNoticeShown){
+          this.shareClaimNoticeShown=true;this.alerts?.show(reward.message??'分享奖励暂未到账，请联网后重试');
+        }
+        this.rewardStateRefreshAt=0;await this.refreshRewardState();
+      }
+    }catch(error){
+      if(!this.disposed&&provider===this.shareProvider&&!this.shareClaimNoticeShown){
+        this.shareClaimNoticeShown=true;this.alerts?.show(error instanceof Error?error.message:'分享暂不可用，请重试');
+      }
+    }finally{
+      if(provider===this.shareProvider){
+        this.shareBusy=false;this.shareClaimRetryAt=Date.now()+5000;
+        if(!this.disposed){
+          this.syncModalState();
+          // onHide paused the simulation; onShow still saw shareBusy while the claim awaited its receipt.
+          if(this.ready&&!this.isPaused)this.world.resume();
+        }
+      }
+    }
+  }
+
+  private updateDailyShareEntry():void {
+    if(!this.shareProvider?.supported||!this.session.getDailyShareState()||this.dailyShareEntry||
+      this.dailyShareEntryRequest||Date.now()<this.dailyShareEntryRetryAt||!this.artLibrary||!this.hudRoot)return;
+    const art=this.artLibrary,parent=this.hudRoot,provider=this.shareProvider;
+    // Register shared sprite ownership before starting asynchronous loading.
+    DAILY_SHARE_ENTRY_IMAGES.forEach(path=>this.coreResourcePaths.add(path));
+    const request=loadDailyShareEntryAssets(art).then(assets=>{
+      if(this.disposed||provider!==this.shareProvider||parent!==this.hudRoot||parent.isValid===false)return;
+      const entry=new DailyShareEntry(parent,art,assets,()=>{void this.beginDailyShare();},id=>this.sfx?.play(id));
+      const insets=this.safeAreaInsets();entry.resize(this.viewport.width,this.viewport.height,insets.top,insets.bottom);
+      this.dailyShareEntry=entry;this.syncModalState();
+    }).catch(error=>{
+      if(this.disposed||provider!==this.shareProvider)return;
+      this.dailyShareEntryRetryAt=Date.now()+RESOURCE_LOADING_POLICY.background.retryDelayMs;
+      console.warn('[ForestGunner] Share entry load failed',error);
+    }).then(()=>{if(this.dailyShareEntryRequest===request)this.dailyShareEntryRequest=undefined;});
+    this.dailyShareEntryRequest=request;
+  }
+
   private async openDailyCheck():Promise<void> {
     if(!this.canOpenDailyCheck()||this.dailyCheckOpening||this.dailyCheckHud?.isOpen)return;
+    if(this.cloudSave){
+      await this.refreshRewardState();
+      if(!this.canOpenDailyCheck()||this.dailyCheckOpening||this.dailyCheckHud?.isOpen)return;
+    }
     if(this.dailyCheckHud){
       this.hud?.cancelInteractions();this.resizeIfNeeded();this.syncModalState();this.dailyCheckHud.open();
       if(this.dailyCheckHud.isOpen){this.dailyCheckAutoPending=false;this.dailyCheckRetryAt=0;}
@@ -1056,7 +1354,13 @@ export class GameBootstrap extends Component {
     this.loadingTrace.frame(dt);
     const frameStartedAt=this.preparationNow(),frameDelta=dt;
     this.loadingText?.sync();
-    this.startupScreen?.sync();
+    if(!this.backgrounded)this.startupScreen?.sync();
+    if(this.cloudSave){
+      if(this.ready&&!this.backgrounded&&!this.cloudForegroundCheck)this.cloudSave.tick();
+      if(this.ready&&!this.backgrounded&&Date.now()>=this.rewardStateRefreshAt)void this.refreshRewardState();
+      this.cloudPanel?.sync(this.cloudSave.displayStatus,this.ready);
+      if(this.ready&&this.cloudSave.blocked&&!this.backgrounded)void this.handleCloudDecision();
+    }
     // The engine keeps updating during async start. No timer survives teardown
     // or performs work while the app is in the background.
     if(this.startupProgress&&!this.backgrounded&&Date.now()>=this.startupProgressNextAt){
@@ -1082,6 +1386,8 @@ export class GameBootstrap extends Component {
     this.sfx?.update(this.backgrounded||!Number.isFinite(dt)?0:Math.max(0,dt));
     this.featureEntries.forEach(entry=>entry.update(this.backgrounded||!Number.isFinite(dt)?0:Math.max(0,dt)));
     this.dailyCheckEntry?.update(this.backgrounded||!Number.isFinite(dt)?0:Math.max(0,dt));
+    this.dailyShareEntry?.update(this.backgrounded||!Number.isFinite(dt)?0:Math.max(0,dt));
+    if(this.shareClaimReady&&!this.shareBusy&&Date.now()>=this.shareClaimRetryAt&&this.canStartDailyShare())void this.beginDailyShare();
     this.resizeIfNeeded();
     // Buff time follows the foreground clock even during menus or asset loading.
     const foregroundDelta=this.backgrounded||this.manuallyPaused||this.rewardedAds?.isPresenting||this.skipFrame||!Number.isFinite(dt)?0:Math.max(0,Math.min(dt,COMBAT_CONFIG.maxFrameTime));
@@ -1263,7 +1569,14 @@ export class GameBootstrap extends Component {
     if(!this.startupRelease)return;
     const result=this.startupBudget?.evaluate({coreReady:this.preparationReady,
       viewsReady:this.startupModules.every(name=>this.resourceModules.isViewReady(name)),hidden:this.backgrounded});
-    if(this.disposed||(!this.startupRequest&&!this.startupFailure&&result?.release)){
+    const prepared=!this.startupRequest&&!this.startupFailure&&result?.release;
+    if(prepared&&!this.disposed){
+      if(this.startupResourcesReadyAt===undefined){
+        this.startupResourcesReadyAt=Date.now();this.finishStartupPanels?.();this.startupProgress?.();
+        this.startupScreen?.setProgress(1);
+      }
+    }
+    if(this.disposed||prepared){
       this.startupCurrent=undefined;const release=this.startupRelease;this.startupRelease=undefined;release();
     }
   }
@@ -1402,7 +1715,7 @@ export class GameBootstrap extends Component {
 
   lateUpdate():void {this.colors?.syncCamera();}
 
-  private get isPaused():boolean {return this.battleLoading||this.manuallyPaused||this.backgrounded||!!this.rewardedAds?.isPresenting||!['Main','SpeedRun','Raid','Boss','Monster','Mine'].includes(this.session.mode);}
+  private get isPaused():boolean {return this.shareBusy||this.cloudDecisionPending||this.cloudForegroundCheck||!!this.cloudSave?.blocked||!!this.cloudSave?.rewardPending||!!this.session?.backendRewardPending||this.battleLoading||this.manuallyPaused||this.backgrounded||!!this.rewardedAds?.isPresenting||!['Main','SpeedRun','Raid','Boss','Monster','Mine'].includes(this.session.mode);}
 
   private hudState() {return this.session.snapshot(this.world.stats,this.isPaused,this.battlefield?.hasActiveRewards??false);}
 
@@ -1447,7 +1760,7 @@ export class GameBootstrap extends Component {
     this.mineHud?.setEntryVisible(main&&!this.session.rebirthAnimating&&this.session.getContentState('mine').visible);
     this.layoutLeftMenu();this.layoutRightMenu();
     this.raidHud?.setExternalModalOpen(!!this.weaponsHud?.isOpen);
-    const open=!!(this.offlineSummaryPending||this.dailyCheckOpening||this.dailyCheckHud?.isOpen||this.rewardedAds?.isPresenting||this.weaponsHud?.isOpen||this.rebirthHud?.isOpen||this.skinHud?.isOpen||this.petHud?.isOpen||this.fishHud?.isOpen||this.adventureHud?.isOpen||this.settingsHud?.isOpen||this.settingsOpening||this.openingFeature||this.battleLoading||this.session?.rebirthAnimating||this.speedRunHud?.blocksUpgrades||this.raidHud?.blocksUpgrades||this.bossHud?.blocksUpgrades||this.huntHud?.blocksUpgrades||this.mineHud?.blocksUpgrades||this.modeRevealElapsed!==null);
+    const open=!!(this.shareBusy||this.offlineSummaryPending||this.dailyCheckOpening||this.dailyCheckHud?.isOpen||this.rewardedAds?.isPresenting||this.weaponsHud?.isOpen||this.rebirthHud?.isOpen||this.skinHud?.isOpen||this.petHud?.isOpen||this.fishHud?.isOpen||this.adventureHud?.isOpen||this.settingsHud?.isOpen||this.settingsOpening||this.openingFeature||this.battleLoading||this.session?.rebirthAnimating||this.speedRunHud?.blocksUpgrades||this.raidHud?.blocksUpgrades||this.bossHud?.blocksUpgrades||this.huntHud?.blocksUpgrades||this.mineHud?.blocksUpgrades||this.modeRevealElapsed!==null);
     // Unity keeps Main_UI/Btn_list below Gun_UI, Rebirth_manager and Contents_UI.
     // Our feature roots also own their menu buttons, so bring the open feature
     // above every other menu without crossing the ad, tutorial or alert layers.
@@ -1466,13 +1779,17 @@ export class GameBootstrap extends Component {
       }
     }
     if(foreground){
-      const top=Math.max(...features.map(hud=>hud.node.getSiblingIndex()),...Array.from(this.featureEntries.values()).map(entry=>entry.node.getSiblingIndex()),this.dailyCheckEntry?.node.getSiblingIndex()??0);
+      const top=Math.max(...features.map(hud=>hud.node.getSiblingIndex()),...Array.from(this.featureEntries.values()).map(entry=>entry.node.getSiblingIndex()),this.dailyCheckEntry?.node.getSiblingIndex()??0,this.dailyShareEntry?.node.getSiblingIndex()??0);
       if(foreground.node.getSiblingIndex()!==top)foreground.node.setSiblingIndex(top);
     }
     if(this.offlineHud?.isOpen)this.offlineHud.node.setSiblingIndex(this.hudRoot!.children.length-1);
     for(const feature of features)feature.setEntryBlocked(open||!main);
     this.dailyCheckEntry?.setVisible(dailyCheckVisible&&!this.session.rebirthAnimating);
     this.dailyCheckEntry?.setBlocked(open||!main||this.isPaused);
+    const share=this.session.getDailyShareState();
+    this.dailyShareEntry?.setRewardState(!!this.shareProvider?.supported&&dailyCheckVisible&&!!share?.canClaim&&!share.blocked&&
+      !this.session.rebirthAnimating&&!this.session.getTutorialState().active,
+      open||!main||this.isPaused);
     if(this.featureEntries.size){
       const visible=this.visibleDeferredHuds();
       this.featureEntries.forEach((entry,name)=>entry.setState(main&&visible[name]&&!this.hasDeferredHud(name)&&!this.session.rebirthAnimating,
@@ -1497,7 +1814,8 @@ export class GameBootstrap extends Component {
   }
 
   private layoutRightMenu():void {
-    const offsets=rightMenuOffsets(this.visibleDeferredHuds());
+    const visible=this.visibleDeferredHuds(),offsets=rightMenuOffsets(visible);
+    this.dailyShareEntry?.setEntryOffset(rightMenuShareOffset(visible));
     for(const [name,y] of Object.entries(offsets)){
       const feature=name as 'speedrun'|'mine'|'boss'|'hunt'|'adventure'|'raid';
       this.featureEntries.get(feature)?.setEntryOffset(y);
@@ -1524,14 +1842,26 @@ export class GameBootstrap extends Component {
     return {...preloading,version:scope.__FOREST_GUNNER_RELEASE__??'local',
       modules,startup:{returningPlayer:this.startupReturning,budgetMs:this.startupBudgetMs,
         uiFrameBudgetMs:RESOURCE_LOADING_POLICY.startup.uiFrameBudgetMs,prefetchPanels:RESOURCE_LOADING_POLICY.startup.prefetchPanels,
-        overBudget:(this.startupInteractiveAt||Date.now())-this.startupStartedAt>this.startupBudgetMs,
+        overBudget:(this.startupResourcesReadyAt??Date.now())-this.startupStartedAt>this.startupBudgetMs,
+        entryMode:'automatic',
+        dataReadyMs:this.startupDataReadyAt===undefined?null:this.startupDataReadyAt-this.startupStartedAt,
+        // Retain the old diagnostic keys without reporting a synthetic click.
+        startPageMs:null,startRequested:false,startRequestedMs:null,
+        resourcesReadyMs:this.startupResourcesReadyAt===undefined?null:this.startupResourcesReadyAt-this.startupStartedAt,
+        remainingWaitMs:null,waitingForStart:false,
         waitingModule:this.startupCurrent,failure:this.startupFailure,attempts:this.startupAttempts,
         moduleTimings:this.startupModules.map(name=>({name,startedAt:states[name]?.startedAt,readyAt:states[name]?.readyAt,
           durationMs:states[name]?.readyAt!==undefined&&states[name]?.startedAt!==undefined?states[name].readyAt!-states[name].startedAt!:null})),
         coreReadyMs:this.startupCoreReadyAt?this.startupCoreReadyAt-this.startupStartedAt:null,
         interactiveMs:this.startupInteractiveAt?this.startupInteractiveAt-this.startupStartedAt:null,
         requiredViews:this.startupModules,preparationReady:this.preparationReady,interactive:this.ready,
-        clock:'game-entry; platform time before game.js requires device launch trace'},
+        // Existing budget-relative fields remain compatible; total is never reset by login.
+        total:{dataReadyMs:this.startupDataReadyAt===undefined?null:this.startupDataReadyAt-this.bootStartedAt,
+          startPageMs:null,startRequestedMs:null,
+          resourcesReadyMs:this.startupResourcesReadyAt===undefined?null:this.startupResourcesReadyAt-this.bootStartedAt,
+          interactiveMs:this.startupInteractiveAt?this.startupInteractiveAt-this.bootStartedAt:null},
+        timeline:this.startupTimeline?.snapshot(),
+        clock:'budget-relative legacy fields; total/timeline from game.js; earlier platform time requires device launch trace'},
       foreground:!this.backgrounded,mode:this.session?.mode,preparationMode:this.resourcePreloader?.mode,battleLoading:this.battleLoading,
       opening:this.openingFeature||(this.settingsOpening?'settings':this.dailyCheckOpening?'dailyCheck':undefined),
       uiReady:RESOURCE_MODULE_ORDER.reduce((result,name)=>{result[name]=this.resourceModules.isViewReady(name);return result;},{} as Record<string,boolean>),
@@ -1703,6 +2033,7 @@ export class GameBootstrap extends Component {
   private updateDeferredHuds():void {
     if(!this.ready||this.disposed||this.backgrounded||this.session.mode!=='Main'||!this.artLibrary||!this.hudRoot)return;
     this.updateDailyCheckEntry();
+    this.updateDailyShareEntry();
     const adventureEntry=this.featureEntries.get('adventure');
     if(adventureEntry&&Date.now()>=this.adventureAlertAt){
       this.adventureAlertAt=Date.now()+10000;
@@ -2202,6 +2533,7 @@ export class GameBootstrap extends Component {
   }
 
   private onHide():void {
+    this.shareProvider?.onHide?.();this.dailyShareEntry?.cancelInteractions();
     this.resourcePreloader?.pause();
     if(this.battleNotice)this.battleNotice.active=false;
     this.featureOpenVersion++;this.openingFeature=undefined;this.featureEntries.forEach(entry=>entry.cancelInteractions());
@@ -2233,18 +2565,40 @@ export class GameBootstrap extends Component {
     const pending=this.session?.weapons.snapshot().pendingAd;
     if(pending)this.session.weapons.completeAd(pending.token,'cancel');
     this.session?.save();
+    if(this.ready&&this.cloudSave&&!this.cloudSave.blocked){
+      const cloud=this.cloudSave;
+      void cloud.flushBackground().catch(()=>{});
+    }
     this.backgrounded=true;this.skipFrame=true;
     if(this.ready)this.world.pause();
   }
   private readonly onDocumentFreeze=():void=>this.onHide();
   private readonly onDocumentResume=():void=>this.onShow();
   private onShow():void {
+    if(this.disposed)return;
+    const foregroundVersion=++this.cloudForegroundVersion;
     this.backgrounded=false;this.skipFrame=true;
     this.backgroundPreparation.reset(RESOURCE_LOADING_POLICY.backgroundScheduling.recoveryDelayMs);
     // Navigation mode/safe bounds can change while hidden without a Canvas resize.
     if(this.canvasTransform&&!this.disposed)this.resizeIfNeeded(true);
     this.offlineCheckpointAt=Date.now()+10000;
     this.session?.checkpointForeground();
+    this.cloudForegroundCheck=false;
+    if(this.ready&&this.cloudSave&&!this.cloudSave.blocked){
+      const cloud=this.cloudSave;
+      this.cloudForegroundCheck=true;
+      const finish=():void=>{
+        // A late check must not release a newer foreground check or a destroyed scene.
+        if(this.disposed||foregroundVersion!==this.cloudForegroundVersion||cloud!==this.cloudSave)return;
+        this.cloudForegroundCheck=false;this.skipFrame=true;
+        // Forward the lifecycle event once the running save has been reconciled.
+        if(!this.backgrounded)this.shareProvider?.onShow?.();
+        // onHide pauses the simulation itself; clearing the UI gate alone leaves it frozen.
+        // Network failure allows local play, while conflicts and other pause reasons remain.
+        if(this.ready&&!this.isPaused)this.world.resume();
+      };
+      void cloud.reconcile().then(finish,finish);
+    }else this.shareProvider?.onShow?.();
     this.dailyCheckHud?.update(0);
     this.resourcePreloader?.resume();
     if(this.battleLoading&&this.battleNotice&&this.battleRetry)this.battleNotice.active=true;
@@ -2282,6 +2636,7 @@ export class GameBootstrap extends Component {
     this.battlefield?.setViewport(this.viewport.width/this.viewport.height);
     const {top:topInset,bottom:bottomInset}=this.safeAreaInsets();
     this.layoutInsets={top:topInset,bottom:bottomInset};
+    this.cloudPanel?.resize(this.viewport.width,this.viewport.height,topInset);
     this.hud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.weaponsHud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.rebirthHud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
@@ -2298,6 +2653,7 @@ export class GameBootstrap extends Component {
     this.offlineHud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.dailyCheckHud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.dailyCheckEntry?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
+    this.dailyShareEntry?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.featureEntries.forEach(entry=>entry.resize(this.viewport.width,this.viewport.height,topInset,bottomInset));
     this.tutorialHud?.resize(this.viewport.width,this.viewport.height,topInset,bottomInset);
     this.rewardedAdModal?.resize(this.viewport.width,this.viewport.height);
@@ -2308,6 +2664,11 @@ export class GameBootstrap extends Component {
   }
   private countNodes(n:Node):number {return 1+n.children.reduce((count,child)=>count+this.countNodes(child),0);}
   private clearViews():void {
+    this.shareProvider?.destroy();this.shareProvider=undefined;
+    this.dailyShareEntry?.destroy();this.dailyShareEntry=undefined;this.dailyShareEntryRequest=undefined;
+    this.shareBusy=false;this.shareClaimReady=false;
+    this.finishStartupCore?.('cancelled');this.finishStartupPanels?.('cancelled');
+    this.startupEntryReady=false;
     this.startupGeneration++;this.startupRequest=undefined;this.startupCurrent=undefined;
     this.startupAssetRequest=undefined;this.startupAssetsAttempted.clear();this.startupModules=[];
     this.startupFailure=undefined;this.startupAttempts=0;this.startupRetryAt=0;
@@ -2374,6 +2735,9 @@ export class GameBootstrap extends Component {
   }
   onDestroy():void {
     this.disposed=true;
+    this.cloudSave?.dispose();this.cloudSave=undefined;
+    this.cloudPanel?.destroy();this.cloudPanel=undefined;
+    this.gameLogin?.dispose();this.gameLogin=undefined;
     (globalThis as any).wx?.offMemoryWarning?.(this.onMemoryWarning);
     this.clearViews();
     this.loadingText?.destroy();this.loadingText=undefined;

@@ -4,8 +4,10 @@ import { OriginalWeaponUi, WeaponHudAssets, WeaponUiConfig } from './OriginalWea
 import { OriginalWeaponFeedback } from './OriginalWeaponFeedback';
 
 export type FeatureName = 'weapons' | 'rebirth' | 'speedrun' | 'raid' | 'boss' | 'skins' | 'pets' | 'fish' | 'hunt' | 'mine' | 'adventure';
-const POSITIONS: Record<FeatureName, [number, number]> = {
+export type FeatureEntryName = FeatureName | 'share';
+const POSITIONS: Record<FeatureEntryName, [number, number]> = {
   weapons: [-1, 355], skins: [-1, 480], fish: [-1, 605], pets: [-1, 730], rebirth: [-1, 855], speedrun: [1, 355], mine: [1, 480], boss: [1, 605], hunt: [1, 730], adventure: [1, 855], raid: [1, 980],
+  share: [1, 1105],
 };
 
 /** Unity Left_Menu keeps visible buttons packed above the bottom safe edge. */
@@ -28,6 +30,11 @@ export function rightMenuOffsets(visible: Partial<Record<FeatureName, boolean>>)
   return positions;
 }
 
+/** The reward entry always follows the last visible gameplay entry. */
+export function rightMenuShareOffset(visible: Partial<Record<FeatureName, boolean>>): number {
+  return Math.max(230, ...Object.values(rightMenuOffsets(visible))) + 125;
+}
+
 export async function loadFeatureEntry(art: ArtLibrary, name: FeatureName): Promise<WeaponHudAssets> {
   const config = await art.json<WeaponUiConfig>(`art/feature-entries/${name}`);
   const paths = Object.values(config.images).map(spec => spec.path);
@@ -48,7 +55,7 @@ export class FeatureEntry {
   private height = 1920;
   private width = 1080;
   private readonly feedback: OriginalWeaponFeedback;
-  constructor(parent: Node, art: ArtLibrary, private readonly assets: WeaponHudAssets, readonly name: FeatureName,
+  constructor(parent: Node, art: ArtLibrary, private readonly assets: WeaponHudAssets, readonly name: FeatureEntryName,
     open: () => void, playSound?: (id: number) => void) {
     this.node = makeNode(`FeatureEntry_${name}`, parent);
     this.ui = new OriginalWeaponUi(art, assets);

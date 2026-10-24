@@ -22,7 +22,7 @@ const builds = [
   ['feedback', ['view/OriginalFeedbackMath.ts', 'view/OriginalParticleSimulation.ts', 'view/OriginalWeaponConfettiMath.ts', 'view/WeaponGradeEffectSimulation.ts']],
   ['character', ['view/OriginalCatAnimation.ts', 'view/WeaponAttackAnimation.ts', 'view/PetAnimation.ts']],
   ['color', ['view/OriginalColorMath.ts']],
-  ['session', ['session/BattleSession.ts', 'session/RuntimeEnvironment.ts', 'session/TutorialPreview.ts']],
+  ['session', ['session/BattleSession.ts', 'session/RuntimeEnvironment.ts', 'session/TutorialPreview.ts', 'session/GameLogin.ts', 'session/GameBackendConfig.ts', 'session/CloudSaveStorage.ts', 'platform/PlatformServices.ts']],
   ['money', ['view/MoneyBurstSimulation.ts']],
 ];
 for (const [output, entries] of builds) {

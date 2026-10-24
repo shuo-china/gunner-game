@@ -53,7 +53,7 @@ const mapResources = packageMapResources(input, code,
   path.join(output, 'map-package-index.json'));
 const featureResources = packageFeatureResources(input, code,
   JSON.parse(fs.readFileSync(path.join(input, remoteConfig), 'utf8')), settings.assets.server,
-  path.join(output, 'feature-package-index.json'), startupMetadata.packages);
+  path.join(output, 'feature-package-index.json'), startupMetadata.packages, mapResources.nativeFiles);
 const subpackages = Array.from(new Map([...startupMetadata.packages, ...mapResources.packages, ...featureResources.packages]
   .map(item => [item.name, item])).values());
 // Match the installed official builder's default MaxSubPackageLimit. The
@@ -68,7 +68,8 @@ if (packedEntry.split(environmentEnd).length !== 2) throw new Error('Missing uni
 fs.writeFileSync(packedEntryPath, 'globalThis.__FOREST_GUNNER_BOOT_STARTED_AT__ = Date.now();\n' + packedEntry.replace(environmentEnd,
   environmentEnd + '\n' + 'globalThis.__FOREST_GUNNER_RELEASE__ = ' + JSON.stringify(version) + ';'));
 project.packOptions = { ignore: [{ type: 'folder', value: 'remote' }], include: [
-  ...startupMetadata.packages.map(item => ({ type: 'file', value: item.path || startupMetadata.path })),
+  { type: 'file', value: startupMetadata.path },
+  ...startupMetadata.packages.map(item => ({ type: 'file', value: item.path })),
   { type: 'file', value: 'startup-inflate.LICENSE.txt' },
   { type: 'file', value: cocosLicenses[0] },
 ] };

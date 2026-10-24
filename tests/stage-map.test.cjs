@@ -73,6 +73,10 @@ test('stage generation is deterministic, isolated, and preserves the first-wave 
 
 test('metadata assets preserve all ten maps, forty trees and distinct Boss geometry', () => {
   assert.equal(assets.skins.length,10);assert.equal(assets.treeSprites.length,40);
+  assert.equal(assets.skins[0].sprites.ground.path,'art/stages/maps/0/forest_ruins/ground');
+  assert.equal(assets.skins[7].sprites.ground.path,'art/stages/maps/7/ground');
+  assert.deepEqual(assets.treeSprites.slice(0,4).map(spec=>spec.path),[28,29,30,31].map(id=>`art/stages/trees/${id}`));
+  assert.deepEqual(assets.treeSprites.slice(28,32).map(spec=>spec.path),['standing_stone','column','stone_ring','shrine'].map(name=>`art/stages/maps/0/forest_ruins/${name}`));
   assert.deepEqual(assets.layout.degreeRates,[[80,20,0,0],[50,45,5,0],[20,55,25,0],[5,35,60,0],[0,15,85,0]]);
   assert.deepEqual(assets.layout.grids.map(g=>g.grid.position[2]),[50,100,150,200,250]);
   assert.deepEqual(assets.boss.collider.size,[7,6,7]);

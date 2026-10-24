@@ -2,18 +2,18 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const legacy = require('./fixtures/legacy-weapon-data.json');
 const { getWeapon, getWeaponCatalog, getWeaponIdsForGrade, WEAPON_CATEGORIES,
-  WEAPON_CATEGORY_BY_TYPE, WEAPON_CATEGORY_NAMES, LEGACY_WEAPON_ID_MAP: migration, AD_WEAPON_ID } = require('./.build/session/core/WeaponCatalog.js');
+  WEAPON_CATEGORY_BY_TYPE, WEAPON_CATEGORY_NAMES, WEAPON_CATALOG_VERSION, WEAPON_COUNT } = require('./.build/session/core/WeaponCatalog.js');
 const { WeaponInventory } = require('./.build/session/session/WeaponInventory.js');
-const { BattleSession, economyStorageKey, weaponCatalogBackupStorageKey } = require('./.build/session/session/BattleSession.js');
+const { BattleSession, economyStorageKey } = require('./.build/session/session/BattleSession.js');
 const { resolveContentConfig } = require('./.build/session/session/ContentConfig.js');
 const clone = value => JSON.parse(JSON.stringify(value));
-function oldInventory() {
-  const state = new WeaponInventory().serialize(); delete state.catalogVersion;
-  state.collection = new Array(65).fill(true);
+function currentInventory() {
+  const state = new WeaponInventory().serialize();
+  state.collection.fill(true);
   state.equipment = [{ weaponId: 64, locked: true, pendingAd: false }, null, { weaponId: 28, locked: false, pendingAd: false }];
   state.backpack[0] = { weaponId: 1, locked: true, pendingAd: false };
   state.backpack[1] = { weaponId: 2, locked: false, pendingAd: false };
-  state.backpack[2] = { weaponId: 14, locked: false, pendingAd: true };
+  state.backpack[2] = { weaponId: 8, locked: false, pendingAd: true };
   state.adGunExpiresAt = 2000000; state.adGunOffered = true;
   state.diamonds = 12345; state.starGems = 678; state.stageValueMax = 400;
   state.starLevels = [8, 13, 20]; state.starFailures = [0, 1, 4]; state.autoEnabled = true;
@@ -25,10 +25,10 @@ function memoryStore(initial = []) {
 }
 const options = storage => ({ environment: 'production', storage, now: () => 1000000,
   contentConfig: resolveContentConfig('production', { adsEnabled: true, tutorialEnabled: false, firstDrawDiamonds: 0, thresholds: { challengePowerLevel: 0 } }) });
-function legacySave() {
+function currentSave() {
   const store = memoryStore(); new BattleSession(options(store));
   const save = JSON.parse(store.data.get(economyStorageKey('production')));
-  save.weapons = oldInventory(); save.money = { digits: '123456789', exponent: 0, precision: 9 }; save.levels = [5, 4, 3];
+  save.weapons = currentInventory(); save.money = { digits: '123456789', exponent: 0, precision: 9 }; save.levels = [5, 4, 3];
   return JSON.stringify(save);
 }
 function quiet(fn) { const old = console.warn; console.warn = () => {}; try { return fn(); } finally { console.warn = old; } }
@@ -110,32 +110,26 @@ test('appended bows restore their authored balances and all five repeated family
   }
 });
 
-test('all 65 legacy IDs preserve grade and mechanism except the two approved S substitutions', () => {
-  assert.equal(migration.length, 65); assert.equal(new Set(migration).size, 59);
-  assert.deepEqual(migration, [
-    0,0,0,1,1,2,2,3,4,4,5,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-    19,20,21,23,22,24,25,26,28,27,29,30,31,33,32,34,35,36,38,37,
-    39,40,41,43,42,44,45,46,48,47,49,50,51,53,52,54,55,56,58,57,
-  ], 'balance provenance never changes saved weapon identity');
-  for (const old of legacy) { const w = getWeapon(migration[old.id]); assert.equal(w.grade, Math.floor(old.id / 5));
-    if (![20, 24].includes(old.id)) assert.equal(w.type, old.type);
-    const state = oldInventory(); state.equipment[0] = { weaponId: old.id, locked: true, pendingAd: false };
-    assert.equal(WeaponInventory.validate(state).equipment[0].weaponId, w.id); }
-  assert.equal(getWeapon(migration[14]).category, 'staff'); assert.equal(migration[14], AD_WEAPON_ID);
-  assert.equal(getWeapon(migration[20]).category, 'crossbow'); assert.equal(getWeapon(migration[24]).category, 'handgun');
-});
-
-test('migration preserves copies, locks, pending claims and stars, ORs discoveries and is idempotent', () => {
-  const source = oldInventory(), before = clone(source), next = WeaponInventory.validate(source);
-  assert.deepEqual(source, before); assert.equal(next.catalogVersion, 4); assert.equal(next.collection.length, 65);
-  assert.ok(next.collection.slice(0,59).every(Boolean)); assert.deepEqual(next.collection.slice(59), new Array(6).fill(false));
-  assert.deepEqual(next.backpack.slice(0, 3), [{ weaponId: 0, locked: true, pendingAd: false }, { weaponId: 0, locked: false, pendingAd: false }, { weaponId: 8, locked: false, pendingAd: true }]);
-  assert.deepEqual(next.equipment, [{ weaponId: 57, locked: true, pendingAd: false }, null, { weaponId: 23, locked: false, pendingAd: false }]);
-  for (const key of Object.keys(source).filter(k => !['backpack', 'equipment', 'collection'].includes(k))) assert.deepEqual(next[key], source[key], key);
+test('current catalog preserves copies, identities, pending claims and complete state without mutation', () => {
+  const source = currentInventory(), before = clone(source), next = WeaponInventory.validate(source);
+  assert.deepEqual(source, before); assert.deepEqual(next, source); assert.notEqual(next, source);
+  assert.equal(next.catalogVersion, WEAPON_CATALOG_VERSION); assert.equal(next.collection.length, WEAPON_COUNT);
   assert.deepEqual(WeaponInventory.validate(next), next);
   source.collection[1] = false; assert.throws(() => WeaponInventory.validate(source), /missing from collection/);
-  const invalid = oldInventory(); invalid.catalogVersion = 2; assert.throws(() => WeaponInventory.validate(invalid));
-  const future = clone(next); future.catalogVersion = 5; assert.throws(() => WeaponInventory.validate(future), /version/);
+});
+
+test('unversioned, retired and future catalogs are rejected even when collection counts match', () => {
+  for (const version of [undefined, 1, 2, 3, 5, 99]) {
+    const source = currentInventory();
+    if (version === undefined) delete source.catalogVersion; else source.catalogVersion = version;
+    assert.throws(() => WeaponInventory.validate(source), /Unsupported weapon catalog version/);
+  }
+  for (const count of [59, 62, 64, 66]) {
+    const source = currentInventory(); source.collection = new Array(count).fill(true);
+    assert.throws(() => WeaponInventory.validate(source), /Invalid collection/);
+  }
+  const missingCount = currentInventory(); delete missingCount.dailyAdCount;
+  assert.throws(() => WeaponInventory.validate(missingCount), /Invalid daily weapon count/);
 });
 
 test('every member of every variable-size next-grade merge pool is reachable', () => {
@@ -145,138 +139,29 @@ test('every member of every variable-size next-grade merge pool is reachable', (
       assert.equal(w.merge(0, 1).weaponId, results[pick]); } }
 });
 
-test('legacy loading backs up exact full save before migration and preserves balance and progress on reload', () => {
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production'), raw = legacySave();
-  const store = memoryStore([[key, raw]]), session = new BattleSession(options(store));
-  assert.equal(store.data.get(backup), raw); assert.equal(store.writes[0], backup);
-  const migrated = JSON.parse(store.data.get(key)); assert.equal(migrated.weapons.catalogVersion, 4);
-  assert.deepEqual(migrated.money, JSON.parse(raw).money); assert.deepEqual(migrated.levels, [5, 4, 3]); assert.deepEqual(migrated.progress, JSON.parse(raw).progress);
-  assert.equal(session.weapons.diamonds, 12345); assert.equal(session.weapons.starGems, 678);
-  assert.deepEqual(migrated.weapons, WeaponInventory.validate(JSON.parse(raw).weapons));
-  const reloaded = new BattleSession(options(store)); assert.deepEqual(reloaded.weapons.serialize(), session.weapons.serialize());
-  assert.equal(store.data.get(backup), raw); assert.equal(store.writes.filter(k => k === backup).length, 1);
-});
-
-test('backup write failure, silent loss or collision never overwrite the active legacy save', () => {
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production'), raw = legacySave();
-  for (const failure of ['throw', 'silent', 'collision']) { const store = memoryStore([[key, raw]]), write = store.setItem;
-    if (failure === 'collision') store.data.set(backup, 'another preserved save');
-    store.setItem = (k, value) => { if (k === backup && failure === 'throw') throw Error('quota'); if (k === backup && failure === 'silent') return; write(k, value); };
-    const session = quiet(() => new BattleSession(options(store))); assert.equal(session.weapons.diamonds, 12345); assert.equal(session.weapons.serialize().catalogVersion, 4);
-    session.weapons.grantDiamonds(1); session.save(); assert.equal(store.data.get(key), raw); }
-});
-
-test('corrupt and future catalogs cannot be replaced by constructor autosave', () => {
-  const key = economyStorageKey('production');
-  for (const raw of ['not json', JSON.stringify({ ...JSON.parse(legacySave()), weapons: { ...oldInventory(), catalogVersion: 99 } })]) {
-    const store = memoryStore([[key, raw]]), session = quiet(() => new BattleSession(options(store)));
-    session.save(); assert.equal(store.data.get(key), raw); assert.deepEqual(store.writes, []); }
-});
-
-function previousSave(version = 2) {
-  const save = JSON.parse(legacySave()), weapons = WeaponInventory.validate(save.weapons);
-  weapons.catalogVersion = version; weapons.collection = new Array(version === 2 ? 59 : 62).fill(true);
-  weapons.equipment[0] = { weaponId: 9, locked: true, pendingAd: false };
-  if (version === 3) {
-    weapons.equipment[2] = { weaponId: 61, locked: true, pendingAd: false };
-    weapons.backpack[0] = { weaponId: 59, locked: true, pendingAd: false };
-    weapons.backpack[1] = { weaponId: 60, locked: false, pendingAd: false };
-  }
-  save.weapons = weapons; return JSON.stringify(save);
-}
-
-test('v2 preserves every existing ID and A bow, adds only six locked discoveries, and reloads idempotently', () => {
-  const raw = previousSave(), source = JSON.parse(raw).weapons, original = clone(source);
-  for (let id = 0; id < 59; id++) {
-    const state = clone(source); state.equipment[0].weaponId = id;
-    assert.equal(WeaponInventory.validate(state).equipment[0].weaponId, id);
-  }
-  const next = WeaponInventory.validate(source);
-  assert.deepEqual(source, original); assert.equal(next.catalogVersion, 4);
-  assert.deepEqual(next.collection, [...source.collection, ...new Array(6).fill(false)]);
-  for (const key of Object.keys(source).filter(k => !['catalogVersion','collection'].includes(k))) assert.deepEqual(next[key], source[key], key);
-  assert.deepEqual(WeaponInventory.validate(next), next);
-  assert.equal(getWeapon(next.equipment[0].weaponId).grade, 3);
-  assert.equal(getWeapon(next.equipment[0].weaponId).name, 'A级迅速之翼');
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production', 2);
-  const oldBackup = weaponCatalogBackupStorageKey('production', 1), store = memoryStore([[key,raw],[oldBackup,'older v1 backup']]);
+test('current saves reload unchanged without migration backups or remapped IDs', () => {
+  const key = economyStorageKey('production'), raw = currentSave(), store = memoryStore([[key, raw]]);
   const session = new BattleSession(options(store));
-  assert.equal(store.data.get(backup), raw); assert.equal(store.writes[0], backup);
-  assert.equal(store.data.get(oldBackup), 'older v1 backup');
+  assert.equal(session.persistenceBlocked, false);
+  assert.deepEqual(session.weapons.serialize(), JSON.parse(raw).weapons);
+  assert.deepEqual(JSON.parse(store.data.get(key)), JSON.parse(raw));
+  assert.ok(store.writes.length > 0); assert.ok(store.writes.every(k => k === key));
   assert.deepEqual(new BattleSession(options(store)).weapons.serialize(), session.weapons.serialize());
-  assert.equal(store.writes.filter(k => k === backup).length, 1);
 });
 
-test('v2 failed or colliding backups and corrupt collections cannot overwrite the original save', () => {
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production',2);
-  for (const failure of ['throw','silent','collision','invalidCollection','invalidId']) {
-    let raw = previousSave();
-    if (failure === 'invalidCollection' || failure === 'invalidId') {
-      const data = JSON.parse(raw);
-      if (failure === 'invalidCollection') data.weapons.collection.pop();
-      else data.weapons.equipment[0].weaponId = 59;
-      raw = JSON.stringify(data);
-    }
-    const store = memoryStore([[key,raw]]), write = store.setItem;
-    if (failure === 'collision') store.data.set(backup,'preserved other v2 save');
-    store.setItem = (k,v) => { if (k === backup && failure === 'throw') throw Error('quota'); if (k === backup && failure === 'silent') return; write(k,v); };
-    const session = quiet(() => new BattleSession(options(store))); session.weapons.grantDiamonds(1); session.save();
-    assert.equal(store.data.get(key),raw,failure);
-    if (failure.startsWith('invalid')) assert.deepEqual(store.writes,[]);
+test('unsupported and corrupt catalogs never overwrite the source save or create a migration backup', () => {
+  const key = economyStorageKey('production');
+  const raws = ['not json'];
+  for (const version of [undefined, 1, 2, 3, 5, 99]) {
+    const save = JSON.parse(currentSave());
+    if (version === undefined) delete save.weapons.catalogVersion; else save.weapons.catalogVersion = version;
+    raws.push(JSON.stringify(save));
   }
-});
-
-test('v3 retains all 62 IDs and complete state, appends three locked discoveries, and safely reloads as v4', () => {
-  const raw = previousSave(3), source = JSON.parse(raw).weapons, original = clone(source);
-  for (let id = 0; id < 62; id++) {
-    const state = clone(source); state.equipment[0].weaponId = id;
-    assert.equal(WeaponInventory.validate(state).equipment[0].weaponId, id);
-  }
-  const next = WeaponInventory.validate(source);
-  assert.deepEqual(source, original); assert.equal(next.catalogVersion, 4);
-  assert.deepEqual(next.collection, [...source.collection, false, false, false]);
-  for (const key of Object.keys(source).filter(k => !['catalogVersion','collection'].includes(k))) assert.deepEqual(next[key], source[key], key);
-  assert.deepEqual(WeaponInventory.validate(next), next);
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production',3);
-  const v1 = weaponCatalogBackupStorageKey('production',1), v2 = weaponCatalogBackupStorageKey('production',2);
-  const store = memoryStore([[key,raw],[v1,'preserved v1 save'],[v2,'preserved v2 save']]);
-  const session = new BattleSession(options(store)), saved = JSON.parse(store.data.get(key));
-  assert.equal(store.data.get(backup),raw); assert.equal(store.writes[0],backup);
-  assert.equal(store.data.get(v1),'preserved v1 save'); assert.equal(store.data.get(v2),'preserved v2 save');
-  assert.deepEqual(saved.weapons,next);
-  for (const field of ['money','levels','progress']) assert.deepEqual(saved[field],JSON.parse(raw)[field]);
-  assert.deepEqual(new BattleSession(options(store)).weapons.serialize(),session.weapons.serialize());
-  assert.equal(store.writes.filter(k=>k===backup).length,1);
-});
-
-test('v3 failed or colliding backups and invalid inventories never overwrite their source save', () => {
-  const key = economyStorageKey('production'), backup = weaponCatalogBackupStorageKey('production',3);
-  for (const failure of ['throw','silent','collision','invalidCollection','invalidId','invalidDiscovery']) {
-    let raw = previousSave(3);
-    if (failure.startsWith('invalid')) {
-      const data = JSON.parse(raw);
-      if (failure === 'invalidCollection') data.weapons.collection.push(false);
-      if (failure === 'invalidId') data.weapons.equipment[0].weaponId = 62;
-      if (failure === 'invalidDiscovery') data.weapons.collection[61] = false;
-      raw = JSON.stringify(data);
-    }
-    const store = memoryStore([[key,raw]]), write = store.setItem;
-    if (failure === 'collision') store.data.set(backup,'preserved other v3 save');
-    store.setItem = (k,v) => { if (k === backup && failure === 'throw') throw Error('quota'); if (k === backup && failure === 'silent') return; write(k,v); };
-    const session = quiet(() => new BattleSession(options(store))); session.weapons.grantDiamonds(1); session.save();
-    assert.equal(store.data.get(key),raw,failure);
-    if (failure.startsWith('invalid')) assert.deepEqual(store.writes,[]);
-  }
-});
-
-test('unversioned legacy and v4 saves with equal 65-entry counts use different identity semantics', () => {
-  const legacyState = oldInventory();
-  assert.equal(WeaponInventory.validate(legacyState).equipment[0].weaponId,57);
-  const current = WeaponInventory.validate(legacyState);
-  for (const id of [59,60,61,62,63,64]) {
-    current.equipment[0].weaponId = id; current.collection[id] = true;
-    const restored = WeaponInventory.validate(current);
-    assert.equal(restored.equipment[0].weaponId,id); assert.deepEqual(restored,current);
+  for (const raw of raws) {
+    const store = memoryStore([[key, raw]]), session = quiet(() => new BattleSession(options(store)));
+    assert.equal(session.persistenceBlocked, true);
+    session.weapons.grantDiamonds(1); session.save();
+    assert.equal(store.data.get(key), raw); assert.deepEqual(store.writes, []); assert.equal(store.data.size, 1);
   }
 });
 

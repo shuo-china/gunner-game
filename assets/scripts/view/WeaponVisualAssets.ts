@@ -1,5 +1,4 @@
 import { ArtLibrary, ImageSpec } from './ArtLibrary';
-import { getWeapon, isWeaponId } from '../core/WeaponCatalog';
 import type { MuzzleEffectSpec } from './OriginalMuzzleEffect';
 import type { ParticleSpec } from './OriginalParticleSimulation';
 import type { DamageNumberConfig } from './DamageNumbers';
@@ -47,7 +46,6 @@ interface ProjectileCatalog {
 /** Shared source assets; per-cat/per-emitter state belongs to views. */
 export class WeaponVisualAssets {
   private readonly appearances = new Map<number, WeaponAppearanceSpec>();
-  private readonly warnedMissingAppearances = new Set<number>();
   private readonly groupRequests = new Map<string, Promise<void>>();
   readonly loadedFramePaths = new Set<string>();
   customProjectileEffect?: EffectAsset;
@@ -75,25 +73,8 @@ export class WeaponVisualAssets {
 
   appearance(id: number): WeaponAppearanceSpec {
     const weapon = this.appearances.get(id);
-    if (weapon) return weapon;
-    // A save may outlive the appearance table bundled by a preview or cached
-    // client. Keep the weapon's gameplay data and render the nearest available
-    // art of the same category; never fail the entire startup for missing art.
-    let fallback: WeaponAppearanceSpec | undefined;
-    if (isWeaponId(id)) {
-      const definition = getWeapon(id);
-      const candidates = Array.from(this.appearances.values());
-      fallback = candidates.find(candidate => {
-        const available = getWeapon(candidate.id);
-        return available.category === definition.category && available.grade === definition.grade;
-      }) ?? candidates.find(candidate => getWeapon(candidate.id).category === definition.category);
-    }
-    fallback ??= this.appearances.get(0)!;
-    if (!this.warnedMissingAppearances.has(id)) {
-      this.warnedMissingAppearances.add(id);
-      console.warn(`[ForestGunner] Missing weapon appearance ${id}; using weapon ${fallback.id} artwork.`);
-    }
-    return fallback;
+    if (!weapon) throw new Error(`Missing weapon appearance ${id}`);
+    return weapon;
   }
 
   private ensureGroup(path: string): Promise<void> {

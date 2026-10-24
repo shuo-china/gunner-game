@@ -9,7 +9,7 @@ export interface RewardedAdPresenter {
 }
 export interface RewardedAdRequest { readonly id: string; readonly placement: RewardedAdPlacement; }
 export interface RewardedAdProvider {
-  /** Return request-scoped cleanup. A future WeChat provider maps video close
+  /** Return request-scoped cleanup. Each platform provider maps video close
    * to success only when fully watched; load/show errors map to failure. */
   show(request: RewardedAdRequest, complete: (outcome: RewardedAdOutcome) => void): (() => void) | void;
   destroy?(): void;

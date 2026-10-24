@@ -39,8 +39,8 @@ test('hunt successful ad stays pending until wallet commit, cancel and stale cal
   h.commitAd(); assert.equal(h.phase, 'exiting'); assert.equal(h.completeAd(ad.token, 'success').reason, 'staleAd');
 });
 
-test('hunt optional save validates integral wave/level and restores no active reward entitlement', () => {
-  const h = make(); h.restore(undefined); h.restore({ wave: 12, level: 4 });
+test('hunt save requires integral wave/level and restores no active reward entitlement', () => {
+  const h = make(); assert.throws(() => h.restore(undefined), /Invalid hunt save/); h.restore({ wave: 12, level: 4 });
   assert.deepEqual(h.serialize(), { wave: 12, level: 4 }); assert.equal(h.runReward, 0); assert.equal(h.phase, 'idle');
   for (const bad of [null, {}, {wave:-1,level:0}, {wave:0,level:5}, {wave:1.5,level:0}, {wave:Number.MAX_SAFE_INTEGER,level:0}])
     assert.throws(() => validateHuntSave(bad));

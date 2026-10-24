@@ -188,7 +188,8 @@ test('challenge uses normal power/upgrades but excludes main stage attack-speed 
   exit(session); assert.equal(session.round.movementMultiplier, 2);
 });
 
-test('rebirth preserves challenge stage, while malformed optional blocks cannot erase existing economy', () => {
+test('rebirth preserves challenge stage, while missing or malformed blocks cannot overwrite existing economy', t => {
+  t.mock.method(console, 'warn', () => {});
   const { session, storage, data, key } = fixture('test');
   assert.equal(session.configureSpeedRunTest({ stage: 12 }), true);
   session.configureProgressionTest({ stageIndex: 2, stageValueMax: 20 });
@@ -197,14 +198,17 @@ test('rebirth preserves challenge stage, while malformed optional blocks cannot 
   assert.equal(session.getSpeedRunState().stage, 12);
   assert.equal(challengeSession({ environment: 'test', storage }).getSpeedRunState().stage, 12);
   const saved = JSON.parse(data.get(key));
-  saved.money = D.from(1234); saved.weapons.diamonds = 5678; saved.speedRun = { stage: -1 };
+  saved.money = { digits: '1234', exponent: 0, precision: 4 }; saved.weapons.diamonds = 5678; saved.speedRun = { stage: -1 };
   data.set(key, JSON.stringify(saved)); const warn = console.warn; console.warn = () => {};
   let restored;
   try { restored = challengeSession({ environment: 'test', storage }); } finally { console.warn = warn; }
   assert.equal(restored.moneyBalance.toNumber(), 1234); assert.equal(restored.weapons.diamonds, resolveContentConfig('test').testResources.diamonds);
   assert.equal(restored.getSpeedRunState().stage, 0); assert.equal(restored.getRebirthState().count, 1);
+  const raw = data.get(key); assert.equal(restored.persistenceBlocked, true); restored.save(); assert.equal(data.get(key), raw);
   const legacy = JSON.parse(data.get(key)); delete legacy.speedRun; data.set(key, JSON.stringify(legacy));
-  assert.equal(challengeSession({ environment: 'test', storage }).getSpeedRunState().stage, 0);
+  const missing = challengeSession({ environment: 'test', storage });
+  assert.equal(missing.getSpeedRunState().stage, 0); assert.equal(missing.persistenceBlocked, true);
+  missing.save(); assert.deepEqual(JSON.parse(data.get(key)), legacy);
   assert.equal(session.configureSpeedRunTest({ stage: NaN }), false);
   assert.equal(challengeSession().configureSpeedRunTest({ stage: 1 }), false);
 });

@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { BattleSession, economyStorageKey } = require('./.build/session/session/BattleSession.js');
 const { DecimalAmount: D } = require('./.build/session/core/DecimalAmount.js');
+const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
 const { getWeapon, getWeaponGrade, getWeaponIdsForGrade } = require('./.build/session/core/WeaponCatalog.js');
 const { resolveContentConfig } = require('./.build/session/session/ContentConfig.js');
 
@@ -35,7 +36,7 @@ function openedFixture(options = {}) {
 }
 
 test('real onboarding resumes after every action, saves balances and teaching together, then survives rebirth', () => {
-  const { store, make, session: initial } = fixture(save => { save.money = D.from(1000); });
+  const { store, make, session: initial } = fixture(save => { save.money = OriginalInfVal.fromAmount(D.from(1000)).toJSON(); });
   let session = initial, challengeWon = false;
   function reloadAt(step, drawCount = 0) {
     expectStep(session, step, drawCount);
@@ -192,33 +193,37 @@ test('ordinary session draws and merges resume their normal rules when teaching 
   assert.notEqual(results[0], results[1], 'normal C merges still sample the catalog pool');
 });
 
-test('new production saves teach while saves without a tutorial block preserve their existing progress', () => {
+test('new production saves teach while saves without a tutorial block are rejected without rewriting', t => {
+  t.mock.method(console, 'warn', () => {});
   const freshStore = storage(), fresh = new BattleSession({ storage: freshStore });
   expectStep(fresh, 'upgrade'); assert.deepEqual(saved(freshStore).tutorial, { step: 'upgrade', drawCount: 0 });
   const { store, session, make } = fixture(save => {
-    delete save.tutorial; save.money = D.from('234.56'); save.weapons.diamonds = 47; save.speedRun.stage = 1;
+    delete save.tutorial; save.money = OriginalInfVal.fromAmount(D.from('234.56')).toJSON(); save.weapons.diamonds = 47; save.speedRun.stage = 1;
     save.levels = [3, 2, 1]; save.progress = { stageIndex: 2, waveIndex: 3 };
   });
-  expectStep(session, 'done'); assert.equal(session.getContentState('skins').unlocked, true);
-  assert.equal(session.moneyBalance.toString(), '234.56'); assert.equal(session.weapons.diamonds, 47);
+  const raw = store.getItem(KEY), writes = store.writes.length;
+  assert.equal(session.persistenceBlocked, true);
   assert.deepEqual(saved(store).levels, [3, 2, 1]); assert.deepEqual(saved(store).progress, { stageIndex: 2, waveIndex: 3 });
-  expectStep(make(), 'done');
+  assert.equal(make().persistenceBlocked, true);
+  assert.equal(store.getItem(KEY), raw); assert.equal(store.writes.length, writes);
 });
 
-test('a damaged optional tutorial block cannot discard a valid wallet, weapons or stage', t => {
+test('a damaged tutorial block cannot be rewritten over the original wallet, weapons or stage', t => {
   t.mock.method(console, 'warn', () => {});
   for (const tutorial of [null, {}, { step: 'unknown' }, { step: 5 }, { step: 'gunBuy', drawCount: -1 }]) {
     const { store, session, make } = fixture(save => {
-      save.tutorial = tutorial; save.money = D.from('12345.67'); save.weapons.diamonds = 37; save.weapons.starGems = 9; save.speedRun.stage = 1;
+      save.tutorial = tutorial; save.money = OriginalInfVal.fromAmount(D.from('12345.67')).toJSON(); save.weapons.diamonds = 37; save.weapons.starGems = 9; save.speedRun.stage = 1;
       save.levels = [3, 2, 1]; save.progress = { stageIndex: 2, waveIndex: 4 }; save.weapons.stageValueMax = 24;
       save.weapons.backpack[0] = { weaponId: 0, locked: false, pendingAd: false };
     });
-    expectStep(session, 'done'); assert.equal(session.getContentState('skins').unlocked, true);
-    assert.equal(session.moneyBalance.toString(), '12345.67');
-    assert.equal(session.weapons.diamonds, 37); assert.equal(session.weapons.starGems, 9);
-    assert.equal(session.weapons.snapshot().backpack[0].weaponId, 0); assert.equal(session.weapons.stageValueMax, 24);
+    const raw = store.getItem(KEY), writes = store.writes.length;
+    assert.equal(session.persistenceBlocked, true);
+    assert.equal(D.from(saved(store).money).toString(), '12345.67');
+    assert.equal(saved(store).weapons.diamonds, 37); assert.equal(saved(store).weapons.starGems, 9);
+    assert.equal(saved(store).weapons.backpack[0].weaponId, 0); assert.equal(saved(store).weapons.stageValueMax, 24);
     assert.deepEqual(saved(store).levels, [3, 2, 1]); assert.deepEqual(saved(store).progress, { stageIndex: 2, waveIndex: 4 });
-    expectStep(make(), 'done');
+    assert.equal(make().persistenceBlocked, true);
+    assert.equal(store.getItem(KEY), raw); assert.equal(store.writes.length, writes);
   }
 });
 

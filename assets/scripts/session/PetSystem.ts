@@ -7,7 +7,7 @@ export const PET_BACKPACK_SIZE = 16;
 export const PET_EQUIPMENT_SIZE = 3;
 export type PetCurrency = 'diamonds' | 'petCoins';
 export interface PetSlotRef { kind: 'owned' | 'selected'; index: number; }
-export interface PetSave { owned: number[]; selected: number[]; collected: boolean[]; coins: number; autoEnabled: boolean; lastDailyAdDate: string; dailyAdCount?: number; }
+export interface PetSave { owned: number[]; selected: number[]; collected: boolean[]; coins: number; autoEnabled: boolean; lastDailyAdDate: string; dailyAdCount: number; }
 export interface PetActionResult { ok: boolean; reason?: string; changed?: boolean; discovered?: number; grade?: number; token?: string; }
 export interface PetDefinition { id: number; grade: string; money: OriginalInfVal; moveSpeed: number; }
 /** Pet_manager.Balance_Reload: double 3.1, ToPrecision(2), DiscardDecimal; ten playable rows. */
@@ -77,16 +77,15 @@ export class PetSystem {
   }
   serialize(): PetSave { return { ...this.data, owned: [...this.data.owned], selected: [...this.data.selected], collected: [...this.data.collected] }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const d = value as PetSave;
     const validSlots = (a: unknown, size: number) => Array.isArray(a) && a.length === size && a.every(x => x === -1 || isPetGrade(x));
     if (!d || !validSlots(d.owned, 16) || !validSlots(d.selected, 3) || !Array.isArray(d.collected) || d.collected.length !== 10
       || d.collected.some(x => typeof x !== 'boolean') || !Number.isSafeInteger(d.coins) || d.coins < 0
       || typeof d.autoEnabled !== 'boolean' || typeof d.lastDailyAdDate !== 'string'
       || (d.lastDailyAdDate !== '' && !validDay(d.lastDailyAdDate))
-      || (d.dailyAdCount !== undefined && (!Number.isSafeInteger(d.dailyAdCount) || d.dailyAdCount < 0))) throw new Error('Invalid pet save');
+      || !Number.isSafeInteger(d.dailyAdCount) || d.dailyAdCount < 0) throw new Error('Invalid pet save');
     this.data = { owned: [...d.owned], selected: [...d.selected], collected: [...d.collected], coins: d.coins, autoEnabled: d.autoEnabled,
-      lastDailyAdDate: d.lastDailyAdDate, dailyAdCount: d.dailyAdCount ?? (d.lastDailyAdDate ? 1 : 0) };
+      lastDailyAdDate: d.lastDailyAdDate, dailyAdCount: d.dailyAdCount };
     for (const grade of [...d.owned, ...d.selected]) if (grade >= 0) this.data.collected[grade] = true;
     this.revision++;
   }
@@ -112,7 +111,7 @@ export class PetSystem {
     this.data.coins += amount; if (amount) this.revision++; return { ok: true, changed: amount > 0 };
   }
   dailyAdRemaining(today: string): number {
-    const used = validDay(today) && today > this.data.lastDailyAdDate ? 0 : this.data.dailyAdCount ?? (this.data.lastDailyAdDate ? 1 : 0);
+    const used = validDay(today) && today > this.data.lastDailyAdDate ? 0 : this.data.dailyAdCount;
     return Math.max(0, ECONOMY_CONFIG.pets.dailyAd.dailyLimit - used);
   }
   claimDailyAd(today: string): PetActionResult {
@@ -120,7 +119,7 @@ export class PetSystem {
     const index = this.data.owned.indexOf(-1);
     if (index < 0) return { ok: false, reason: 'full' };
     if (!this.dailyAdRemaining(today)) return { ok: false, reason: 'dailyLimit' };
-    const used = today > this.data.lastDailyAdDate ? 0 : this.data.dailyAdCount ?? 1;
+    const used = today > this.data.lastDailyAdDate ? 0 : this.data.dailyAdCount;
     this.data.lastDailyAdDate = today > this.data.lastDailyAdDate ? today : this.data.lastDailyAdDate;
     this.data.dailyAdCount = used + 1;
     this.data.owned[index] = ECONOMY_CONFIG.pets.dailyAd.grade;

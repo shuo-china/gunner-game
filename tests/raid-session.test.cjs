@@ -234,16 +234,17 @@ test('cross-week runs freeze their boss and reward history, with no new-week bes
   }
 });
 
-test('v3 reload retains consumed entries but abandons unfinished runs; absent/corrupt Raid block is isolated', () => {
+test('current reload retains consumed entries but abandons unfinished runs; invalid Raid blocks cannot overwrite saves', () => {
   const f = fixture(), s = f.session; enter(s); s.getRaidBossCombat().hit(s.getRaidBossCombat().maxHealth);
   const reloaded = f.make(); assert.equal(reloaded.mode, 'Main'); assert.equal(reloaded.getRaidState().phase, 'idle');
   assert.equal(reloaded.getRaidState().freeRemaining, 1); assert.equal(reloaded.getRaidState().seasonTryCount, 1);
   assert.equal(reloaded.weapons.starGems, 0); assert.equal(reloaded.getRaidState().seasonBestLevel, 0);
   for (const raid of [undefined, { freeUsed: -1 }, null]) {
     const save = JSON.parse(f.data.get(f.key)); save.money = { digits: '1234', exponent: 0, precision: 4 }; save.raid = raid;
-    f.data.set(f.key, JSON.stringify(save)); const warn = console.warn; console.warn = () => {};
+    const raw=JSON.stringify(save);f.data.set(f.key,raw);f.writes.length=0; const warn = console.warn; console.warn = () => {};
     let restored; try { restored = f.make(); } finally { console.warn = warn; }
-    assert.equal(restored.moneyBalance.toNumber(), 1234); assert.equal(restored.getRaidState().freeRemaining, 2);
+    assert.equal(restored.persistenceBlocked,true);assert.equal(restored.getRaidState().freeRemaining,2);
+    assert.equal(f.data.get(f.key),raw);assert.equal(f.writes.length,0);assert.equal(JSON.parse(raw).money.digits,'1234');
   }
 });
 

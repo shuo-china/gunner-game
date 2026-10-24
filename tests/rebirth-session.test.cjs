@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { BattleSession, economyStorageKey } = require('./.build/session/session/BattleSession.js');
 const { DecimalAmount: D } = require('./.build/session/core/DecimalAmount.js');
+const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
 const { getRebirthReward, remainingRebirthUpgradeBudget } = require('./.build/session/session/RebirthEconomy.js');
 const { resolveContentConfig } = require('./.build/session/session/ContentConfig.js');
 const { ContentUnlockManager } = require('./.build/session/session/ContentUnlockManager.js');
@@ -20,7 +21,7 @@ function fixture(options = {}) {
   const key = economyStorageKey('production');
   ruleSession({ storage, now });
   const saved = JSON.parse(data.get(key));
-  saved.money = D.from('12345.75'); saved.levels = [2, 3, 4];
+  saved.money = OriginalInfVal.fromAmount(D.from('12345.75')).toJSON(); saved.levels = [2, 3, 4];
   saved.tutorial = { step: 'done', drawCount: 2 }; saved.speedRun.stage = 1;
   saved.progress = options.position || { stageIndex: 2, waveIndex: 0 };
   saved.weapons.stageValueMax = options.history ?? 24;
@@ -222,15 +223,17 @@ test('future completion adapters run once after the complete save and cannot int
   assert.equal(calls, 1); assert.equal(context.writes.length, 1); assert.equal(context.session.canFight, true);
 });
 
-test('old v3 saves load defaults and corrupt rebirth blocks never discard valid existing progress', () => {
-  const old = fixture({ legacy: true }).session;
-  assert.equal(old.getRebirthState().ruby.toNumber(), 0);
-  assert.deepEqual(old.getRebirthState().upgrades.map(item => item.level), [0, 0, 0]);
+test('missing rebirth blocks are rejected and corrupt blocks cannot overwrite saved progress', () => {
   const warning = console.warn; console.warn = () => {};
   try {
+    const missing = fixture({ legacy: true }), raw = missing.data.get(missing.key);
+    assert.equal(missing.session.persistenceBlocked, true); assert.equal(missing.writes.length, 0);
+    assert.equal(ruleSession({ storage: missing.storage, now: missing.now }).persistenceBlocked, true);
+    assert.equal(missing.data.get(missing.key), raw); assert.equal(missing.writes.length, 0);
     for (const rebirth of [null, { ruby: { digits: '-5', exponent: 0, precision: 1 }, levels: [0, 0, 0], count: 1, adUsedDate: '' },
       { ruby: { digits: '5', exponent: 0, precision: 1 }, levels: [20001, 0, 0], count: 1, adUsedDate: '' }]) {
       const damaged = fixture({ rebirth }).session;
+      assert.equal(damaged.persistenceBlocked, true);
       assert.equal(damaged.getRebirthState().ruby.toNumber(), 0); assert.equal(damaged.moneyBalance.toString(), '12345.75');
       assert.equal(damaged.weapons.diamonds, 5678); assert.equal(damaged.round.stageIndex, 2);
       assert.deepEqual(damaged.snapshot(stats, false).upgrades.map(item => item.level), [2, 3, 4]);
@@ -326,7 +329,7 @@ test('permanent purchases obey equality/max and persist InfVal wallet precision;
 
 test('rebirth balances retain saved InfVal precision across reloads and are isolated from returned snapshots', () => {
   const { session, storage, now, data, key } = fixture({ rebirth: {
-    ruby: { digits: '12345', exponent: -2, precision: 5 }, levels: [0, 0, 0], count: 4, adUsedDate: '',
+    ruby: { digits: '12345', exponent: -2, precision: 5 }, levels: [0, 0, 0], count: 4, adUsedDate: '', adUsedCount: 0,
   } });
   const snapshot = session.getRebirthState(); snapshot.upgrades[0].level = 20000;
   assert.equal(session.purchaseRebirthUpgrade('power'), true);

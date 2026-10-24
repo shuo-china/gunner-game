@@ -9,7 +9,7 @@ function fixture({ failPackage = false, failLocal = false, pendingPackage = fals
   const files = {}, packages = [], reads = [], warnings = [], requests = [], timers = [], readCallbacks = [];
   let now = 0;
   const timing=createTiming({Date:{now:()=>now}});
-  for (const [i, name] of ['forest-map-common', 'forest-map-0', 'forest-map-0-1'].entries()) {
+  for (const [i, name] of ['forest-map-common', 'forest-map-0', 'forest-map-0-1', 'forest-map-legacy-0', 'forest-map-legacy-0-1', 'forest-map-legacy'].entries()) {
     const remote = `remote/resources/native/00/00000000-0000-0000-0000-00000000000${i}.abcd.png`;
     files[remote] = { package: name, path: `subpackages/${name}/${remote.slice('remote/resources/'.length)}` };
   }
@@ -26,7 +26,7 @@ function fixture({ failPackage = false, failLocal = false, pendingPackage = fals
     wx: { loadSubpackage(options) { packages.push(options.name); requests.push(options); if (pendingPackage) return; if (failPackage) options.fail(Error('offline')); else options.success(); } },
   });
   const cc = { assetManager: { downloader } };
-  assert.equal(module.exports.installMapResources(cc), true, 'generated common/stage/split names install');
+  assert.equal(module.exports.installMapResources(cc), true, 'generated common/stage/legacy/split names install');
   assert.equal(module.exports.installMapResources(cc), true, 'installation is idempotent');
   const load = url => new Promise((resolve, reject) => downloader.handlers['.png'](url, {}, (error, data) => error ? reject(error) : resolve(data)));
   return { files, packages, reads, warnings, load, requests, timers, readCallbacks, timing:timing.api, advance: ms => { now += ms; },
@@ -36,7 +36,7 @@ function fixture({ failPackage = false, failLocal = false, pendingPackage = fals
 test('common and stage packages load once and untouched images retain their original downloader', async () => {
   const h = fixture(), paths = Object.keys(h.files);
   const results = await Promise.all(paths.flatMap(path => [h.load(base + path), h.load(base + path + '?cache=1')]));
-  assert.deepEqual(h.packages, ['forest-map-common', 'forest-map-0', 'forest-map-0-1']);
+  assert.deepEqual(h.packages, ['forest-map-common', 'forest-map-0', 'forest-map-0-1', 'forest-map-legacy-0', 'forest-map-legacy-0-1', 'forest-map-legacy']);
   assert.ok(results.every(path => path.startsWith('subpackages/')));
   const other = base + 'remote/other.png'; assert.equal(await h.load(other), other);
 });
@@ -47,6 +47,18 @@ test('failed subpackages or damaged local images fall back to the server', async
     assert.equal(await h.load(url), url); assert.equal(await h.load(url), url);
     assert.equal(h.packages.length, 1);
     if (options.failPackage) assert.equal(h.warnings.length, 1);
+  }
+});
+
+test('unused map exports download only when requested and preserve the server fallback', async () => {
+  for (const failPackage of [false, true]) {
+    const h = fixture({ failPackage }), paths = Object.keys(h.files);
+    await h.load(base + paths[1]);
+    assert.deepEqual(h.packages, ['forest-map-0'], 'starting the current stage must not request legacy exports');
+    const url = base + paths[3];
+    assert.equal(await h.load(url), failPackage ? url : h.files[paths[3]].path);
+    assert.deepEqual(h.packages, ['forest-map-0', 'forest-map-legacy-0']);
+    await h.load(url); assert.equal(h.packages.length, 2, 'legacy requests share the same success cache or failure cooldown');
   }
 });
 

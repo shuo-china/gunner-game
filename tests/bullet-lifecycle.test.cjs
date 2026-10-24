@@ -160,7 +160,7 @@ test('each existing map wall stops a normal round and spawns its closest-point e
     world.step(C.physicsStep);
     assert.equal(bullet.damaging, false);
     assert.deepEqual(world.drainEvents(), [{ type: 'impact', position: sample.impact, radius: 0, height: 2, sourceTime: C.physicsStep,
-      actorId: 0, weaponId: 0, weaponType: 'SINGLE', critical: false }]);
+      bulletId: bullet.id, actorId: 0, weaponId: 0, weaponType: 'SINGLE', critical: false }]);
     assert.equal(world.stats.hits, 0);
     assert.equal(world.stats.kills, 0);
     world.step(C.physicsStep);

@@ -1238,7 +1238,7 @@ export class CombatWorld {
 
   private collideBullet(bullet: BulletState, point: Vec2, tree?: Damageable, height: number = C.bulletHeight): void {
     if (bullet.weaponType === 'EXPLOSIVE' || bullet.weaponType === 'MISSILE') {
-      this.explode(bullet, point, height);
+      this.explode(bullet, point, height, tree?.id);
       this.stopBullet(bullet);
       return;
     }
@@ -1247,7 +1247,7 @@ export class CombatWorld {
       // HitBlastSniper marks its first explosion before dispatching the FX;
       // subsequent HitPierce calls still damage, but cannot spawn enemy FX.
       bullet.hasEnemyImpactFx = true;
-      this.explode(bullet, point, height);
+      this.explode(bullet, point, height, tree?.id);
       if (!lethal) this.stopBullet(bullet);
       return;
     }
@@ -1262,7 +1262,7 @@ export class CombatWorld {
       const penetrating = bullet.weaponType === 'LASER' || bullet.weaponType === 'PIERCE' || bullet.weaponType === 'BLAST_SNIPER';
       if (!penetrating || !bullet.hasEnemyImpactFx) {
         if (penetrating) bullet.hasEnemyImpactFx = true;
-        this.impact(bullet, point, 0, tree.sphereCollider || tree.orientedBoxCollider || tree.capsuleCollider ? height : bullet.height);
+        this.impact(bullet, point, 0, tree.sphereCollider || tree.orientedBoxCollider || tree.capsuleCollider ? height : bullet.height, tree.id);
       }
       if (bullet.weaponType === 'LASER') {
         // HitLaser has the same UI_type.Raid (5) stop as HitPierce.
@@ -1281,10 +1281,10 @@ export class CombatWorld {
     this.stopBullet(bullet);
   }
 
-  private explode(bullet: BulletState, point: Vec2, height: number = C.bulletHeight): void {
+  private explode(bullet: BulletState, point: Vec2, height: number = C.bulletHeight, treeId?: number): void {
     if (bullet.hasExploded) return;
     bullet.hasExploded = true;
-    this.impact(bullet, point, bullet.explosionRadius, height);
+    this.impact(bullet, point, bullet.explosionRadius, height, treeId);
     if (bullet.explosionRadius <= 0) return;
     const index = this.prepareTargetIndex();
     for (const tree of index?.around(point, bullet.explosionRadius, this.explosionCandidates) ?? this.damageTargets) {
@@ -1353,9 +1353,10 @@ export class CombatWorld {
     return { actorId: bullet.actorId, weaponId: bullet.weaponId, weaponType: bullet.weaponType, critical: bullet.critical };
   }
 
-  private impact(bullet: BulletState, position: Vec2, radius: number, height = bullet.height): void {
+  private impact(bullet: BulletState, position: Vec2, radius: number, height = bullet.height, treeId?: number): void {
     const sourceTime = this.inFixedPhysics ? this.physicsTime : this.frameTime;
-    this.events.push({ type: 'impact', position: copy(position), radius, height, sourceTime, ...this.bulletMetadata(bullet) });
+    this.events.push({ type: 'impact', position: copy(position), radius, height, sourceTime,
+      bulletId: bullet.id, ...(treeId === undefined ? {} : { treeId }), ...this.bulletMetadata(bullet) });
   }
 
   /** Boss death animates its skin but leaves Enemy_Coll active until scene exit.

@@ -48,39 +48,23 @@ function fixture(edit = () => {}, options = {}) {
 const unlock = (saved, index, level = 0, count = 0) => { saved.relics.items[index] = { unlocked: true, level, count }; };
 const coreState = s => ({ adventure: s.getAdventureState(), relics: s.getRelicState(), pets: s.getPetState() });
 
-test('legacy broken locks recover only unavailable trips, refund once and retain an immutable original backup',()=>{
- const f=fixture(saved=>{saved.adventure.level=7;saved.adventure.tickets=17;saved.adventure.nextRunId=3;saved.adventure.cores=[31,42,53,64];
-   saved.adventure.maps[0]={startedAt:NOW-3600000,runId:1,pets:[{kind:'owned',index:3,grade:0},{kind:'owned',index:1,grade:0}]};
-   saved.adventure.maps[5]={startedAt:NOW-1000,runId:2,pets:[{kind:'selected',index:0,grade:2}]};
- });
- const s=f.session,backupKey=f.key+':adventure-pet-lock-backup',backup=f.data.get(backupKey);
- assert.ok(backup);assert.equal(JSON.parse(backup).adventure.maps[0].pets.length,2);
- assert.equal(s.getAdventureState().saveInvalid,false);assert.equal(s.getAdventureState().tickets,19);
- assert.equal(s.getAdventureState().maps[0].pets.length,0);assert.equal(s.getAdventureState().maps[5].runId,2);
- assert.deepEqual(s.getAdventureState().cores,[31,42,53,64]);assert.equal(s.getPetState().selectedLocked[0],true);
- assert.equal(s.getPetState().ownedLocked[1],false);assert.equal(s.mergePets(0,1).ok,true);
- assert.equal(s.drawRelic(0).ok,true);assert.equal(s.startAdventure(2,0,[owned(2)]).ok,true);
- const reloaded=f.make();assert.equal(reloaded.getAdventureState().tickets,18);assert.equal(f.data.get(backupKey),backup);
- assert.deepEqual(reloaded.getPetState().owned,s.getPetState().owned);assert.equal(reloaded.getPetState().selectedLocked[0],true);
-});
-
-test('legacy lock recovery preserves over-cap ticket refunds and does not invent cores or experience',()=>{
- const f=fixture(saved=>{saved.adventure.tickets=20;saved.adventure.nextRunId=2;saved.adventure.exp=12;
-   saved.adventure.maps[0]={startedAt:NOW-3600000,runId:1,pets:[{kind:'owned',index:0,grade:9}]};});
- assert.equal(f.session.getAdventureState().tickets,21);assert.equal(f.session.getAdventureState().exp,12);
- assert.deepEqual(f.session.getAdventureState().cores,[0,0,0,0]);assert.equal(f.make().getAdventureState().tickets,21);
- assert.equal(f.session.getPetState().owned[0],0);
-});
-
-test('lock recovery cannot overwrite the source save if its backup fails',()=>{
- const f=fixture(),raw=f.saved();raw.adventure.nextRunId=2;raw.adventure.maps[0]={startedAt:NOW,runId:1,pets:[{kind:'owned',index:3,grade:0}]};
- f.data.set(f.key,JSON.stringify(raw));const before=f.data.get(f.key),write=f.storage.setItem;
- for(const failure of ['silent','throw']){
-   f.storage.setItem=(key,value)=>{if(key.endsWith(':adventure-pet-lock-backup')){if(failure==='throw')throw Error('quota');return;}write(key,value);};
-   const s=f.make();assert.equal(s.getAdventureState().saveInvalid,true);s.save();assert.equal(f.data.get(f.key),before);
- }
- f.storage.setItem=write;assert.equal(f.make().getAdventureState().saveInvalid,false);
- assert.equal(f.saved().adventure.tickets,21);
+test('unavailable dispatched pets preserve the invalid trip without repair, refunds or backup writes', () => {
+  const f = fixture(saved => {
+    saved.adventure.level = 7; saved.adventure.tickets = 17; saved.adventure.nextRunId = 3;
+    saved.adventure.cores = [31, 42, 53, 64]; saved.adventure.exp = 12;
+    saved.adventure.maps[0] = { startedAt: NOW - HOUR, runId: 1, pets: [{ kind: 'owned', index: 3, grade: 0 }, { kind: 'owned', index: 1, grade: 0 }] };
+    saved.adventure.maps[5] = { startedAt: NOW - 1000, runId: 2, pets: [{ kind: 'selected', index: 0, grade: 2 }] };
+  });
+  const before = f.saved().adventure, s = f.session;
+  assert.equal(s.getAdventureState().saveInvalid, true);
+  assert.equal(s.startAdventure(2, 0, [owned(2)]).reason, 'invalidSave');
+  assert.equal(s.drawRelic(0).reason, 'invalidSave');
+  assert.equal(s.mergePets(0, 1).reason, 'invalidSave');
+  s.save(); assert.deepEqual(f.saved().adventure, before);
+  assert.equal(f.make().getAdventureState().saveInvalid, true);
+  assert.deepEqual(f.saved().adventure, before);
+  assert.equal(f.data.size, 1, 'no historical repair backup is created');
+  assert.equal(before.tickets, 17); assert.equal(before.exp, 12); assert.deepEqual(before.cores, [31, 42, 53, 64]);
 });
 
 test('dispatch saves ticket debit and pet identity together, restores locks and settles each trip once', () => {
@@ -175,10 +159,7 @@ test('ability max draw and upgrade debit their own currencies in one save and ef
   assert.equal(f.make().getRelicState().items[0].displayLevel, 2); assert.equal(f.writes[0].relics.items[0].count, 3);
 });
 
-test('optional v3 blocks migrate neutrally, malformed blocks remain isolated and byte-equivalent as JSON values', () => {
-  const legacy = fixture(saved => { delete saved.adventure; delete saved.relics; });
-  assert.equal(legacy.session.moneyBalance.toString(), '1000'); assert.equal(legacy.session.getAdventureState().tickets, 20);
-  assert.equal(legacy.session.getRelicState().damagePercent, '100');
+test('current malformed blocks remain isolated and byte-equivalent as JSON values', () => {
   const broken = { version: 91, future: ['preserve', { record: 7 }] };
   for (const block of ['adventure', 'relics']) {
     const f = fixture(saved => { saved[block] = broken; });

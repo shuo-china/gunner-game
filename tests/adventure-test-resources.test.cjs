@@ -108,10 +108,14 @@ test('zero overrides disable travel supply and the domain floor operation is ide
   assert.deepEqual(adventure.serialize(), before);
 });
 
-test('missing travel blocks receive test supply while malformed optional blocks remain intact', () => {
+test('missing travel blocks block persistence and test supply while malformed current blocks remain intact', t => {
+  t.mock.method(console, 'warn', () => {});
   const legacy = fixture({ edit: saved => { delete saved.adventure; delete saved.relics; } });
-  assert.deepEqual(resources(legacy.session), floorResources);
-  assert.equal(legacy.session.getAdventureState().saveInvalid, false);
+  const raw = legacy.data.get(legacy.key);
+  assert.equal(legacy.session.persistenceBlocked, true);
+  assert.deepEqual(resources(legacy.session), { tickets: 20, cores: [0, 0, 0, 0] });
+  legacy.session.refillTestResources(); legacy.session.checkpointForeground();
+  assert.equal(legacy.data.get(legacy.key), raw); assert.equal(legacy.saved().adventure, undefined);
   const broken = { version: 91, future: ['keep', { amount: 9 }] };
   for (const block of ['adventure', 'relics']) {
     const f = fixture({ edit: saved => { saved[block] = broken; } });

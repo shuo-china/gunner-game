@@ -149,7 +149,7 @@ test('pet draw price and grade probabilities follow configuration in the real HU
  h.click('level0:1326');assert.equal(h.state().diamonds,40);assert.equal(h.state().owned[0],4);
 });
 
-const fixtureSave=(owned=[],selected=[])=>({owned:[...owned,...Array(16-owned.length).fill(-1)],selected:[...selected,...Array(3-selected.length).fill(-1)],collected:Array(10).fill(false),coins:0,autoEnabled:false,lastDailyAdDate:''});
+const fixtureSave=(owned=[],selected=[])=>({owned:[...owned,...Array(16-owned.length).fill(-1)],selected:[...selected,...Array(3-selected.length).fill(-1)],collected:Array(10).fill(false),coins:0,autoEnabled:false,lastDailyAdDate:'',dailyAdCount:0});
 
 test('pet Auto button follows access changes without an inventory revision and cancels a pending merge',()=>{
   const h=harness();h.pets.restore(fixtureSave([0,0,1]));h.pets.setAuto(true);

@@ -175,7 +175,7 @@ test('challenge export keeps ordinary source geometry and omits all PlusPack and
   assert.deepEqual(config.nodes['level0:1825'].rect.size, [1000, 864.2999877929688]);
   assert.equal(config.nodes['level0:1170'].active, true);
   assert.equal(config.nodes['level0:465'], undefined);
-  assert.equal(config.nodes['level0:10311'].text.value, '在1分钟内摧毁所有树木！');
+  assert.equal(config.nodes['level0:10311'].text.value, '在1分钟内摧毁所有建筑！');
   assert.equal(config.nodes['level0:1825'].image.sprite, 's478');
   assert.equal(config.animations.win.duration, 1.5);
   assert.equal(config.animations.fail.duration, 1.5);
@@ -198,6 +198,20 @@ test('ordinary challenge opens, uses stage plus one, settles bounce, and launche
   assert.equal(h.records.starts, 1); assert.equal(h.state.phase, 'entering');
   assert.equal(h.node(937).active, false); assert.equal(h.node(1457).active, false);
   assert.equal(h.hud.blocksUpgrades, true);
+});
+
+test('challenge preview follows reordered stage targets with the original image proportions', () => {
+  const stages = require('../assets/resources/art/stages/config.json');
+  const h = harness(); h.click(444); h.hud.update(.31);
+  for (const stage of [0, 7, 10, 17]) {
+    h.state.stage = stage; h.hud.update(0);
+    const target = stages.treeSprites[(stage % 10) * 4];
+    const image = h.node(235).children.find(child => child.name === 'OriginalImage');
+    assert.equal(image.getComponent(h.Sprite).spriteFrame.texture.path, target.path);
+    const size = image.getComponent(h.UITransform);
+    assert.ok(Math.abs(size.width / size.height - target.sizePx[0] / target.sizePx[1]) < 1e-9);
+    assert.equal(h.text(10219), `Stage ${stage + 1}`);
+  }
 });
 
 test('challenge entry follows shared unlock state even after the outer menu requests visibility', () => {

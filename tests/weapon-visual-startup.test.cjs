@@ -98,7 +98,7 @@ test('new-player startup reads only archery effects and default-weapon frames wh
   assert.equal(Object.keys(assets.config.projectileSkins).length, Object.keys(h.cached.get(groupCalls(h)[0]).data.projectileSkins).length);
 });
 
-test('saved squads load only default and equipped categories; repeated, empty, and invalid IDs preserve fallback behavior', async () => {
+test('saved squads load only default and equipped categories; repeated IDs are deduplicated and empty squads prepare the default', async () => {
   const glove = categoryId('glove'), cannon = categoryId('cannon'), ids = [glove, cannon, glove, cannon];
   const h = harness(); await h.WeaponVisualAssets.load(h.art, ids);
   sameFrames(h, [0, glove, cannon]);
@@ -106,9 +106,30 @@ test('saved squads load only default and equipped categories; repeated, empty, a
   assert.equal(groupCalls(h).length, 3);
   assert.deepEqual(ids, [glove, cannon, glove, cannon]);
   const empty = harness(); await empty.WeaponVisualAssets.load(empty.art, []); sameFrames(empty, [0]);
-  const invalid = harness(), assets = await invalid.WeaponVisualAssets.load(invalid.art, [-1, 999, .5, NaN, Infinity, '1']);
-  sameFrames(invalid, [0]);
-  for (const id of [-1, 999, .5, NaN, Infinity, '1']) assert.equal(assets.appearance(id).id, 0);
+});
+
+test('invalid weapon IDs reject startup without preparing replacement artwork or publishing partial assets', async () => {
+  for (const id of [-1, 999, .5, NaN, Infinity, '1']) {
+    const h = harness(), previous = {}; h.art.weaponVisuals = previous;
+    await assert.rejects(h.WeaponVisualAssets.load(h.art, [id]), /Missing weapon appearance/);
+    assert.equal(h.art.weaponVisuals, previous);
+    assert.deepEqual(groupCalls(h), []); assert.deepEqual(h.requested, []); assert.deepEqual(h.effects, []);
+  }
+  const h = harness(), assets = await h.WeaponVisualAssets.load(h.art);
+  for (const id of [-1, 999, .5, NaN, Infinity, '1']) assert.throws(() => assets.appearance(id), /Missing weapon appearance/);
+});
+
+test('a missing current weapon appearance fails explicitly even when same-grade and same-family artwork exists', async () => {
+  const missing = 59;
+  const h = harness({ customize: (path, config) => {
+    if (path === INDEX) config.weapons = config.weapons.filter(weapon => weapon.id !== missing);
+  } });
+  const assets = await h.WeaponVisualAssets.load(h.art), requests = h.requested.length;
+  assert.equal(assets.appearance(0).id, 0);
+  assert.throws(() => assets.appearance(missing), /Missing weapon appearance 59/);
+  await assert.rejects(assets.prepareWeapons([missing]), /Missing weapon appearance 59/);
+  await assert.rejects(h.WeaponVisualAssets.load(h.art, [missing]), /Missing weapon appearance 59/);
+  assert.equal(h.art.weaponVisuals, assets); assert.equal(h.requested.length, requests);
 });
 
 test('concurrent prepareAll shares each category request and restores all 65 weapons field-for-field before completion', async () => {

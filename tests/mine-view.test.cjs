@@ -36,7 +36,8 @@ test('Mine loads every original scene/number/particle sprite before declaring ba
 
 test('Mine uses the original double-size ground plane/UV and restores Main afterward', () => {
   class Sprite {} class UITransform {} class Vec4 { constructor(...values) { this.values = values; } }
-  const { OriginalMapView } = moduleFrom('OriginalMapView', { cc: { Sprite, UITransform, Vec4, Texture2D: { WrapMode: { REPEAT: 1 } } }, '../core': core, './ArtLibrary': {} });
+  const { OriginalMapView } = moduleFrom('OriginalMapView', { cc: { Sprite, UITransform, Vec4, Texture2D: { WrapMode: { REPEAT: 1 } } },
+    '../core': core, './ArtLibrary': {}, './MapBorderGeometry': {}, './OriginalParticleMesh': {} });
   const map = Object.create(OriginalMapView.prototype);
   const node = () => ({ active: true, position: { x: 0, y: 0 }, sprite: {}, transform: {
     setContentSize(...size) { this.size = size; }, setAnchorPoint(...anchor) { this.anchor = anchor; } },

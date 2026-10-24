@@ -44,7 +44,7 @@ export interface RaidSnapshot {
   candidatesRevision?: number; missionsRevision?: number;
 }
 export interface RaidSave {
-  entryDay: number; freeUsed: number; adUsed: boolean; adUsedCount?: number; seasonIndex: number;
+  entryDay: number; freeUsed: number; adUsed: boolean; adUsedCount: number; seasonIndex: number;
   seasonTryCount: number; seasonBestLevel: number; bestByType: number[];
   missionClear: boolean[]; missionClaimed: boolean[]; lastSeenMs: number;
 }
@@ -151,17 +151,16 @@ export class RaidSystem {
   }
   serialize(): RaidSave { return { ...this.state, bestByType: [...this.state.bestByType], missionClear: [...this.state.missionClear], missionClaimed: [...this.state.missionClaimed] }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const s = value as RaidSave | null;
     // A lowered daily cap must not invalidate an existing save with more uses.
     if (!s || !validInt(s.entryDay, -100000000, 100000000) || !validInt(s.freeUsed)
       || typeof s.adUsed !== 'boolean' || !validInt(s.seasonIndex, -20000000, 20000000)
       || !validInt(s.seasonTryCount) || !validInt(s.seasonBestLevel) || !validInt(s.lastSeenMs, 0, 8640000000000000)
       || !Array.isArray(s.bestByType) || s.bestByType.length !== 7 || !s.bestByType.every(n => validInt(n))
-      || (s.adUsedCount !== undefined && (!validInt(s.adUsedCount) || s.adUsed !== (s.adUsedCount > 0)))
+      || !validInt(s.adUsedCount) || s.adUsed !== (s.adUsedCount > 0)
       || !Array.isArray(s.missionClear) || s.missionClear.length !== RAID_MISSIONS.length || s.missionClear.some(b => typeof b !== 'boolean')
       || !Array.isArray(s.missionClaimed) || s.missionClaimed.length !== RAID_MISSIONS.length || s.missionClaimed.some((b, i) => typeof b !== 'boolean' || (b && !s.missionClear[i]))) throw new Error('Invalid raid save');
-    this.state = { ...s, adUsedCount: s.adUsedCount ?? (s.adUsed ? 1 : 0), bestByType: [...s.bestByType], missionClear: [...s.missionClear], missionClaimed: [...s.missionClaimed] };
+    this.state = { ...s, bestByType: [...s.bestByType], missionClear: [...s.missionClear], missionClaimed: [...s.missionClaimed] };
     this.refreshCalendar();
   }
   private readClock(): number {
@@ -282,7 +281,7 @@ export class RaidSystem {
     this.refreshCalendar();
     if (!this.content.isAdEnabled('raid-entry')) return { ok: false, reason: 'adsDisabled' };
     if (this.phaseValue !== 'preparing') return { ok: false, reason: 'busy' };
-    if (this.state.freeUsed < RAID_FREE_LIMIT || (this.state.adUsedCount ?? 0) >= ECONOMY_CONFIG.raid.adEntriesPerDay) return { ok: false, reason: 'unavailable' };
+    if (this.state.freeUsed < RAID_FREE_LIMIT || this.state.adUsedCount >= ECONOMY_CONFIG.raid.adEntriesPerDay) return { ok: false, reason: 'unavailable' };
     const token = `raid:${this.instanceId}:${++this.requestSerial}`;
     this.pending = { token, day: this.state.entryDay, season: this.state.seasonIndex }; this.phaseValue = 'adPending';
     return { ok: true, token };
@@ -295,7 +294,7 @@ export class RaidSystem {
     if (!this.content.isAdEnabled('raid-entry')) return { ok: false, reason: 'adsDisabled' };
     if (outcome !== 'success') return { ok: false, reason: outcome };
     const result = this.prepareStart();
-    if (result.ok) { this.state.adUsedCount = (this.state.adUsedCount ?? 0) + 1; this.state.adUsed = true; }
+    if (result.ok) { this.state.adUsedCount++; this.state.adUsed = true; }
     return result;
   }
   cancelAd(): void { this.pending = null; if (this.adPending) this.phaseValue = 'preparing'; }
@@ -381,7 +380,7 @@ export class RaidSystem {
       seasonIndex: this.state.seasonIndex, bossIndex, weakness,
       seasonRemainingSeconds: Math.max(0, (raidCalendar(this.state.lastSeenMs).seasonEndsAt - this.state.lastSeenMs) / 1000),
       freeRemaining, freeLimit: RAID_FREE_LIMIT, adEnabled,
-      adAvailable: adEnabled && (this.state.adUsedCount ?? 0) < ECONOMY_CONFIG.raid.adEntriesPerDay && freeRemaining === 0 && this.phaseValue === 'preparing',
+      adAvailable: adEnabled && this.state.adUsedCount < ECONOMY_CONFIG.raid.adEntriesPerDay && freeRemaining === 0 && this.phaseValue === 'preparing',
       canEnter: unlocked.unlocked && this.phaseValue === 'preparing' && freeRemaining > 0 && slots.some(Boolean),
       starGems: inventory.starGems, seasonTryCount: this.state.seasonTryCount,
       seasonBestLevel: this.state.seasonBestLevel, bestByType: [...this.state.bestByType],

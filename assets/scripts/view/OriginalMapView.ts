@@ -4,6 +4,8 @@ import type { StageDefinition, Vec2 } from '../core';
 import { ArtLibrary, ImageSpec, makeNode } from './ArtLibrary';
 import type { RaidVisualConfig } from './RaidBossView';
 import { loadResourceBatch } from './ResourceBatch';
+import { createMapBorderGeometry, MAP_BORDER_SEAMS } from './MapBorderGeometry';
+import { OriginalParticleMesh, ParticleMeshGeometry } from './OriginalParticleMesh';
 
 type Point = [number, number];
 interface PlaneBasis { position: Point; axisX: Point; axisY: Point }
@@ -39,7 +41,8 @@ export class OriginalMapView {
   readonly node: Node;
   readonly shadowLayer: Node;
   private readonly visibleItems: VisibleItem[] = [];
-  private readonly spriteItems: Array<{node: Node; asset: string; basis: PlaneBasis; visible: VisibleItem}> = [];
+  private readonly spriteItems: Array<{node: Node; asset: string; basis: PlaneBasis; visible: VisibleItem;
+    mesh?: OriginalParticleMesh; geometry?: ParticleMeshGeometry}> = [];
   private readonly fillItems: Array<{graphics: Graphics; spec: FillSpec}> = [];
   private skinIndex = -1;
   private arena = false;
@@ -58,8 +61,10 @@ export class OriginalMapView {
     if (stages.version !== 1 || stages.skins.length !== 10 || stages.treeSprites.length !== 40) throw new Error('Invalid original stage assets');
     map.skins = stages.skins;
     art.catalog.stageTrees = stages;
-    await this.loadStage(art, map, stageIndex);
-    const effect = await art.resourceLoader.load(map.ground.lighting.effect, 'effect');
+    const [, effect] = await Promise.all([
+      this.loadStage(art, map, stageIndex),
+      art.resourceLoader.load(map.ground.lighting.effect, 'effect'),
+    ]);
     this.effects.set(map,effect);
     return map;
   }
@@ -139,6 +144,17 @@ export class OriginalMapView {
       sprite.spriteFrame = frame;
       const transform = item.node.getComponent(UITransform)!;
       transform.setContentSize(...spec.sizeUnits); transform.setAnchorPoint(...spec.anchor);
+      if (item.asset === 'borderUp' && (MAP_BORDER_SEAMS[index] || item.mesh)) {
+        // Retain the same mesh allocation after first use; a later skin gets
+        // an undeformed grid. applyLayout restores the authored node basis
+        // after updateProjected's local-coordinate reset.
+        const geometry = createMapBorderGeometry(spec, MAP_BORDER_SEAMS[index]);
+        if (!item.mesh) {
+          item.geometry = geometry;
+          item.mesh = new OriginalParticleMesh(sprite, geometry);
+        } else Object.assign(item.geometry!, geometry);
+        item.mesh.updateProjected();
+      }
       const corners = this.imageCorners(spec,item.basis);
       Object.assign(item.visible,{minX:Math.min(...corners.map(p=>p[0])),maxX:Math.max(...corners.map(p=>p[0])),
         minY:Math.min(...corners.map(p=>p[1])),maxY:Math.max(...corners.map(p=>p[1]))});

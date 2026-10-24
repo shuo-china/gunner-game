@@ -125,7 +125,19 @@ function coalesceSharedPackages(groups, limit = 512 * 1024 - 64) {
     report: { originalGroups: groups.length, mergedGroups: result.length, limitBytes: limit, addedBytes: 0, merges } };
 }
 
-function packageFeatureResources(input, code, config, base, evidencePath, metadataPackages = []) {
+// These small textures are unconditionally used by boot/HUD preparation. Resolve
+// SpriteFrame dependencies so Creator auto-atlases retain their original bytes.
+const STARTUP_IMAGE_PREFIXES = ['art/hud/', 'art/effects/number-atlas/',
+  'art/effects/money-burst/', 'art/tutorial-system/', 'art/stage-transition/'];
+function startupImageFiles(input, config) {
+  const roots = Object.values(config.paths).filter(item => config.types[item[1]] === 'cc.SpriteFrame'
+    && STARTUP_IMAGE_PREFIXES.some(prefix => item[0].startsWith(prefix)));
+  return collectNativeFiles(input, config, roots.map(item => 'cc.SpriteFrame:' + item[0]));
+}
+
+function packageFeatureResources(input, code, config, base, evidencePath, metadataPackages = [], mapNativeFiles = []) {
+  const mapFiles = new Set(mapNativeFiles);
+  const startupImages = startupImageFiles(input, config);
   const ui = uiConfig(input, config, 'art/weapon-system/config', value => Array.isArray(value.gunIcons) && value.images && value.roles && value.roots?.inventory);
   const settings = uiConfig(input, config, 'art/settings-system/config', value => value.settingsUi && value.input && value.images && value.roots);
   const hud = uiConfig(input, config, 'art/hud/config', value => value.joystick && value.layout && value.format);
@@ -212,6 +224,12 @@ function packageFeatureResources(input, code, config, base, evidencePath, metada
     ['weapons', imageFiles(weaponImages.filter(image => !collectionImages.has(image)))],
     ['collection', imageFiles(weaponImages.filter(image => collectionImages.has(image)))],
   ];
+  // DailyShareEntry is authored in code, so it has no panel JSON to discover.
+  // Keep its generated emblem and reused menu plate local when this build has it.
+  const shareIcon = 'art/share-system/images/entry-share';
+  if (Object.values(config.paths).some(item => item[0] === shareIcon + '/spriteFrame' && config.types[item[1]] === 'cc.SpriteFrame')) {
+    imageGroups.push(['entry-share', imageFiles(['art/boss-system/images/s803', shareIcon])]);
+  }
   const imageOwners = new Map();
   for (const [group, files] of imageGroups) for (const file of files) {
     if (fontFiles.has(file)) continue;
@@ -239,9 +257,9 @@ function packageFeatureResources(input, code, config, base, evidencePath, metada
   ]);
   for (const group of sharedNative.groups) fontGroups.set(group.name, group.files);
   const groups = new Map([
-    // Loading text and the main HUD precede all subpackage/CDN requests. Stage
+    // Loading text and fixed HUD/effect/tutorial images live in main. Stage
     // and alert glyphs preload from a subpackage to preserve the 4 MiB main limit.
-    ['startup', startupFonts],
+    ['startup', [...startupFonts, ...startupImages]],
     // Keep these together; UUID-sorted pages from every panel would otherwise
     // make the initial stage loader pull several unrelated 3 MiB font packages.
     ['startup-fonts', transitionFonts],
@@ -252,14 +270,36 @@ function packageFeatureResources(input, code, config, base, evidencePath, metada
   for (const [group, files] of Array.from(independentImages).sort(([a], [b]) => a.localeCompare(b))) {
     groups.set(group, [...(groups.get(group) || []), ...files.sort()]);
   }
+  // Cover every PNG emitted by Creator, including battle-only textures and
+  // generated atlases with no direct config.paths entry. Existing feature/map
+  // ownership wins; remaining images use small, independent platform packages.
+  const nativeRoot = path.join(input, 'remote/resources/native');
+  const walk = directory => fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry =>
+    entry.isDirectory() ? walk(path.join(directory, entry.name)) : [path.join(directory, entry.name)]);
+  const allPngs = walk(nativeRoot).filter(file => file.endsWith('.png'))
+    .map(file => path.relative(input, file).split(path.sep).join('/')).sort();
+  const claimed = new Set([...mapFiles, ...Array.from(groups.values()).flat()]);
+  const categories = new Map();
+  for (const [id, item] of Object.entries(config.paths)) {
+    const category = /^art\/([a-z][a-z-]*)\//.exec(item[0]);
+    if (category) categories.set(decodeUuid(config.uuids[Number(id)]), category[1]);
+  }
+  let additionalImages = 0;
+  for (const file of allPngs) {
+    if (claimed.has(file)) continue;
+    const uuid = file.split('/')[4].split('.')[0];
+    const group = 'images-' + (categories.get(uuid) || 'atlas');
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(file); claimed.add(file); additionalImages++;
+  }
   const index = { version: 2, base, files: {} }, packages = [], evidence = [];
   const script = '// Versioned first-use UI resources.\n';
   for (const [group, files] of groups) {
-    const limit = group.startsWith('fonts-') || group.includes('-shared-') || group === 'startup-fonts' ? 512 * 1024 : 3 * 1024 * 1024;
+    const limit = group.startsWith('fonts-') || group.startsWith('images-') || group.includes('-shared-') || group === 'startup-fonts' ? 512 * 1024 : 3 * 1024 * 1024;
     const existing = metadataPackages.filter(item => item.name.startsWith('forest-feature-') && item.group === group);
     let current, part = existing.length;
     for (const remote of files) {
-      if (index.files[remote]) continue;
+      if (index.files[remote] || mapFiles.has(remote)) continue;
       if (!/^remote\/resources\/native\/[0-9a-f]{2}\/[0-9a-f-]+\.[0-9a-f]+\.png$/.test(remote)) throw new Error('Unexpected UI native: ' + remote);
       const bytes = fs.readFileSync(path.join(input, remote));
       // Individual font pages remain indivisible; one may exceed the preferred
@@ -282,8 +322,14 @@ function packageFeatureResources(input, code, config, base, evidencePath, metada
       evidence.push({ remote, local, package: packageName, localOnly: fontFiles.has(remote), bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') });
     }
   }
+  const missing = allPngs.filter(file => !index.files[file] && !mapFiles.has(file));
+  if (missing.length) throw new Error('Unpackaged PNG resources: ' + missing.join(', '));
+  const imageCoverage = { totalPngs: allPngs.length, mappedPngs: allPngs.length - missing.length,
+    additionalImages, startupImages: startupImages.length,
+    startupImageBytes: startupImages.reduce((sum, file) => sum + sizeOf(file), 0),
+    startupPrefixes: STARTUP_IMAGE_PREFIXES, missing };
   const sharedGroups = { fonts: sharedFonts.report, images: sharedImages.report, combined: sharedNative.report };
-  fs.writeFileSync(evidencePath, JSON.stringify({ ...index, files: evidence, sharedGroups }, null, 2) + '\n');
+  fs.writeFileSync(evidencePath, JSON.stringify({ ...index, files: evidence, sharedGroups, imageCoverage }, null, 2) + '\n');
   const runtime = fs.readFileSync(path.join(__dirname, 'wechat-feature-runtime.cjs'), 'utf8');
   fs.copyFileSync(path.join(__dirname, 'wechat-resource-timing.js'), path.join(code, 'wechat-resource-timing.js'));
   fs.writeFileSync(path.join(code, 'startup-features.js'), runtime.replace('__FOREST_GUNNER_FEATURE_INDEX__', JSON.stringify(index)));
@@ -291,6 +337,6 @@ function packageFeatureResources(input, code, config, base, evidencePath, metada
   const marker = "require('./startup-metadata').installStartupMetadata(cc);";
   if (entry.split(marker).length !== 2) throw new Error('Missing startup metadata hook');
   fs.writeFileSync(entryPath, entry.replace(marker, marker + "\n        require('./startup-features').installFeatureResources(cc);"));
-  return { files: evidence.length, bytes: evidence.reduce((sum, file) => sum + file.bytes, 0), packages, sharedGroups };
+  return { files: evidence.length, bytes: evidence.reduce((sum, file) => sum + file.bytes, 0), packages, sharedGroups, imageCoverage };
 }
-module.exports = { packageFeatureResources, collectionOnlyImages, coalesceSharedResources, coalesceSharedPackages };
+module.exports = { packageFeatureResources, collectionOnlyImages, coalesceSharedResources, coalesceSharedPackages, startupImageFiles };

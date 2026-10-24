@@ -38,7 +38,9 @@ export interface RigData {
 
 /** Loads only the small V1 art bundle. Combat never receives these paths. */
 export class ArtLibrary {
-  catalog: any;
+  // Runtime catalogs can arrive before the base art finishes loading. Keep a
+  // stable owner without adding those catalogs to the base resource scan.
+  catalog: any = {};
   rig!: RigData;
   weaponVisuals?: WeaponVisualAssets;
   skinVisuals?: SkinVisualAssets;
@@ -60,18 +62,20 @@ export class ArtLibrary {
   }
 
   async load(): Promise<void> {
-    this.catalog = await this.json('art/catalog');
-    [this.rig, this.catalog.feedback] = await Promise.all([
-      this.json(this.catalog.characters.cat_basic.rig), this.json('art/effects/original-feedback'),
+    const baseCatalog = { ...await this.json('art/catalog') };
+    Object.assign(this.catalog, baseCatalog);
+    [this.rig, baseCatalog.feedback] = await Promise.all([
+      this.json(baseCatalog.characters.cat_basic.rig), this.json('art/effects/original-feedback'),
     ]);
+    this.catalog.feedback = baseCatalog.feedback;
     const paths = new Set<string>();
-    const numberGlyphs:Record<string,ImageSpec> = this.catalog.feedback.damage.glyphs;
+    const numberGlyphs:Record<string,ImageSpec> = baseCatalog.feedback.damage.glyphs;
     const walk = (value: any): void => {
       if (!value || typeof value !== 'object' || value === numberGlyphs) return;
       if (typeof value.path === 'string' && value.sizeUnits) paths.add(value.path);
       for (const item of Object.values(value)) walk(item);
     };
-    walk(this.catalog); walk(this.rig.parts); walk(this.rig.attachments);
+    walk(baseCatalog); walk(this.rig.parts); walk(this.rig.attachments);
     // Creator's loose iterable transform does not reliably spread ES6 Sets.
     await Promise.all([
       loadResourceBatch(Array.from(paths, path => () => this.loadFrame(path))),

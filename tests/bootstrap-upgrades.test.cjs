@@ -23,6 +23,9 @@ function loadBootstrap() {
     './core/BossCombat': core,
     './session/BattleSession': sessionModule,
     './session/RuntimeEnvironment': require('./.build/session/session/RuntimeEnvironment.js'),
+    './session/GameBackendConfig': require('./.build/session/session/GameBackendConfig.js'),
+    './session/GameLogin': require('./.build/session/session/GameLogin.js'),
+    './platform/PlatformServices': require('./.build/session/platform/PlatformServices.js'),
     './session/TutorialPreview': require('./.build/session/session/TutorialPreview.js'),
     './session/RewardedAds': require('./.build/session/session/RewardedAds.js'),
     './session/AudioPreferences': {},
@@ -30,10 +33,13 @@ function loadBootstrap() {
     './view/SafeArea': {},
     './view/FontPolicyLabel': {},
     './view/StartupLoadingScreen': {},
+    './view/CloudSavePanel': {},
+    './session/CloudSaveStorage': require('./.build/session/session/CloudSaveStorage.js'),
     './view/ResourceLoadingPolicy': require('./support/resource-modules.cjs').resourceModules()('ResourceLoadingPolicy'),
     './view/UiPreparationQueue': require('./support/resource-modules.cjs').resourceModules()('UiPreparationQueue'),
     './view/BackgroundPreparationScheduler': require('./support/resource-modules.cjs').resourceModules()('BackgroundPreparationScheduler'),
     './view/ResourceModuleManager': require('./support/resource-modules.cjs').resourceModules()('ResourceModuleManager'),
+    './view/StartupTimeline': require('./support/resource-modules.cjs').resourceModules()('StartupTimeline'),
     './view/StartupPreparationBudget': require('./support/resource-modules.cjs').resourceModules()('StartupPreparationBudget'),
     './view/FeatureResourceManifest': require('./support/resource-modules.cjs').resourceModules()('FeatureResourceManifest'),
     // These tests cover purchase/modal contracts; diagnostics and GPU leases are separate suites.
@@ -52,6 +58,8 @@ function loadBootstrap() {
     imports[`./view/${name}`] = {};
   }
   imports['./view/FeatureEntry'].rightMenuOffsets = () => ({});
+  imports['./view/FeatureEntry'].rightMenuShareOffset = () => 355;
+  imports['./view/DailyShareEntry'] = {};
   imports['./view/FeatureEntry'].leftMenuOffsets = () => ({});
   const source = fs.readFileSync(projectPath('assets/scripts/GameBootstrap.ts'), 'utf8');
   const output = ts.transpileModule(source, { compilerOptions: {
@@ -113,6 +121,7 @@ const featureHuds = ['weaponsHud', 'rebirthHud', 'speedRunHud', 'raidHud', 'boss
 function modalFixture() {
   const app = new GameBootstrap();
   app.session = { mode: 'Main', rebirthAnimating: false, getTutorialState: () => ({ active: false }),
+    getDailyShareState: () => undefined,
     content: { isUnlocked: () => true }, getSpeedRunState: () => ({ unlocked: true }),
     getContentState: () => ({ visible: true }) };
   app.hudRoot = { children: [] };
@@ -204,12 +213,14 @@ test('raid star upgrades take foreground priority and return it to Raid when clo
 function fixture({ actors = 3, levels = [0, 0, 0], environment = 'test' } = {}) {
   const app = new GameBootstrap();
   app.world = new core.CombatWorld(73);
-  const data = new Map([[sessionModule.economyStorageKey(environment), JSON.stringify({
-    version: 3, progress: { stageIndex: 0, waveIndex: 0 }, money: { digits: '0', exponent: 0 }, levels,
-    weapons: new WeaponInventory().serialize(),
-  })]]);
+  const data = new Map(), key = sessionModule.economyStorageKey(environment);
+  const storage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
+  new sessionModule.BattleSession({ environment, storage });
+  const saved = JSON.parse(data.get(key));
+  saved.levels = levels; saved.money = { digits: '0', exponent: 0, precision: 1 };
+  data.set(key, JSON.stringify(saved));
   app.session = new sessionModule.BattleSession({ environment,
-    storage: { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) },
+    storage,
     onWeaponsChanged: force => app.syncLoadout(force ? 'equipment' : 'inventory'),
   });
   if (actors > 1) for (let slot = 1; slot < actors; slot++) {

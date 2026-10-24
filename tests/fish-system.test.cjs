@@ -61,7 +61,7 @@ test('fish daily refresh, date rollback, save isolation and reduced limits prese
     save([], { freeDrawDate: '2026-02-30' }), save([], { collected: Array(13).fill(0) }), save([], { autoEnabled: 1 })]) {
     assert.throws(() => restored.restore(invalid), /Invalid fish save/); assert.deepEqual(restored.serialize(), before);
   }
-  restored.restore(undefined); assert.deepEqual(restored.serialize(), before);
+  assert.throws(() => restored.restore(undefined), /Invalid fish save/); assert.deepEqual(restored.serialize(), before);
 });
 
 test('native compact fusion removes both source positions and appends the next grade', () => {

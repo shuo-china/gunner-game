@@ -24,11 +24,27 @@ test('economy settings are deeply frozen and reject invalid authoring before pla
     c => { c.redeemCodes.push({ ...c.redeemCodes[0] }); }, c => { c.dailyCheck.diamondsByDay.pop(); },
     c => { c.dailyCheck.diamondsByDay[0] = -1; }, c => { c.dailyCheck.diamondsByDay[0] = .5; },
     c => { c.dailyCheck.dailyLimit = 2; }, c => { c.dailyCheck.dailyLimit = -1; },
+    c => { c.dailyShare.diamonds = -1; }, c => { c.dailyShare.diamonds = .5; },
+    c => { c.dailyShare.dailyLimit = 2; }, c => { c.dailyShare.dailyLimit = -1; },
     c => { c.speedRun.stageGrowthPercent = -.1; }, c => { c.boss.stageGrowthPercent = .5; },
     c => { delete c.boss.stageGrowthPercent; }]) {
     const bad = JSON.parse(JSON.stringify(ECONOMY_CONFIG)); edit(bad);
     assert.throws(() => validateEconomyConfig(bad), /Invalid economy configuration/);
   }
+});
+
+test('daily share previews, durable awards and disabled state use the single configured source', () => {
+  const load = economyModules(c => { c.dailyShare.diamonds = 123; });
+  const f = fixture(load);
+  assert.equal(f.session.getDailyShareState().diamonds, 123);
+  assert.deepEqual(f.session.claimDailyShare(), { ok: true, diamonds: 123 });
+  assert.equal(f.make().weapons.diamonds, 123);
+  assert.equal(f.make().claimDailyShare().reason, 'notClaimable');
+  const disabled = economyModules(c => { c.dailyShare.dailyLimit = 0; });
+  const system = new (disabled('session/DailyShareSystem').DailyShareSystem)();
+  system.restore({ lastClaimDay: '2026-10-14' });
+  assert.equal(system.snapshot('2026-10-15').canClaim, false);
+  assert.deepEqual(system.serialize(), { lastClaimDay: '2026-10-14' });
 });
 
 test('daily check previews and durable claims share changed final values without reapplying a multiplier', () => {
@@ -186,7 +202,7 @@ test('configured new-game wallets, onboarding, pet draw, redeem codes and test s
   const load = economyModules(c => {
     c.newGame = { gold: '1234', diamonds: 17, starGems: 19, ruby: '27', petCoins: 80, starterWeaponId: 1 };
     c.onboarding.firstDrawDiamondFloor = 123; c.pets = { ...c.pets, drawPrice: 40, drawGrade: 2 };
-    c.redeemCodes = [{ code: 'one', diamonds: 7 }, { code: 'two', diamonds: 9 }];
+    c.redeemCodes = [{ code: 'one', diamonds: 7, mode: 'per_player' }, { code: 'two', diamonds: 9, mode: 'per_player' }];
     Object.assign(c.testResources, { diamonds: 333, starGems: 444, fundGoldUpgrades: false, fundRebirthUpgrades: false });
   });
   const f = fixture(load), s = f.session;
@@ -226,7 +242,7 @@ test('gameplay income changes retain onboarding, redemption, test supply and his
   assert.equal(testing.weapons.draw().ok, true); assert.equal(testing.weapons.diamonds, 1999900);
 });
 
-test('configured weapon price, weighted grades, ad quality/limit survive reload and old one-use flags', () => {
+test('configured weapon price, weighted grades and ad quality/limit survive current-format reload', () => {
   const load = economyModules(c => { c.weapons.drawPrice = 60; c.weapons.drawGradePercents = [20, 80, 0, 0]; c.weapons.dailyAd = { grade: 3, dailyLimit: 2 }; });
   const { WeaponInventory } = load('session/WeaponInventory'), { getWeaponGrade } = load('core/WeaponCatalog');
   const { ContentUnlockManager } = load('session/ContentUnlockManager'), { resolveContentConfig } = load('session/ContentConfig');
@@ -238,7 +254,8 @@ test('configured weapon price, weighted grades, ad quality/limit survive reload 
   assert.equal(getWeaponGrade(w.draw().weaponId), 0); assert.equal(getWeaponGrade(w.draw().weaponId), 1); assert.equal(w.diamonds, 0);
   let ad = w.beginAd('daily'); assert.equal(w.completeAd(ad.token, 'cancel').ok, false);
   ad = w.beginAd('daily'); assert.equal(getWeaponGrade(w.completeAd(ad.token, 'success').weaponId), 3);
-  const saved = w.serialize(); delete saved.dailyAdCount;
+  const saved = w.serialize(), missing = { ...saved }; delete missing.dailyAdCount;
+  assert.throws(() => new WeaponInventory({ ...options, initialState: missing }), /Invalid/);
   const restored = new WeaponInventory({ ...options, initialState: saved });
   assert.equal(restored.snapshot().dailyAdAvailable, true);
   ad = restored.beginAd('daily'); assert.equal(restored.completeAd(ad.token, 'success').ok, true);
@@ -258,7 +275,7 @@ test('existing pending weapon offer keeps its identity when future offer config 
   assert.equal(w.serialize().backpack[0].weaponId, 8);
 });
 
-test('configured rebirth multiplier and daily count survive completion, legacy migration and next day', () => {
+test('configured rebirth multiplier and daily count survive completion, reload and next day', () => {
   const load = economyModules(c => { c.rebirth.adTotalMultiplier = 5; c.rebirth.adDailyLimit = 2; });
   const { RebirthSystem } = load('session/RebirthSystem'), { ContentUnlockManager } = load('session/ContentUnlockManager');
   const content = new ContentUnlockManager(load('session/ContentConfig').resolveContentConfig('test', { adsEnabled: true }));
@@ -268,7 +285,8 @@ test('configured rebirth multiplier and daily count survive completion, legacy m
   let ad = r.request('ad', p); r.completeAd(ad.token, 'cancel', p);
   ad = r.request('ad', p); assert.equal(r.completeAd(ad.token, 'success', p).ok, true); r.advance(2);
   r.commitCompletion(r.prepareCompletion(p)); assert.equal(r.snapshot(p, 24).ruby.toString(), preview.enhancedReward.toString());
-  const legacy = r.serialize(); delete legacy.adUsedCount; const restored = make(); restored.restore(legacy);
+  const saved = r.serialize(), missing = { ...saved }; delete missing.adUsedCount;
+  const restored = make(); assert.throws(() => restored.restore(missing), /Invalid rebirth ad count/); restored.restore(saved);
   assert.equal(restored.snapshot(p, 24).adAvailable, true);
   ad = restored.request('ad', p); restored.completeAd(ad.token, 'success', p); restored.advance(2); restored.commitCompletion(restored.prepareCompletion(p));
   assert.equal(restored.request('ad', p).reason, 'adUsed');
@@ -276,7 +294,7 @@ test('configured rebirth multiplier and daily count survive completion, legacy m
   now += 86400000; assert.equal(reloaded.snapshot(p, 24).adAvailable, true);
 });
 
-test('Raid configured tiers, missions and daily tickets settle through the session and migrate old flags', () => {
+test('Raid configured tiers, missions and daily tickets settle through the session and require current counts', () => {
   const load = economyModules(c => { c.raid.freeEntriesPerDay = 1; c.raid.adEntriesPerDay = 2;
     c.raid.starGemTiers = [{ levels: 2, perLevel: 7 }, { levels: 1, perLevel: 3 }]; c.raid.starGemsPerExtraLevel = 1;
     c.raid.missions[0].reward = 61; });
@@ -291,13 +309,14 @@ test('Raid configured tiers, missions and daily tickets settle through the sessi
   assert.equal(s.claimRaidMission(0).ok, false);
   let ad = s.beginRaidAd(); s.completeRaidAd(ad.token, 'cancel'); assert.equal(s.getRaidState().adAvailable, true);
   ad = s.beginRaidAd(); assert.equal(s.completeRaidAd(ad.token, 'success').ok, true); s.exitRaid(); s.advanceFrame(1.5);
-  for (const [key, value] of f.saved) { const data = JSON.parse(value); delete data.raid.adUsedCount; f.saved.set(key, JSON.stringify(data)); }
   const restored = f.make(); restored.openRaid(); assert.equal(restored.getRaidState().adAvailable, true);
   ad = restored.beginRaidAd(); assert.equal(restored.completeRaidAd(ad.token, 'success').ok, true);
   restored.exitRaid(); restored.advanceFrame(1.5); restored.openRaid(); assert.equal(restored.getRaidState().adAvailable, false);
-  const legacy = new RaidSystem(s.content, () => s.weapons.snapshot(), () => NOW).serialize();
-  legacy.freeUsed = 5; legacy.adUsed = true; delete legacy.adUsedCount;
-  const raid = new RaidSystem(s.content, () => s.weapons.snapshot(), () => NOW); raid.restore(legacy);
+  const saved = new RaidSystem(s.content, () => s.weapons.snapshot(), () => NOW).serialize();
+  saved.freeUsed = 5; saved.adUsed = true; saved.adUsedCount = 1;
+  const missing = { ...saved }; delete missing.adUsedCount;
+  const raid = new RaidSystem(s.content, () => s.weapons.snapshot(), () => NOW);
+  assert.throws(() => raid.restore(missing), /Invalid raid save/); raid.restore(saved);
   assert.equal(raid.snapshot().freeRemaining, 0, 'lowering caps preserves an existing save');
   f.setNow(NOW + 86400000); const tomorrow = f.make(); assert.equal(tomorrow.getRaidState().freeRemaining, 1);
 });

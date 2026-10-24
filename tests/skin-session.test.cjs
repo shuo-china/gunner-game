@@ -104,7 +104,7 @@ test('equip is cosmetic, refuses unowned ids and persists without forcing balanc
   assert.equal(s.equipSkin(3).changed, false); assert.equal(s.equipSkin(0).ok, true);
 });
 
-test('optional v3 skins restore atomically and corrupt blocks preserve economy and valid older saves', () => {
+test('missing or corrupt skin saves block overwrites while readable current economy remains available', () => {
   const f = fixture('production'); f.session.weapons.grantDiamonds(9876);
   const malformed = [null, {}, { owned: [] }, { owned: Array(25).fill(false), selectedId: 0 },
     { owned: [true, ...Array(24).fill(false)], selectedId: 1 }, { owned: [true, ...Array(24).fill(0)], selectedId: 0 },
@@ -113,9 +113,11 @@ test('optional v3 skins restore atomically and corrupt blocks preserve economy a
   try {
     for (const skins of [undefined, ...malformed]) {
       const s = f.patch(saved => { saved.skins = skins; saved.money = { digits: '12345', exponent: 2, precision: 5 }; saved.levels = [7, 8, 9]; });
-      assert.equal(s.weapons.diamonds, 9876); assert.equal(s.moneyBalance.toString(), '1234500');
+      const raw = f.data.get(f.key); assert.equal(s.persistenceBlocked, true);
+      if (skins !== undefined) { assert.equal(s.weapons.diamonds, 9876); assert.equal(s.moneyBalance.toString(), '1234500'); }
       assert.equal(s.getSkinState().selectedId, 0); assert.deepEqual(s.getSkinState().owned, [true, ...Array(24).fill(false)]);
       assert.deepEqual(JSON.parse(f.data.get(f.key)).levels, [7, 8, 9]);
+      s.save(); assert.equal(f.data.get(f.key), raw);
     }
   } finally { console.warn = warn; }
   const system = new SkinSystem(); system.purchase(1, 100, () => true); system.equip(1);

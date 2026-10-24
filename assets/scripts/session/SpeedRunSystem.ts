@@ -52,7 +52,6 @@ export class SpeedRunSystem {
   get loadingElapsed(): number | null { return this.phaseValue === 'entering' || this.phaseValue === 'exiting' ? this.loading : null; }
   serialize(): SpeedRunSave { return { stage: this.stageValue }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const data = value as Partial<SpeedRunSave> | null;
     if (!data || !validStage(data.stage)) throw new Error('Invalid challenge save');
     this.stageValue = data.stage;

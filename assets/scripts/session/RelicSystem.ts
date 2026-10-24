@@ -53,7 +53,6 @@ export class RelicSystem {
   private revision = 0;
   serialize(): RelicSave { return { version: 1, items: this.data.items.map(item => ({ ...item })) }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const d = value as RelicSave;
     if (!d || d.version !== 1 || !Array.isArray(d.items) || d.items.length !== RELIC_CATALOG.length
       || d.items.some((item, i) => !item || !integer(item.level, 0, relicMaxLevel(RELIC_CATALOG[i].type)) || !integer(item.count)

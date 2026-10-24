@@ -82,7 +82,12 @@ function state(world) {
     frameTime: world.frameTime, physicsTime: world.physicsTime, physicsAccumulator: world.physicsAccumulator,
     nearHitPoint: world.nearHitPoint, autoTargetId: world.autoTargetId, lockedAttackTargetId: world.lockedAttackTargetId,
     attackClock: world.attackClock, bulletPoolCursor: world.bulletPoolCursor,
-    events: world.drainEvents(),
+    // The frozen explosion method predates visual-only impact identities. Keep
+    // comparing every physical hit, damage, radius and position against it.
+    events: world.drainEvents().map(event => {
+      if (event.type !== 'impact') return event;
+      const { bulletId, treeId, ...physicalEvent } = event; return physicalEvent;
+    }),
   };
 }
 function equal(worlds, label) {

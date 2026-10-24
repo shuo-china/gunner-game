@@ -59,7 +59,9 @@ export class StartupLoadingScreen {
     });
   }
 
-  setProgress(value:number):void {this.theme?.setProgress(value);this.sync();}
+  // Resource callbacks may complete together. The frame's sync() publishes the
+  // latest state once; resize still paints immediately for a valid GPU frame.
+  setProgress(value:number):void {this.theme?.setProgress(value);}
 
   resize(width:number,height:number):void {
     this.width=width;this.height=height;

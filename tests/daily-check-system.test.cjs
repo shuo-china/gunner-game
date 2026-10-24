@@ -39,10 +39,10 @@ test('out of order, invalid dates and rollback never create a claim; calendar bo
   assert.equal(dailyCheckDay(NaN), '');
 });
 
-test('missing legacy block starts eligible; malformed ledgers remain unchanged and blocked', () => {
-  const system = new DailyCheckSystem(); system.restore(undefined);
+test('new ledgers start eligible; missing or malformed restored ledgers remain blocked', () => {
+  const system = new DailyCheckSystem();
   assert.equal(system.snapshot('2026-10-16').canClaim, true);
-  for (const bad of [null, [], 'claimed', {}, { lastClaimDay: '2026-10-16', checkNum: 1, totalCheckNum: 0 },
+  for (const bad of [undefined, null, [], 'claimed', {}, { lastClaimDay: '2026-10-16', checkNum: 1, totalCheckNum: 0 },
     { lastClaimDay: '', checkNum: 1, totalCheckNum: 1 }, { lastClaimDay: '2026-02-30', checkNum: 1, totalCheckNum: 1 },
     { lastClaimDay: '2026-10-16', checkNum: 8, totalCheckNum: 8 }, { lastClaimDay: '2026-10-16', checkNum: 1.5, totalCheckNum: 1.5 },
     { lastClaimDay: '2026-10-16', checkNum: 2, totalCheckNum: 3 }]) {

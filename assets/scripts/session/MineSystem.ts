@@ -41,7 +41,6 @@ export class AttackSpeedBuff {
   }
   serialize(): AttackSpeedBuffSave { return { attackSpeedRemainingSeconds: this.remaining }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const n = (value as AttackSpeedBuffSave | null)?.attackSpeedRemainingSeconds;
     if (typeof n !== 'number' || !Number.isFinite(n) || n < 0 || n > Number.MAX_SAFE_INTEGER) throw new Error('Invalid attack-speed buff save');
     // Preserve valid remaining time when an author lowers the configured cap.
@@ -92,7 +91,6 @@ export class MineSystem {
   }
   serialize(): MineSave { return { ...this.state }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const s = value as MineSave | null;
     if (!s || !Number.isSafeInteger(s.entryDay) || Math.abs(s.entryDay) > 100000000 || !validInt(s.usedEntries)
       || !validInt(s.bestReward) || !validInt(s.playCount) || !validInt(s.lastSeenMs) || s.lastSeenMs > 8640000000000000) throw new Error('Invalid mine save');
@@ -140,6 +138,8 @@ export class MineSystem {
     return true;
   }
   private finish(): void { this.phaseValue = 'result'; this.resultTime = 0; this.settlement = true; }
+  /** Freeze earned ore credit before an early exit uses the normal settlement transaction. */
+  prepareExitSettlement(): void { if (this.canFight) this.finish(); }
   resultSave(): MineSave { return { ...this.state, bestReward: Math.max(this.state.bestReward, this.reward) }; }
   commitResult(next: MineSave): void { this.state = { ...next }; this.settlement = false; }
   commitBonus(): void { this.bonusClaimed = true; }

@@ -4,45 +4,8 @@ const timing = require('./wechat-resource-timing.js');
 // Copied beside game.js by the release packager; this module needs no Node APIs.
 const REMOTE_BASE = 'https://nurse.kylinsit.com/forest-gunner/';
 const IMPORT_PATH = /^remote\/resources\/(?:config\.[0-9a-f]+|import\/[0-9a-f]{2}\/[0-9a-f-]+(?:@[0-9a-f]+)?\.[0-9a-f]+)\.json$/;
-const STARTUP_METADATA_PACKAGE = Object.freeze({ name: 'forest-startup-metadata',
-  root: 'subpackages/forest-startup-metadata/',
-  path: 'subpackages/forest-startup-metadata/startup-metadata.bin' });
+const STARTUP_METADATA_PATH = 'startup-metadata.bin';
 const installed = new WeakMap();
-let metadataPath = 'startup-metadata.bin';
-let packageLoad;
-
-function prepareStartupMetadata() {
-  timing.publishEarlySnapshot();
-  if (packageLoad) { timing.reusePackage(STARTUP_METADATA_PACKAGE.name); return packageLoad; }
-  metadataPath = null;
-  const request = new Promise(resolve => {
-    const finishTiming = timing.beginPackage(STARTUP_METADATA_PACKAGE.name, 'startup-index');
-    let settled = false;
-    let timer;
-    const complete = (loaded, outcome = loaded ? 'success' : 'failed') => {
-      finishTiming(outcome);
-      if (settled) return;
-      settled = true;
-      if (timer !== undefined) clearTimeout(timer);
-      if (loaded) metadataPath = STARTUP_METADATA_PACKAGE.path;
-      resolve(loaded);
-    };
-    try {
-      if (typeof wx === 'undefined' || typeof wx.loadSubpackage !== 'function'
-        || typeof setTimeout !== 'function' || typeof clearTimeout !== 'function') return complete(false, 'unavailable');
-      timer = setTimeout(() => complete(false, 'timeout'), 120000);
-      wx.loadSubpackage({ name: STARTUP_METADATA_PACKAGE.name,
-        success: () => complete(true), fail: () => complete(false) });
-    } catch (_) {
-      complete(false, 'threw');
-    }
-  });
-  packageLoad = request.then(loaded => {
-    if (!loaded) packageLoad = undefined;
-    return loaded;
-  });
-  return packageLoad;
-}
 
 function statistics(state) {
   return Object.freeze({
@@ -151,10 +114,6 @@ function installStartupMetadata(cc) {
     downloader = cc && cc.assetManager && cc.assetManager.downloader;
     if (!downloader || typeof downloader.register !== 'function') return stats;
     if (installed.has(downloader)) return installed.get(downloader);
-    if (!metadataPath) {
-      state.reason = 'metadata-unavailable';
-      return stats;
-    }
     // Capture the WeChat adapter handler so misses retain its filesystem/cache behavior.
     original = downloader.handlers && downloader.handlers['.json'];
     if (typeof original !== 'function' || typeof wx === 'undefined'
@@ -167,28 +126,26 @@ function installStartupMetadata(cc) {
     else return stats;
 
     inflater = require('./startup-inflate.js');
-    const buffer = timing.measureMetadata('metadataRead', 'startup-index', () => fileSystem.readFileSync(metadataPath));
+    const buffer = timing.measureMetadata('metadataRead', 'startup-index', () => fileSystem.readFileSync(STARTUP_METADATA_PATH));
     const bytes = timing.measureMetadata('metadataInflate', 'startup-index', () => new inflater.Inflate(new Uint8Array(buffer)).decompress());
     const metadata = timing.measureMetadata('metadataParse', 'startup-index', () => JSON.parse(asciiText(bytes)));
-    if (!metadata || ![1, 2].includes(metadata.version) || metadata.base !== REMOTE_BASE
+    if (!metadata || metadata.version !== 2 || metadata.base !== REMOTE_BASE
       || !metadata.files || typeof metadata.files !== 'object' || Array.isArray(metadata.files)) {
       state.reason = 'invalid-metadata';
       return stats;
     }
     files = metadata.files;
-    if (metadata.version === 2) {
-      routes = metadata.routes; groups = metadata.groups;
-      if (!routes || typeof routes !== 'object' || Array.isArray(routes)
-        || !groups || typeof groups !== 'object' || Array.isArray(groups)) throw new Error('Invalid metadata routing');
-      for (const name of Object.keys(groups)) {
-        const group = groups[name];
-        if (!/^forest-(metadata|feature)-[a-z-]+-\d+$/.test(name) || !group || group.name !== name
-          || group.path !== 'subpackages/' + name + '/metadata.bin') throw new Error('Invalid metadata group');
-      }
-      for (const path of Object.keys(routes)) {
-        if (!IMPORT_PATH.test(path) || !Object.prototype.hasOwnProperty.call(groups, routes[path])
-          || Object.prototype.hasOwnProperty.call(files, path)) throw new Error('Invalid metadata route');
-      }
+    routes = metadata.routes; groups = metadata.groups;
+    if (!routes || typeof routes !== 'object' || Array.isArray(routes)
+      || !groups || typeof groups !== 'object' || Array.isArray(groups)) throw new Error('Invalid metadata routing');
+    for (const name of Object.keys(groups)) {
+      const group = groups[name];
+      if (!/^forest-(metadata|feature)-[a-z-]+-\d+$/.test(name) || !group || group.name !== name
+        || group.path !== 'subpackages/' + name + '/metadata.bin') throw new Error('Invalid metadata group');
+    }
+    for (const path of Object.keys(routes)) {
+      if (!IMPORT_PATH.test(path) || !Object.prototype.hasOwnProperty.call(groups, routes[path])
+        || Object.prototype.hasOwnProperty.call(files, path)) throw new Error('Invalid metadata route');
     }
     state.entries = Object.keys(files).filter(path => IMPORT_PATH.test(path)).length + Object.keys(routes).length;
   } catch (_) {
@@ -334,4 +291,4 @@ function installStartupMetadata(cc) {
   return stats;
 }
 
-module.exports = { STARTUP_METADATA_PACKAGE, prepareStartupMetadata, installStartupMetadata };
+module.exports = { STARTUP_METADATA_PATH, installStartupMetadata };

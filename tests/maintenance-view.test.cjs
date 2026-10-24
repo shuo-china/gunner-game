@@ -17,6 +17,21 @@ function loadScript(relative, imports, globals = {}) {
     imports['./ResourceBatch'] ??= loadScript('view/ResourceBatch', {}, { setTimeout });
     imports['./NumberGlyphAtlas'] ??= loadScript('view/NumberGlyphAtlas', { cc: imports.cc });
   }
+  if (relative === 'view/OriginalMapView') {
+    imports['./MapBorderGeometry'] ??= loadScript('view/MapBorderGeometry', {});
+    imports['./OriginalParticleMesh'] ??= { OriginalParticleMesh: class {
+      constructor(sprite, geometry) {
+        this.sprite = sprite; this.geometry = geometry; this.updates = 0;
+        assert.equal(sprite.mapBorderMesh, undefined, 'a resident border must allocate its mesh only once');
+        sprite.mapBorderMesh = this;
+      }
+      updateProjected() {
+        this.updates++;
+        this.sprite.node.setPosition(0, 0, 0); this.sprite.node.angle = 0;
+        this.sprite.node.setScale(1, 1, 1);
+      }
+    } };
+  }
   const module = { exports: {} };
   const context = vm.createContext({ module, exports: module.exports,
     require: name => {
@@ -26,6 +41,7 @@ function loadScript(relative, imports, globals = {}) {
       if (name === './view/BackgroundPreparationScheduler') return shared('BackgroundPreparationScheduler');
       if (['./view/ResourceModuleManager','./view/StartupPreparationBudget','./view/FeatureResourceManifest'].includes(name)) return shared(path.basename(name));
       if (name === './view/LoadingPerformanceTrace') return loadScript('view/LoadingPerformanceTrace', {});
+      if (name === './view/StartupTimeline') return loadScript('view/StartupTimeline', {});
       assert.ok(name in imports, `Missing stub for ${name} in ${relative}`);
       return imports[name];
     }, ...globals });
@@ -140,7 +156,9 @@ function engineStub({ failMaterialAt = 0, failOutputSprite = false } = {}) {
     }
   }
   class Label extends Component {
-    static Overflow = { NONE: 0 };
+    static Overflow = { NONE: 0, SHRINK: 2 };
+    static HorizontalAlign = { CENTER: 1 };
+    static VerticalAlign = { CENTER: 1 };
     writes = 0;
     set string(value) { this.value = value; this.writes++; }
     get string() { return this.value; }
@@ -226,11 +244,11 @@ test('ArtLibrary coalesces concurrent frame loads, retries failure and serves su
 
 function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.resolve({}), startupFontWait,
   moneyWait = Promise.resolve({}), rebirthWait = Promise.resolve({}), skinWait = Promise.resolve({}), settingsWait = Promise.resolve({}), bgmWait = Promise.resolve({}), failResize = false, failHudImage = false, failRebirthImage = false, failSkinImage = false, failSettingsImage = false,
-  realWorld = false, storage, environment = 'production', contentOverrides, settingsLoad, skinPrepare, wechat = false, debug = true,
+  realWorld = false, storage, environment = 'production', contentOverrides, settingsLoad, skinPrepare, wechat = false, douyin = false, native = false, platformConfig, debug = true, loginRequest, saveRequest, rewardRequest, useRuntimeRewardAuthority = false,
   deferHiddenHuds = false, manualStartup = false, dailyCheck = false, dailyCheckLoad, dailyCheckEntryLoad, offlineLoad, offlineUpdate, sessionNow, weaponLoad, raidLoad, bossLoad, speedRunLoad, fishLoad, adventureLoad, bgmLoad, release, backgroundFail = false } = {}) {
   const engine = engineStub(), { cc, artModule, colorMath } = engine;
   if (storage) cc.sys.localStorage = storage;
-  const calls = { worlds: 0, feedback: 0, maps: 0, battlefieldDestroyed: 0, colorsDestroyed: 0, hudDestroyed: 0,
+  const calls = { worlds: 0, artLoads: 0, feedback: 0, maps: 0, battlefieldDestroyed: 0, colorsDestroyed: 0, hudDestroyed: 0,
     hudAssets: 0, moneyBurst: 0, moneyNumbers: 0, rebirthAssets: 0, rebirthCreated: 0, rebirthDestroyed: 0,
     skinAssets: 0, skinCreated: 0, skinDestroyed: 0, settingsAssets: 0, settingsCreated: 0, settingsDestroyed: 0,
     bgmAssets: 0, bgmCreated: 0, bgmDestroyed: 0, steps: 0, drains: 0, resets: 0, loadouts: 0, fontInstalled: 0,
@@ -331,7 +349,7 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
     catalog = { weapons: { pistol_basic: {} } };
     async json(key) { assert.equal(key, 'art/hud/config'); if (startupFontWait) await startupFontWait; return { bitmapFont: { pages: [] } }; }
     async loadFrame() {}
-    load() { assert.ok(calls.fontInstalled > 0, 'font fallback installs before any art load'); calls.art = this; this.onAssetLoaded?.(1); return artWait; }
+    load() { assert.ok(calls.fontInstalled > 0, 'font fallback installs before any art load'); calls.artLoads++; calls.art = this; this.onAssetLoaded?.(1); return artWait; }
     image() { throw new Error('HUD image failure'); }
     dispose() { this.frames.clear();this.resourceLoader.invalidate(); }
     evictFrames(paths,retained) {let count=0;for(const path of paths)if(!retained.has(path)&&this.frames.delete(path))count++;return count;}
@@ -497,6 +515,11 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
     update() {} cancelInteractions() { this.cancellations = (this.cancellations || 0) + 1; }
     destroy() { this.node.destroy(); }
   }
+  class DailyShareEntry extends DailyCheckEntry {
+    constructor(...args) { super(...args); this.node.name = 'DailyShareEntry'; calls.dailyShareCreated = (calls.dailyShareCreated || 0) + 1; }
+    setRewardState(visible, blocked) { this.node.active = visible; this.blocked = blocked; }
+    setEntryOffset(offset) { this.offset = offset; }
+  }
   class TutorialHud {
     constructor(parent) { this.node = artModule.makeNode('TutorialHud', parent); this.updates = []; }
     resize(width, height) { this.extent = { width, height }; }
@@ -530,21 +553,27 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
   const { resolveContentConfig } = require('./.build/session/session/ContentConfig.js');
   const sessionForFixture = { ...session,
     BattleSession: class extends session.BattleSession {
-      constructor(options) { super({ ...options, now: sessionNow ?? (() => new Date(2026, 9, 11, 12).getTime()), contentConfig: contentOverrides === undefined ? options.contentConfig : resolveContentConfig(options.environment, contentOverrides) }); }
+      constructor(options) { super({ ...options,
+        // Unrelated offline/gameplay fixtures explicitly exercise the isolated local simulator.
+        // Cloud cases and authority regressions retain the production bootstrap decision.
+        rewardAuthority: useRuntimeRewardAuthority || options.rewardAuthority === 'server' ? options.rewardAuthority : 'local',
+        now: sessionNow ?? (() => new Date(2026, 9, 11, 12).getTime()), contentConfig: contentOverrides === undefined ? options.contentConfig : resolveContentConfig(options.environment, contentOverrides) }); }
       // Legacy unrelated gameplay cases opt out of this newly added launch popup.
       getDailyCheckState() { const state = super.getDailyCheckState(); return dailyCheck ? state : { ...state, canClaim: false, claimableIndex: null }; }
     } };
   const core = require('./.build/core/index.js');
   const { GameBootstrap, context } = loadScript('GameBootstrap', {
-    cc, 'cc/env': { DEBUG: debug, PREVIEW: false, WECHAT: wechat }, './core': { CombatWorld: realWorld ? core.CombatWorld : World, COMBAT_CONFIG: core.COMBAT_CONFIG,
+    cc, 'cc/env': { DEBUG: debug, PREVIEW: false, WECHAT: wechat, BYTEDANCE: douyin, NATIVE: native }, './core': { CombatWorld: realWorld ? core.CombatWorld : World, COMBAT_CONFIG: core.COMBAT_CONFIG,
       createStageDefinition:core.createStageDefinition },
     './view/ArtLibrary': { makeNode: artModule.makeNode, ArtLibrary: Art },
     './view/StartupLoadingScreen': loadScript('view/StartupLoadingScreen', { cc, './ArtLibrary': artModule }),
+    './view/CloudSavePanel': loadScript('view/CloudSavePanel', { cc, './ArtLibrary': artModule }),
+    './session/CloudSaveStorage': require('./.build/session/session/CloudSaveStorage.js'),
     './view/BattleAssetLoader': { BattleAssetLoader: class { ready() { return true; } async load() {} preload() {} } },
     './view/SkinHudColorPipeline': { disposeSkinHudPresentation() {}, skinHudPresentationSnapshot: () => ({ owners: 0 }) },
     './view/GameResourcePreloader': preloaderModule,
     './view/SafeArea': loadScript('view/SafeArea', {}),
-    './view/FeatureEntry': { leftMenuOffsets: () => ({}), rightMenuOffsets: () => ({}), loadFeatureEntry: async () => ({}), FeatureEntry: class {
+    './view/FeatureEntry': { leftMenuOffsets: () => ({}), rightMenuOffsets: () => ({}), rightMenuShareOffset: () => 355, loadFeatureEntry: async () => ({}), FeatureEntry: class {
       constructor(parent, art, assets, name, open) { this.node = artModule.makeNode('FeatureEntry_' + name, parent); this.entry = this.node; this.open = open; }
       resize(...args) { this.extent = args; } update() {} cancelInteractions() {} destroy() { this.node.destroy(); }
       setState(visible, locked, blocked) { this.node.active = visible; this.locked = locked; this.blocked = blocked; }
@@ -558,13 +587,16 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
     './core/HuntMap': { createHuntDefinition: core.createHuntDefinition },
     './core/BossCombat': { BossCombat: core.BossCombat },
     './session/RuntimeEnvironment': require('./.build/session/session/RuntimeEnvironment.js'),
+    './session/GameBackendConfig': require('./.build/session/session/GameBackendConfig.js'),
+    './session/GameLogin': require('./.build/session/session/GameLogin.js'),
+    './platform/PlatformServices': require('./.build/session/platform/PlatformServices.js'),
     './session/TutorialPreview': require('./.build/session/session/TutorialPreview.js'),
     './session/RewardedAds': require('./.build/session/session/RewardedAds.js'),
     './session/AudioPreferences': loadScript('session/AudioPreferences', {}),
     './session/WeChatFontFallback': { installWeChatFontFallback(parser) { assert.equal(parser, cc.assetManager.parser); calls.fontInstalled++; } },
     './view/RewardedAdModal': { RewardedAdModal },
     './view/OriginalFeedbackAssets': { loadOriginalFeedback: () => { calls.feedback++; feedbackEntered.resolve(); return feedbackWait; } },
-    './view/OriginalMapView': { OriginalMapView: { load: () => { calls.maps++; return Promise.resolve({}); } } },
+    './view/OriginalMapView': { OriginalMapView: { load: (_art, stageIndex) => { calls.maps++; calls.initialMapStage = stageIndex; return Promise.resolve({}); } } },
     './view/OriginalColorPipeline': { OriginalColorPipeline: Colors }, './view/OriginalColorMath': colorMath,
     './view/FontPolicyLabel': require('./support/font-policy-handle.cjs'),
     './view/MineHud': { MineHud: class extends RaidHud {
@@ -583,6 +615,10 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
     './view/DailyCheckHud': { DailyCheckHud, DailyCheckEntry,
       loadDailyCheckHudAssets: () => { calls.dailyCheckAssets++; return dailyCheckLoad ? dailyCheckLoad() : Promise.resolve({}); },
       loadDailyCheckEntryAssets: () => { calls.dailyCheckEntryAssets++; return dailyCheckEntryLoad ? dailyCheckEntryLoad() : Promise.resolve({}); },
+    },
+    './view/DailyShareEntry': { DailyShareEntry,
+      DAILY_SHARE_ENTRY_IMAGES: ['art/boss-system/images/s803', 'art/share-system/images/entry-share'],
+      loadDailyShareEntryAssets: async () => { calls.dailyShareAssets = (calls.dailyShareAssets || 0) + 1; return {}; },
     },
     './view/RebirthHud': { RebirthHud, loadRebirthHudAssets: () => { calls.rebirthAssets++; return rebirthWait; } },
     './view/SpeedRunHud': { SpeedRunHud, loadSpeedRunHudAssets: () => { calls.speedRunAssets++; return speedRunLoad ? speedRunLoad() : Promise.resolve({}); } },
@@ -606,9 +642,52 @@ function bootstrapHarness({ artWait = Promise.resolve(), feedbackWait = Promise.
       },
     },
     './view/TutorialHud': { TutorialHud, loadTutorialHudAssets: async () => ({}) },
-  }, { setTimeout, __FOREST_GUNNER_ENV__: { environment }, __FOREST_GUNNER_RELEASE__: release, console: { error: (...args) => errors.push(args), info: (...args) => logs.push(args),warn:(...args)=>logs.push(args) } });
+  }, { setTimeout, __FOREST_GUNNER_ENV__: { environment }, __FOREST_GUNNER_RELEASE__: release, __FOREST_GUNNER_PLATFORM__: platformConfig, console: { error: (...args) => errors.push(args), info: (...args) => logs.push(args),warn:(...args)=>logs.push(args) } });
   const create = () => {
     const app = new GameBootstrap(); app.node = artModule.makeNode('Canvas');
+    const actualStart = app.start.bind(app);
+    app.start = () => {
+      if (wechat) {
+        context.wx ??= {};
+        context.wx.login ??= options => { calls.loginCodes = (calls.loginCodes || 0) + 1; options.success({ code: 'fixture-code-' + calls.loginCodes }); };
+        context.wx.request ??= options => {
+          if (options.url.includes('/rewards/')) {
+            calls.rewardRequests ??= []; calls.rewardRequests.push(options);
+            if (rewardRequest) return rewardRequest(options);
+            const kind = options.url.split('/').at(-1), now = Date.now();
+            if (kind === 'state') {
+              const { DailyCheckSystem } = require('./.build/session/session/DailyCheckSystem.js'), daily = new DailyCheckSystem();
+              if (calls.cloudRaw) daily.restore(JSON.parse(calls.cloudRaw).dailyCheck);
+              options.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', server_time_ms: now, revision: calls.cloudRevision ?? '0',
+                ...bootstrapRewardState(calls.cloudRaw, calls.cloudRevision, now) } });
+            } else {
+              assert.equal(kind, 'offline', 'non-startup reward calls need an explicit server fixture');
+              const save = JSON.parse(calls.cloudRaw); save.offline = { lastSavedAtMs: now };
+              calls.cloudRevision = String(Number(options.data.base_revision) + 1); calls.cloudRaw = JSON.stringify(save);
+              options.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', request_id: options.data.request_id,
+                revision: calls.cloudRevision, awarded_revision: calls.cloudRevision, save: calls.cloudRaw, saved_at_ms: now,
+                ...bootstrapRewardState(calls.cloudRaw, calls.cloudRevision, now), reward: { kind: 'offline', result: null, before: null } } });
+            }
+            return;
+          }
+          if(options.url.endsWith('/save')){
+            calls.cloudRequests ??= [];
+            calls.cloudRequests.push(options);
+            if(saveRequest)return saveRequest(options);
+            if(options.method==='GET')options.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:calls.cloudRevision??'0',save:calls.cloudRaw??null,saved_at_ms:0}});
+            else {
+              calls.cloudRevision=String(Number(options.data.base_revision)+1);calls.cloudRaw=options.data.save;
+              options.success({statusCode:200,data:{player_id:'101',namespace:'production',request_id:options.data.request_id,revision:calls.cloudRevision,current_revision:calls.cloudRevision,saved_at_ms:Date.now()}});
+            }
+            return;
+          }
+          calls.loginRequests = (calls.loginRequests || 0) + 1;
+          if (loginRequest) return loginRequest(options);
+          options.success({ statusCode: 200, data: bootstrapLoginResponse() });
+        };
+      }
+      return actualStart();
+    };
     // Model engine frames while start() waits at its real preparation barrier.
     // Lazy-panel fixtures model an already booted scene with evicted views;
     // startup contracts opt into manualStartup and control real timestamps.
@@ -645,19 +724,756 @@ function captureBootstrapSafeAreaLayouts(app) {
   return { calls, restore() { for (const [name, original] of originals) app[name] = original; } };
 }
 
+function bootstrapRewardState(raw, revision, now, today = '2026-10-23') {
+  const { DailyCheckSystem } = require('./.build/session/session/DailyCheckSystem.js');
+  const { DailyShareSystem } = require('./.build/session/session/DailyShareSystem.js');
+  const daily = new DailyCheckSystem(), share = new DailyShareSystem();
+  if (raw) { const save = JSON.parse(raw); daily.restore(save.dailyCheck); share.restore(save.dailyShare); }
+  return { revision: revision ?? '0', server_time_ms: now, next_daily_reset_ms: now + 86400000,
+    daily_check: daily.snapshot(today), daily_share: share.snapshot(today) };
+}
+
+function bootstrapLoginResponse() {
+  return { player: { id: '101', nickname: '玩家', provider: 'wechat_mini', app_id: 'wx3dd63318911f5012' },
+    is_new_player: false, token_info: { access_token: 'fg1_' + 'A'.repeat(43), token_type: 'Bearer', expires_in: 86400, expires_at_ms: Date.now() + 86400000 }, server_time_ms: Date.now() };
+}
+
+function enableDailyShareHost(h, show = () => {}) {
+  h.context.wx = { ...h.context.wx, shareAppMessage: options => {
+    h.calls.shareCalls = (h.calls.shareCalls || 0) + 1; show(options);
+  } };
+}
+
+function unlockDailyShareContent(app) {
+  app.session.tutorial.complete();
+  app.session.speedRun.restore({ stage: 1 });
+  app.syncModalState();
+}
+
+test('daily share appears with daily check only after the tutorial and first challenge win, and hides after claiming', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    const available = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+    app.session.setVerifiedDailyShare(available); app.updateDeferredHuds();
+    await Promise.all([app.dailyShareEntryRequest, app.dailyCheckEntryRequest]);
+    assert.equal(app.session.getContentState('dailyCheck').reason, 'tutorial');
+    assert.equal(app.dailyCheckEntry.node.active, false); assert.equal(app.dailyShareEntry.node.active, false);
+    assert.equal(app.canStartDailyShare(), false); await app.beginDailyShare();
+    app.session.tutorial.complete(); app.syncModalState();
+    assert.equal(app.session.getContentState('dailyCheck').reason, 'challenge');
+    assert.equal(app.dailyCheckEntry.node.active, false); assert.equal(app.dailyShareEntry.node.active, false);
+    assert.equal(app.canStartDailyShare(), false); await app.beginDailyShare();
+    assert.equal(h.calls.shareCalls, undefined, 'A direct call cannot bypass the shared progression gate');
+    app.session.speedRun.restore({ stage: 1 }); app.syncModalState();
+    assert.equal(app.session.getContentState('dailyCheck').visible, true);
+    assert.equal(app.dailyCheckEntry.node.active, true); assert.equal(app.dailyShareEntry.node.active, true);
+    assert.equal(app.canStartDailyShare(), true);
+    let claims = 0;
+    app.session.claimDailyShare = async () => {
+      claims++; app.session.setVerifiedDailyShare({ ...available, canClaim: false, lastClaimDay: available.today });
+      return { ok: true, diamonds: available.diamonds };
+    };
+    app.cloudSave.reconcile = async () => {};
+    const operation = app.beginDailyShare(); app.onHide(); app.onShow(); await operation;
+    assert.equal(claims, 1); assert.equal(h.calls.shareCalls, 1);
+    assert.equal(app.dailyShareEntry.node.active, false, 'Claiming removes only the share reward entry');
+    assert.equal(app.dailyCheckEntry.node.active, true, 'Daily check keeps its own entry and claim state');
+    await app.beginDailyShare(); assert.equal(h.calls.shareCalls, 1);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share visibility and interaction reuse the separate daily check content contracts', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  await Promise.all([app.dailyShareEntryRequest, app.dailyCheckEntryRequest]);
+  try {
+    const content = app.session.getContentState.bind(app.session);
+    let gate = { visible: false, unlocked: false };
+    app.session.getContentState = id => id === 'dailyCheck' ? gate : content(id);
+    app.syncModalState();
+    assert.equal(app.dailyCheckEntry.node.active, false); assert.equal(app.dailyShareEntry.node.active, false);
+    assert.equal(app.canStartDailyShare(), false); await app.beginDailyShare();
+    gate = { visible: true, unlocked: false }; app.syncModalState();
+    assert.equal(app.dailyCheckEntry.node.active, true); assert.equal(app.dailyShareEntry.node.active, true);
+    assert.equal(app.canStartDailyShare(), false); await app.beginDailyShare();
+    assert.equal(h.calls.shareCalls, undefined, 'A visible but locked daily feature cannot launch a share');
+    gate = { visible: true, unlocked: true }; app.syncModalState();
+    assert.equal(app.dailyShareEntry.node.active, true); assert.equal(app.canStartDailyShare(), true);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share grants once after returning, hides after settlement and rejects repeat clicks', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true });
+  enableDailyShareHost(h);
+  const app = h.create(); await app.start(); await app.dailyShareEntryRequest;
+  try {
+    assert.equal(app.canStartDailyShare(), true); assert.equal(app.dailyShareEntry.node.active, true);
+    const before = app.session.weapons.diamonds, reward = app.session.getDailyShareState().diamonds;
+    const first = app.beginDailyShare(); await app.beginDailyShare();
+    assert.equal(h.calls.shareCalls, 1); assert.equal(app.shareBusy, true);
+    assert.equal(app.dailyShareEntry.blocked, true); assert.equal(app.session.weapons.diamonds, before);
+    app.onHide(); app.onShow(); await first;
+    assert.equal(app.session.weapons.diamonds, before + reward);
+    assert.equal(app.session.getDailyShareState().canClaim, false);
+    assert.equal(app.dailyShareEntry.node.active, false); assert.equal(app.shareBusy, false);
+    assert.equal(app.world.isPaused, false, 'settlement must release the world paused when sharing hid the game');
+    const elapsed = app.world.simulationTime;
+    app.update(1 / 60); app.update(1 / 60);
+    assert.ok(app.world.simulationTime > elapsed, 'combat advances after the share result and resumed-frame guard');
+    await app.beginDailyShare(); app.onShow();
+    assert.equal(h.calls.shareCalls, 1); assert.equal(app.session.weapons.diamonds, before + reward);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share SDK failure leaves its reward available and does not change the wallet', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true });
+  enableDailyShareHost(h, () => { throw Error('platform unavailable'); });
+  const app = h.create(); await app.start(); await app.dailyShareEntryRequest;
+  try {
+    const before = app.session.weapons.diamonds;
+    await app.beginDailyShare();
+    assert.equal(app.shareBusy, false); assert.equal(app.shareClaimReady, false);
+    assert.equal(app.session.weapons.diamonds, before); assert.equal(app.dailyShareEntry.node.active, true);
+    assert.match(app.alerts.message, /分享未完成/);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share respects tutorial, modal, background and non-main interaction gates', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start(); await app.dailyShareEntryRequest;
+  try {
+    const tutorial = app.session.getTutorialState.bind(app.session);
+    app.session.getTutorialState = () => ({ ...tutorial(), active: true }); app.syncModalState();
+    assert.equal(app.dailyShareEntry.node.active, false); await app.beginDailyShare();
+    app.session.getTutorialState = tutorial;
+    app.offlineSummaryPending = true; app.syncModalState();
+    assert.equal(app.dailyShareEntry.blocked, true); await app.beginDailyShare(); app.offlineSummaryPending = false;
+    app.session.setMode('Mine'); app.syncModalState();
+    assert.equal(app.dailyShareEntry.node.active, false); await app.beginDailyShare(); app.session.setMode('Main');
+    app.onHide(); await app.beginDailyShare(); app.onShow();
+    assert.equal(h.calls.shareCalls, undefined); app.syncModalState(); assert.equal(app.dailyShareEntry.node.active, true);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share waits for foreground cloud reconciliation before calling the reward service', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    unlockDailyShareContent(app);
+    const state = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+    app.session.setVerifiedDailyShare(state); app.updateDeferredHuds(); await app.dailyShareEntryRequest;
+    let claims = 0;
+    app.session.claimDailyShare = async () => { claims++; app.session.setVerifiedDailyShare({ ...state, lastClaimDay: state.today, canClaim: false }); return { ok: true, diamonds: state.diamonds }; };
+    const reconciled = deferred(); app.cloudSave.reconcile = () => reconciled.promise;
+    const operation = app.beginDailyShare(); app.onHide(); app.onShow();
+    await new Promise(setImmediate);
+    assert.equal(claims, 0); assert.equal(app.shareBusy, true); assert.equal(app.cloudForegroundCheck, true);
+    reconciled.resolve(); await operation;
+    assert.equal(claims, 1); assert.equal(app.cloudForegroundCheck, false); assert.equal(app.dailyShareEntry.node.active, false);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share ignores a cloud return that finishes after the game has hidden again', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    unlockDailyShareContent(app);
+    app.session.setVerifiedDailyShare({ today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 });
+    let claims = 0; app.session.claimDailyShare = async () => { claims++; return { ok: true, diamonds: 80 }; };
+    const first = deferred(), second = deferred(); let reconciles = 0;
+    app.cloudSave.reconcile = () => ++reconciles === 1 ? first.promise : second.promise;
+    const operation = app.beginDailyShare(); app.onHide(); app.onShow(); app.onHide();
+    first.resolve(); await new Promise(setImmediate);
+    assert.equal(claims, 0); assert.equal(app.shareClaimReady, false); assert.equal(app.shareBusy, true);
+    app.onShow(); second.resolve(); await operation;
+    assert.equal(claims, 1);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share retries a failed settlement without launching the platform sheet twice', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start(); await app.dailyShareEntryRequest;
+  try {
+    const grant = app.session.claimDailyShare.bind(app.session), before = app.session.weapons.diamonds;
+    let claims = 0;
+    app.session.claimDailyShare = () => ++claims === 1 ? { ok: false, reason: 'saveFailed' } : grant();
+    const first = app.beginDailyShare(); app.onHide(); app.onShow(); await first;
+    assert.equal(app.shareClaimReady, true); assert.equal(app.session.weapons.diamonds, before);
+    await app.beginDailyShare();
+    assert.equal(claims, 2); assert.equal(h.calls.shareCalls, 1); assert.equal(app.shareClaimReady, false);
+    assert.equal(app.dailyShareEntry.node.active, false);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share teardown destroys the provider and prevents a late result from claiming', async () => {
+  const h = bootstrapHarness({ wechat: true, environment: 'test', deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start(); await app.dailyShareEntryRequest;
+  const result = deferred(); let destroyed = 0, claims = 0;
+  app.shareProvider.destroy();
+  app.shareProvider = { supported: true, share: () => result.promise, destroy() { destroyed++; } };
+  app.session.claimDailyShare = () => { claims++; return { ok: true, diamonds: 80 }; };
+  const operation = app.beginDailyShare(); app.clearViews(); result.resolve({ status: 'unverified' }); await operation;
+  assert.equal(destroyed, 1); assert.equal(claims, 0); assert.equal(app.dailyShareEntry, undefined);
+  assert.equal(app.shareBusy, false); assert.equal(app.shareClaimReady, false); app.onDestroy();
+});
+
+test('daily share stays hidden without verified presentation state and refreshes claimed and next-day state', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    app.session.setVerifiedDailyShare(undefined);
+    unlockDailyShareContent(app);
+    assert.equal(app.session.getDailyShareState(), undefined); assert.equal(app.dailyShareEntry?.node.active ?? false, false);
+    await app.beginDailyShare(); assert.equal(h.calls.shareCalls, undefined);
+    let share = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+    app.cloudSave.rewardState = async () => ({ revision: app.cloudSave.currentRevision, daily_check: app.session.verifiedDailyCheck, daily_share: share });
+    app.rewardStateRefreshAt = 0; await app.refreshRewardState(); app.updateDeferredHuds(); await app.dailyShareEntryRequest;
+    assert.equal(app.dailyShareEntry.node.active, true);
+    app.shareClaimReady = true; share = { ...share, lastClaimDay: share.today, canClaim: false };
+    app.rewardStateRefreshAt = 0; await app.refreshRewardState(); assert.equal(app.dailyShareEntry.node.active, false);
+    assert.equal(app.shareClaimReady, false, 'an authoritative claimed state discards an obsolete retry');
+    share = { ...share, today: '2026-10-25', canClaim: true, diamonds: 125 };
+    app.rewardStateRefreshAt = 0; await app.refreshRewardState();
+    assert.equal(app.dailyShareEntry.node.active, true); assert.equal(app.session.getDailyShareState().diamonds, 125);
+    assert.equal(app.shareClaimReady, false, 'a completed reward does not create another automatic claim on the new day');
+    app.session.setVerifiedDailyShare(undefined); app.syncModalState();
+    assert.equal(app.dailyShareEntry.node.active, false, 'cleared verified presentation state removes an existing entry too');
+    await app.beginDailyShare();
+    assert.equal(app.shareClaimReady, false);
+  } finally { app.onDestroy(); }
+});
+
+for (const staleBecause of ['newer reward receipt', 'reward still in flight']) {
+  test(`daily share state arriving after ${staleBecause} cannot revive a claimed entry`, async () => {
+    const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+    const app = h.create(); await app.start();
+    try {
+      unlockDailyShareContent(app);
+      const available = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+      app.session.setVerifiedDailyShare(available); app.updateDeferredHuds(); await app.dailyShareEntryRequest;
+      const state = deferred(), oldRevision = app.cloudSave.currentRevision;
+      let revision = oldRevision;
+      Object.defineProperty(app.cloudSave, 'currentRevision', { get: () => revision });
+      app.cloudSave.rewardState = () => state.promise; app.rewardStateRefreshAt = 0;
+      const refreshed = app.refreshRewardState();
+      app.session.setVerifiedDailyShare({ ...available, canClaim: false, lastClaimDay: available.today });
+      app.syncModalState(); assert.equal(app.dailyShareEntry.node.active, false);
+      if (staleBecause === 'newer reward receipt') revision = String(Number(oldRevision) + 1);
+      else Object.defineProperty(app.session, 'backendRewardPending', { get: () => true });
+      const now = Date.now(); h.context.Date = { now: () => now };
+      state.resolve({ revision: oldRevision, daily_check: app.session.verifiedDailyCheck, daily_share: available });
+      await refreshed;
+      assert.equal(app.dailyShareEntry.node.active, false); assert.equal(app.session.getDailyShareState().canClaim, false);
+      assert.equal(app.rewardStateRefreshAt, now + 1000, 'stale state is retried promptly instead of being cached for fifteen minutes');
+    } finally { app.onDestroy(); }
+  });
+}
+
+test('daily share preserves an unsettled retry across midnight until the server accepts or rejects it', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    unlockDailyShareContent(app);
+    const yesterday = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+    app.session.setVerifiedDailyShare(yesterday); app.shareClaimReady = true;
+    app.cloudSave.rewardState = async () => ({ revision: app.cloudSave.currentRevision,
+      daily_check: app.session.verifiedDailyCheck, daily_share: { ...yesterday, today: '2026-10-25' } });
+    app.rewardStateRefreshAt = 0; await app.refreshRewardState();
+    assert.equal(app.session.getDailyShareState().canClaim, true); assert.equal(app.shareClaimReady, true);
+  } finally { app.onDestroy(); }
+});
+
+test('daily share definitive rejection clears eligibility even when the next state is a claimable new day', async () => {
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true }); enableDailyShareHost(h);
+  const app = h.create(); await app.start();
+  try {
+    unlockDailyShareContent(app);
+    const yesterday = { today: '2026-10-24', lastClaimDay: '', canClaim: true, blocked: false, diamonds: 80 };
+    app.session.setVerifiedDailyShare(yesterday);
+    let claims = 0;
+    app.session.claimDailyShare = async () => { claims++; return { ok: false, reason: 'notClaimable' }; };
+    app.cloudSave.reconcile = async () => {};
+    app.cloudSave.rewardState = async () => ({ revision: app.cloudSave.currentRevision,
+      daily_check: app.session.verifiedDailyCheck, daily_share: { ...yesterday, today: '2026-10-25' } });
+    const operation = app.beginDailyShare(); app.onHide(); app.onShow(); await operation;
+    assert.equal(app.session.getDailyShareState().canClaim, true); assert.equal(app.shareClaimReady, false);
+    assert.equal(app.world.isPaused, false, 'a definitive reward failure also releases the share pause');
+    const elapsed = app.world.simulationTime;
+    app.update(1 / 60); app.update(1 / 60);
+    assert.ok(app.world.simulationTime > elapsed, 'rejected rewards cannot leave the battle frozen');
+    app.shareClaimRetryAt = 0; app.update(0); await new Promise(setImmediate);
+    assert.equal(h.calls.shareCalls, 1); assert.equal(claims, 1, 'the rejected prior request cannot auto-claim tomorrow');
+  } finally { app.onDestroy(); }
+});
+
+test('production without login keeps rewards unavailable and never computes local offline income', async () => {
+  const saved = offlineBootStorage(), h = bootstrapHarness({ storage: saved.storage, useRuntimeRewardAuthority: true,
+    sessionNow: () => OFFLINE_BOOT_NOW, dailyCheck: true, deferHiddenHuds: true }), app = h.create();
+  const before = JSON.parse(saved.data.get(saved.key));
+  await app.start();
+  assert.equal(app.ready, true); assert.equal(app.cloudSave, undefined);
+  assert.equal(app.session.offlineInitializationPending, false); assert.equal(app.session.offlineResult, null);
+  assert.equal(app.offlineSummaryPending, false); assert.equal(app.session.getDailyCheckState().canClaim, false);
+  const diamonds = app.session.weapons.diamonds;
+  for (const result of [await app.session.claimDailyCheck(0), await app.session.redeemCode('950424')]) {
+    assert.equal(result.ok, false); assert.match(result.message, /登录/);
+  }
+  assert.equal(app.session.weapons.diamonds, diamonds);
+  const after = JSON.parse(saved.data.get(saved.key)).money;
+  assert.equal(after.digits, before.money.digits); assert.equal(after.exponent, before.money.exponent);
+  assert.deepEqual(JSON.parse(saved.data.get(saved.key)).levels, before.levels);
+  assert.equal(h.calls.rewardRequests, undefined); app.onDestroy();
+});
+
+test('cloud startup reuses complete offline receipt state before constructing the settled session', async () => {
+  const saved = offlineBootStorage(), original = saved.data.get(saved.key);
+  const { DailyCheckSystem } = require('./.build/session/session/DailyCheckSystem.js');
+  const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
+  const daily = new DailyCheckSystem().snapshot('2026-10-15');
+  const share = { today: '2026-10-15', lastClaimDay: '2026-10-15', canClaim: false, blocked: false, diamonds: 80 };
+  let offline;
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, useRuntimeRewardAuthority: true, sessionNow: () => OFFLINE_BOOT_NOW,
+    rewardRequest: options => {
+      if (options.url.endsWith('/offline')) { offline = options; return; }
+      assert.equal(app.session, undefined, 'daily state is verified before session construction');
+      options.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', server_time_ms: OFFLINE_BOOT_NOW,
+        revision: h.calls.cloudRevision, next_daily_reset_ms: OFFLINE_BOOT_NOW + 86400000, daily_check: daily, daily_share: share } });
+    } }), app = h.create();
+  h.calls.cloudRaw = original; h.calls.cloudRevision = '4';
+  const starting = app.start(); await new Promise(setImmediate);
+  assert.ok(offline); assert.equal(offline.method, 'POST'); assert.equal(offline.data.base_revision, '4');
+  assert.equal(app.session, undefined); assert.equal(h.calls.worlds, 0); assert.equal(app.startupEntryReady, false);
+  assert.equal(app.cloudSave.localSave, original);
+  const settled = JSON.parse(original); settled.money = OriginalInfVal.fromInt(7654321).toJSON();
+  settled.levels = [8, 9, 10]; settled.offline.lastSavedAtMs = OFFLINE_BOOT_NOW;
+  h.calls.cloudRaw = JSON.stringify(settled); h.calls.cloudRevision = '5';
+  offline.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', request_id: offline.data.request_id,
+    revision: '5', awarded_revision: '5', save: h.calls.cloudRaw, saved_at_ms: OFFLINE_BOOT_NOW, server_time_ms: OFFLINE_BOOT_NOW,
+    next_daily_reset_ms: OFFLINE_BOOT_NOW + 12 * 60 * 60000, daily_check: daily, daily_share: share,
+    reward: { kind: 'offline', result: null, before: null } } });
+  await starting;
+  assert.equal(app.ready, true); assert.equal(app.session.offlineInitializationPending, false);
+  assert.equal(app.session.moneyBalance.toString(), '7654321');
+  assert.deepEqual(app.session.snapshot({}).upgrades.map(upgrade => upgrade.level), [8, 9, 10]);
+  assert.equal(app.session.getDailyCheckState().today, '2026-10-15');
+  assert.deepEqual(app.session.verifiedDailyCheck, daily);
+  assert.deepEqual(app.session.getDailyShareState(), share);
+  assert.deepEqual(h.calls.rewardRequests.map(options => options.url.split('/').at(-1)), ['offline']);
+  assert.deepEqual(JSON.parse(app.cloudSave.localSave).money, settled.money);
+  assert.equal(app.cloudSave.rewardPending, false); assert.equal(app.cloudSave.dirty, false);
+  app.onDestroy();
+});
+
+test('cloud startup expired receipt state failure retries state without repeating an already-settled offline claim', async () => {
+  const saved = offlineBootStorage(), original = saved.data.get(saved.key);
+  const { DailyCheckSystem } = require('./.build/session/session/DailyCheckSystem.js');
+  const { OriginalInfVal } = require('./.build/session/core/OriginalInfVal.js');
+  const settled = JSON.parse(original); settled.money = OriginalInfVal.fromInt(7654321).toJSON();
+  settled.offline.lastSavedAtMs = OFFLINE_BOOT_NOW;
+  let states = 0, now;
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, useRuntimeRewardAuthority: true, sessionNow: () => OFFLINE_BOOT_NOW,
+    rewardRequest: options => {
+      if (options.url.endsWith('/offline')) {
+        now = Date.now(); app.cloudSave.now = () => now;
+        const readState = app.cloudSave.rewardState.bind(app.cloudSave);
+        app.cloudSave.rewardState = receipt => {
+          if (receipt) now += 1001;
+          return readState(receipt);
+        };
+        h.calls.cloudRaw = JSON.stringify(settled); h.calls.cloudRevision = '5';
+        options.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', request_id: options.data.request_id,
+          revision: '5', awarded_revision: '5', save: h.calls.cloudRaw, saved_at_ms: OFFLINE_BOOT_NOW, server_time_ms: OFFLINE_BOOT_NOW,
+          ...bootstrapRewardState(h.calls.cloudRaw, '5', OFFLINE_BOOT_NOW, '2026-10-15'),
+          reward: { kind: 'offline', result: null, before: null } } });
+        return;
+      }
+      assert.ok(options.url.endsWith('/state'));
+      if (++states === 1) { options.fail({ errMsg: 'temporary state failure' }); return; }
+      options.success({ statusCode: 200, data: { player_id: '101', namespace: 'production', revision: h.calls.cloudRevision,
+        ...bootstrapRewardState(h.calls.cloudRaw, h.calls.cloudRevision, OFFLINE_BOOT_NOW, '2026-10-15') } });
+    } }), app = h.create();
+  h.calls.cloudRaw = original; h.calls.cloudRevision = '4';
+  const starting = app.start();
+  try {
+    await waitForOfflineRetry(app);
+    assert.equal(app.session, undefined); assert.equal(app.ready, false); assert.equal(h.calls.worlds, 0);
+    assert.equal(app.cloudSave.currentRevision, '5'); assert.equal(app.cloudSave.rewardPending, false);
+    assert.deepEqual(JSON.parse(app.cloudSave.localSave).money, settled.money);
+    app.startupInputBlock.emit(h.cc.Node.EventType.TOUCH_END, { propagationStopped: false });
+    await starting;
+    assert.equal(app.ready, true); assert.equal(app.session.moneyBalance.toString(), '7654321');
+    assert.equal(app.session.getDailyCheckState().today, '2026-10-15');
+    assert.deepEqual(h.calls.rewardRequests.map(options => options.url.split('/').at(-1)), ['offline', 'state', 'state']);
+    assert.deepEqual(h.errors, []);
+  } finally { app.onDestroy(); await starting; }
+});
+
+test('cloud read precedes session creation and initial upload gates automatic entry and account-dependent assets', async () => {
+  let read, write;
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true,saveRequest:o=>{if(o.method==='GET')read=o;else write=o;}}),app=h.create(),start=app.start();
+  await new Promise(setImmediate);
+  assert.ok(read);assert.equal(app.session,undefined);assert.equal(app.startupEntryReady,false);
+  assert.equal(app.startupInputBlock.getChildByName('StartGameButton'),undefined);
+  assert.equal(app.resourceLoadingSnapshot().startup.dataReadyMs,null);assert.equal(app.ready,false);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  assert.equal(h.calls.maps,0);assert.equal(h.calls.initialWeaponIds,undefined);
+  assert.equal(h.context.__forestGunnerLoading.snapshot().startup.timeline.phases.cloudRead.active,1);
+  read.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:'0',save:null,saved_at_ms:0}});
+  await new Promise(setImmediate);
+  assert.ok(write);assert.ok(app.session);assert.equal(app.startupEntryReady,false);assert.equal(h.calls.worlds,0);
+  assert.equal(app.resourceLoadingSnapshot().startup.dataReadyMs,null);assert.equal(app.ready,false);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  assert.equal(h.calls.maps,0);assert.equal(h.calls.initialWeaponIds,undefined);
+  assert.equal(h.context.__forestGunnerLoading.snapshot().startup.timeline.phases.cloudWrite.active,1);
+  write.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:'1',current_revision:'1',request_id:write.data.request_id,saved_at_ms:Date.now()}});
+  await start;assert.equal(app.ready,true);assert.equal(app.cloudSave.dirty,false);
+  assert.equal(app.resourceLoadingSnapshot().startup.entryMode,'automatic');
+  assert.notEqual(app.resourceLoadingSnapshot().startup.dataReadyMs,null);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.maps,1);
+  const timeline=h.context.__forestGunnerLoading.snapshot().startup.timeline;
+  assert.equal(timeline.phases.cloudRead.succeeded,1);assert.equal(timeline.phases.cloudWrite.succeeded,1);
+  app.onDestroy();
+});
+
+test('cloud read failure keeps the account at retry without initializing a fresh session', async () => {
+  const h=bootstrapHarness({wechat:true,saveRequest:o=>o.fail({})}),app=h.create(),start=app.start();
+  await new Promise(setImmediate);
+  assert.ok(app.cancelOfflineRetry);assert.equal(app.session,undefined);assert.equal(app.startupEntryReady,false);assert.equal(h.calls.worlds,0);
+  app.onDestroy();await start;
+});
+
+test('new authenticated accounts ignore obsolete local saves without showing an import decision', async () => {
+  const { BattleSession, economyStorageKey } = require('./.build/session/session/BattleSession.js'), data = new Map();
+  const storage = { getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, v) };
+  new BattleSession({ environment: 'production', storage });
+  const key = economyStorageKey('production'), old = JSON.parse(storage.getItem(key)); old.levels[0] = 42;
+  storage.setItem(key, JSON.stringify(old));
+  const h = bootstrapHarness({ wechat: true, storage, deferHiddenHuds: true }), app = h.create();
+  try {
+    await app.start(); assert.equal(app.ready, true); assert.equal(app.cloudPanel.cover.active, false);
+    assert.equal(app.session.snapshot({}).upgrades[0].level, 0); assert.deepEqual(JSON.parse(storage.getItem(key)), old);
+    assert.equal(storage.getItem(app.cloudSave.journalKey + ':backup:legacy'), null);
+    assert.ok(h.calls.cloudRequests.some(o => o.method === 'POST'));
+  } finally { app.onDestroy(); }
+});
+
+test('test-funded WeChat sessions never use production cloud storage', async () => {
+  const h=bootstrapHarness({wechat:true,environment:'test',deferHiddenHuds:true}),app=h.create();await app.start();
+  assert.equal(app.ready,true);assert.equal(app.cloudSave,undefined);assert.equal(h.calls.cloudRequests,undefined);app.onDestroy();
+});
+
+for(const screenOff of [false,true])test(`a foreground cloud conflict pauses gameplay and offers both snapshots${screenOff?' after screen unlock':''}`, async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+  if(screenOff){app.onHide();await new Promise(setImmediate);}
+  const changed=JSON.parse(h.calls.cloudRaw);changed.progress.stageIndex=3;h.calls.cloudRaw=JSON.stringify(changed);h.calls.cloudRevision='2';
+  const nextRead=app.cloudSave.now()+300001;app.cloudSave.now=()=>nextRead;
+  app.onShow();assert.equal(app.isPaused,true);await new Promise(setImmediate);
+  if(screenOff)assert.equal(app.world.isPaused,true,'a conflicting cloud save cannot release the hidden world');
+  app.update(1/60);
+  assert.equal(app.cloudSave.status,'conflict');assert.equal(app.cloudPanel.cover.active,true);assert.equal(app.isPaused,true);
+  assert.match(app.cloudPanel.body.string,/两份存档/);app.onDestroy();await new Promise(setImmediate);
+});
+
+test('screen unlock resumes the real combat world after foreground cloud reconciliation', async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true,realWorld:true}),app=h.create();await app.start();
+  try {
+    app.update(0);app.update(1/60);const before=app.world.simulationTime;
+    app.onHide();app.update(60);assert.equal(app.world.simulationTime,before);
+    const nextRead=app.cloudSave.now()+300001;app.cloudSave.now=()=>nextRead;
+    app.onShow();assert.equal(app.isPaused,true);assert.equal(app.world.isPaused,true);
+    await new Promise(setImmediate);
+    assert.equal(app.cloudForegroundCheck,false);assert.equal(app.world.isPaused,false);
+    app.update(60);assert.equal(app.world.simulationTime,before,'the first resumed frame cannot catch up screen-off time');
+    app.update(1/60);assert.ok(app.world.simulationTime>before,'combat advances after cloud success');
+  } finally { app.onDestroy(); }
+});
+
+test('screen unlock resumes combat after a failed cloud network check', async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+  try {
+    app.onHide();await new Promise(setImmediate);
+    h.context.wx.request=options=>options.fail({errMsg:'network unavailable'});
+    const nextRead=app.cloudSave.now()+300001;app.cloudSave.now=()=>nextRead;
+    app.onShow();await new Promise(setImmediate);
+    assert.equal(app.cloudSave.status,'offline');assert.equal(app.isPaused,false);assert.equal(app.world.isPaused,false);
+    app.update(60);const before=app.world.simulationTime;app.update(1/60);
+    assert.ok(app.world.simulationTime>before,'local gameplay continues after a failed request');
+  } finally { app.onDestroy(); }
+});
+
+test('an older foreground check cannot release a newer screen-unlock check', async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+  try {
+    const first=deferred(),second=deferred();let checks=0;
+    app.cloudSave.reconcile=()=>++checks===1?first.promise:second.promise;
+    app.onHide();app.onShow();app.onHide();app.onShow();
+    first.resolve();await new Promise(setImmediate);
+    assert.equal(app.cloudForegroundCheck,true);assert.equal(app.world.isPaused,true);
+    second.resolve();await new Promise(setImmediate);
+    assert.equal(app.cloudForegroundCheck,false);assert.equal(app.world.isPaused,false);
+  } finally { app.onDestroy(); }
+});
+
+for(const blockedBy of ['background','manual pause','cloud conflict','battle loading','destroy']) {
+  test(`foreground cloud completion respects ${blockedBy}`,async()=>{
+    const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+    try {
+      const pending=deferred();app.cloudSave.reconcile=()=>pending.promise;
+      app.onHide();app.onShow();const world=app.world;
+      if(blockedBy==='background')app.onHide();
+      else if(blockedBy==='manual pause')app.togglePause();
+      else if(blockedBy==='cloud conflict')app.cloudSave.status='conflict';
+      else if(blockedBy==='battle loading')app.battleLoading=true;
+      else app.onDestroy();
+      pending.resolve();await new Promise(setImmediate);
+      assert.equal(world.isPaused,true,'completion must preserve the current pause reason');
+      if(blockedBy==='background'){
+        app.onShow();await new Promise(setImmediate);assert.equal(world.isPaused,false,'a later valid return still resumes');
+      }else if(blockedBy==='manual pause'){
+        app.togglePause();assert.equal(world.isPaused,false,'the user can resume explicitly');
+      }
+    } finally { if(!app.disposed)app.onDestroy(); }
+  });
+}
+
+test('cloud conflict reload releases views before engine scene destruction and retains the chosen save', async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+  const changed=JSON.parse(h.calls.cloudRaw);changed.progress.stageIndex=3;h.calls.cloudRaw=JSON.stringify(changed);h.calls.cloudRevision='2';
+  const nextRead=app.cloudSave.now()+300001;app.cloudSave.now=()=>nextRead;
+  await app.cloudSave.reconcile();const cloud=app.cloudSave;let reloaded=false;
+  app.chooseCloudSave=async()=> 'cloud';
+  h.cc.director.loadScene=()=>{
+    assert.equal(app.ready,false);assert.equal(app.hud,undefined);assert.equal(app.weaponsHud,undefined);
+    assert.equal(app.cloudPanel.title.string,'正在恢复进度');
+    reloaded=true;app.onDestroy();return true;
+  };
+  await app.handleCloudDecision();assert.equal(reloaded,true);assert.equal(cloud.localSave,h.calls.cloudRaw);assert.deepEqual(h.errors,[]);
+});
+
+test('cached cloud state survives repeated daily-panel opens and foreground changes until its fifteen-minute expiry', async () => {
+  let now=Date.now();const startedAt=now;
+  const h=bootstrapHarness({wechat:true,dailyCheck:true,deferHiddenHuds:true,sessionNow:()=>now,
+    contentOverrides:{tutorialEnabled:false,thresholds:{rebirthSkinChallengeWins:0}}});
+  h.context.Date={now:()=>now};const app=h.create();await app.start();
+  app.cloudSave.now=()=>now;app.dailyCheckAutoPending=false;
+  const stateReads=()=>h.calls.rewardRequests.filter(request=>request.url.endsWith('/state')).length;
+  const saveReads=()=>h.calls.cloudRequests.filter(request=>request.method==='GET').length;
+  const saveWrites=()=>h.calls.cloudRequests.filter(request=>request.method==='POST').length;
+  const initialWrites=saveWrites();
+  try {
+    assert.equal(stateReads(),1);assert.equal(saveReads(),1);
+    for(let i=0;i<5;i++){
+      await drainPreparation(app,app.openDailyCheck());assert.equal(app.dailyCheckHud.isOpen,true);
+      app.dailyCheckHud.close();app.syncModalState();now+=1000;
+      app.onHide();app.onShow();await new Promise(setImmediate);app.update(0);
+      assert.equal(stateReads(),1,'reopening and resuming keep the cached reward state');
+      assert.equal(saveReads(),1,'rapid foreground checks reuse the recent cloud read');
+      assert.equal(saveWrites(),initialWrites,'rapid hide events cannot upload each local checkpoint');
+    }
+    now=startedAt+15*60000-1;
+    await drainPreparation(app,app.openDailyCheck());assert.equal(stateReads(),1);
+    app.dailyCheckHud.close();app.syncModalState();
+    now++;
+    await drainPreparation(app,Promise.all([app.openDailyCheck(),app.openDailyCheck()]));
+    assert.equal(stateReads(),2,'expiry refreshes once even when two opens overlap');
+    assert.equal(app.dailyCheckHud.isOpen,true);
+  } finally {app.onDestroy();}
+});
+
+test('server daily reset expires the reward presentation before the fifteen-minute cache', async () => {
+  const resetAt=Date.UTC(2026,9,23,16);let now=resetAt-10000;
+  const {DailyCheckSystem}=require('./.build/session/session/DailyCheckSystem.js');
+  const h=bootstrapHarness({wechat:true,dailyCheck:true,deferHiddenHuds:true,sessionNow:()=>now,
+    rewardRequest:options=>{
+      assert.ok(options.url.endsWith('/state'));
+      options.success({statusCode:200,data:{player_id:'101',namespace:'production',
+        ...bootstrapRewardState(h.calls.cloudRaw,h.calls.cloudRevision,now,now<resetAt?'2026-10-23':'2026-10-24'),
+        next_daily_reset_ms:now<resetAt?resetAt:resetAt+86400000,
+      }});
+    }});
+  h.context.Date={now:()=>now};const app=h.create();await app.start();app.dailyCheckAutoPending=false;
+  try {
+    assert.equal(h.calls.rewardRequests.length,1);assert.equal(app.session.getDailyCheckState().today,'2026-10-23');
+    now=resetAt-1;app.update(0);await new Promise(setImmediate);
+    assert.equal(h.calls.rewardRequests.length,1);
+    now=resetAt;app.update(0);await new Promise(setImmediate);
+    assert.equal(h.calls.rewardRequests.length,2);assert.equal(app.session.getDailyCheckState().today,'2026-10-24');
+    now=resetAt+15*60000-1;app.update(0);await new Promise(setImmediate);
+    assert.equal(h.calls.rewardRequests.length,2,'the new day starts a fresh presentation cache');
+    now++;app.update(0);await new Promise(setImmediate);assert.equal(h.calls.rewardRequests.length,3);
+  } finally {app.onDestroy();}
+});
+
+test('failed reward-state refreshes back off for fifteen minutes across daily-panel opens and resume', async () => {
+  let now=Date.now(),fail=false;
+  const {DailyCheckSystem}=require('./.build/session/session/DailyCheckSystem.js');
+  const h=bootstrapHarness({wechat:true,dailyCheck:true,deferHiddenHuds:true,sessionNow:()=>now,
+    contentOverrides:{tutorialEnabled:false,thresholds:{rebirthSkinChallengeWins:0}},
+    rewardRequest:options=>{
+      assert.ok(options.url.endsWith('/state'));
+      if(fail){options.fail({errMsg:'network unavailable'});return;}
+      options.success({statusCode:200,data:{player_id:'101',namespace:'production',server_time_ms:now,revision:h.calls.cloudRevision??'0',
+        ...bootstrapRewardState(h.calls.cloudRaw,h.calls.cloudRevision,now)}});
+    }});
+  h.context.Date={now:()=>now};const app=h.create();await app.start();app.dailyCheckAutoPending=false;
+  try {
+    await drainPreparation(app,app.openDailyCheck());app.dailyCheckHud.close();app.syncModalState();
+    fail=true;now+=15*60000;
+    await drainPreparation(app,app.openDailyCheck());assert.equal(h.calls.rewardRequests.length,2);
+    assert.equal(app.dailyCheckHud.isOpen,true,'cached presentation remains usable after a transient state failure');
+    app.dailyCheckHud.close();app.syncModalState();
+    now+=15*60000-1;app.onHide();app.onShow();await new Promise(setImmediate);
+    await drainPreparation(app,app.openDailyCheck());assert.equal(h.calls.rewardRequests.length,2);
+    app.dailyCheckHud.close();app.syncModalState();
+    now++;fail=false;await drainPreparation(app,app.openDailyCheck());
+    assert.equal(h.calls.rewardRequests.length,3);assert.equal(app.dailyCheckHud.isOpen,true);
+  } finally {app.onDestroy();}
+});
+
+test('Bootstrap cloud notices use filtered display status for repeated failures and slow synchronization', async () => {
+  const h=bootstrapHarness({wechat:true,deferHiddenHuds:true}),app=h.create();await app.start();
+  const cloud=app.cloudSave;let now=cloud.now();cloud.now=()=>now;
+  try {
+    h.context.wx.request=options=>options.fail({errMsg:'network unavailable'});
+    for(let failures=1;failures<=3;failures++){
+      now+=300001;await cloud.reconcile().catch(()=>{});app.update(0);
+      assert.equal(cloud.status,'offline');
+      assert.equal(app.cloudPanel.status.node.active,failures===3,'the first two failures remain quiet');
+    }
+    assert.match(app.cloudPanel.status.string,/等待云端同步/);
+    let pending;h.context.wx.request=options=>{pending=options;};now+=300001;
+    const request=cloud.reconcile();await new Promise(setImmediate);assert.ok(pending);
+    app.update(0);assert.equal(cloud.status,'syncing');assert.equal(app.cloudPanel.status.node.active,false);
+    now+=2999;app.update(0);assert.equal(app.cloudPanel.status.node.active,false);
+    now++;app.update(0);assert.match(app.cloudPanel.status.string,/正在同步进度/);
+    assert.equal(app.cloudPanel.status.node.active,true);
+    pending.success({statusCode:200,data:{player_id:'101',namespace:'production',revision:h.calls.cloudRevision,
+      save:h.calls.cloudRaw,saved_at_ms:now}});
+    await request;app.update(0);assert.equal(app.cloudPanel.status.node.active,false);
+  } finally {app.onDestroy();}
+});
+
+test('WeChat startup waits for verified login before loading the local session or gameplay', async () => {
+  let response;
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, loginRequest: options => { response = options; } });
+  const app = h.create(), start = app.start();
+  await new Promise(setImmediate);
+  assert.ok(response); assert.equal(app.session, undefined); assert.equal(h.calls.worlds, 0);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  assert.equal(h.calls.maps,0);assert.equal(h.calls.initialWeaponIds,undefined);assert.equal(app.startupEntryReady,false);
+  const timeline=h.context.__forestGunnerLoading.snapshot().startup.timeline;
+  assert.equal(timeline.phases.login.active,1);assert.equal(timeline.phases.core.active,1);
+  app.update(1 / 60); app.onHide(); app.update(1 / 60); app.onShow(); app.update(1 / 60);
+  assert.equal(app.session, undefined, 'engine frames and foreground changes do not bypass login');
+  response.success({ statusCode: 200, data: bootstrapLoginResponse() });
+  await start;
+  assert.equal(app.ready, true, h.errors.map(e=>e.map(String).join(' ')).join('\n')); assert.equal(app.gameLogin.player.id, '101');
+  assert.equal(h.calls.loginCodes, 1);assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  assert.deepEqual(h.errors, []);
+  app.onDestroy();
+});
+
+test('WeChat login failure stays on the startup cover and a tap retries with a new code', async () => {
+  let requests = 0;
+  const h = bootstrapHarness({ wechat: true, deferHiddenHuds: true, loginRequest: options => {
+    options.success(++requests === 1 ? { statusCode: 401, data: { code: 'WECHAT_CODE_INVALID' } }
+      : { statusCode: 200, data: bootstrapLoginResponse() });
+  } });
+  const app = h.create(), start = app.start();
+  await new Promise(setImmediate);
+  assert.equal(app.session, undefined); assert.ok(app.cancelOfflineRetry);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  app.startupInputBlock.emit(h.cc.Node.EventType.TOUCH_END);
+  await start;
+  assert.equal(app.ready, true); assert.equal(h.calls.loginCodes, 2); assert.equal(requests, 2);
+  assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.hudAssets,1);
+  const timeline=h.context.__forestGunnerLoading.snapshot().startup.timeline;
+  assert.equal(timeline.phases.login.attempts,2);assert.equal(timeline.phases.login.failed,1);assert.equal(timeline.phases.login.succeeded,1);
+  assert.deepEqual(h.errors, []); app.onDestroy();
+});
+
+test('an early fixed-resource rejection stays observed while login retries and cannot replace the login error', async () => {
+  const feedback=deferred(),requests=[],unhandled=[];
+  const onUnhandled=error=>unhandled.push(error);
+  process.on('unhandledRejection',onUnhandled);
+  const h=bootstrapHarness({wechat:true,manualStartup:true,feedbackWait:feedback.promise,loginRequest:options=>requests.push(options)});
+  const app=h.create(),started=app.start();
+  try {
+    await new Promise(setImmediate);assert.equal(requests.length,1);
+    requests[0].fail({});await new Promise(setImmediate);
+    assert.ok(app.cancelOfflineRetry);assert.equal(app.session,undefined);
+    const label=app.loading.getComponent(h.cc.Label),retryMessage=label.string;
+    assert.match(retryMessage,/连接失败.*\n点击这里重试/);
+    feedback.reject(new Error('early feedback failure'));await new Promise(setImmediate);
+    h.calls.art.onAssetLoaded(20);app.update(1/60);
+    assert.equal(label.string,retryMessage);assert.deepEqual(unhandled,[]);
+    assert.equal(h.calls.maps,0);assert.equal(h.calls.worlds,0);assert.equal(app.startupEntryReady,false);
+    app.startupInputBlock.emit(h.cc.Node.EventType.TOUCH_END);await new Promise(setImmediate);
+    assert.equal(requests.length,2);assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);
+    requests[1].success({statusCode:200,data:bootstrapLoginResponse()});await started;
+    assert.equal(app.ready,false);assert.equal(h.calls.worlds,0);assert.deepEqual(unhandled,[]);
+    assert.match(label.string,/资源加载失败：战斗反馈/);assert.match(label.string,/early feedback failure/);
+    assert.equal(h.errors.length,1);
+  } finally {app.onDestroy();await started;process.off('unhandledRejection',onUnhandled);}
+});
+
+test('fixed assets completing during hidden startup do not redraw progress or publish the world', async () => {
+  const feedback=deferred(),money=deferred();let now=0;
+  const h=bootstrapHarness({manualStartup:true,feedbackWait:feedback.promise,moneyWait:money.promise});
+  h.context.Date={now:()=>now};
+  const app=h.create(),started=app.start();await new Promise(setImmediate);
+  const label=app.loading.getComponent(h.cc.Label),screen=app.startupScreen;
+  assert.equal(app.startupEntryReady,true);assert.equal(app.preparationReady,false);
+  let progressUpdates=0;const setProgress=screen.setProgress.bind(screen);
+  screen.setProgress=value=>{progressUpdates++;setProgress(value);};
+  app.onHide();const message=label.string,writes=label.writes;
+  feedback.resolve({});await new Promise(setImmediate);
+  h.calls.art.onAssetLoaded(23);now=3000;app.update(0);
+  assert.equal(label.string,message);assert.equal(label.writes,writes);assert.equal(progressUpdates,0);
+  assert.equal(h.calls.worlds,0);assert.equal(app.ready,false);
+  app.onShow();app.update(0);
+  assert.match(label.string,/等待：伤害数字/);assert.match(label.string,/资源已完成 23 项/);assert.ok(progressUpdates>0);
+  app.onDestroy();money.resolve({});await started;assert.deepEqual(h.errors,[]);
+});
+
+test('teardown during login observes late fixed-resource success and failure without starting account-dependent work', async () => {
+  for(const fail of [false,true]){
+    const assets=deferred();let login;
+    const h=bootstrapHarness({wechat:true,manualStartup:true,artWait:assets.promise,loginRequest:options=>{login=options;}});
+    const app=h.create(),started=app.start();await new Promise(setImmediate);
+    assert.ok(login);assert.equal(h.calls.artLoads,1);assert.equal(app.session,undefined);assert.equal(h.calls.maps,0);
+    app.onDestroy();if(fail)assets.reject(new Error('late prewarm failure'));else assets.resolve();
+    await started;await new Promise(setImmediate);
+    assert.equal(h.calls.maps,0);assert.equal(h.calls.worlds,0);assert.equal(app.ready,false);
+    assert.equal(h.cc.game.listeners.length,0);assert.equal(h.context.__forestGunnerLoading,undefined);assert.deepEqual(h.errors,[]);
+  }
+});
+
+test('reserved distribution builds stop before local gameplay when their login SDK is not integrated', async () => {
+  for (const options of [{ douyin: true }, { platformConfig: { channel: 'taptap-mini' } },
+    { native: true, platformConfig: { channel: 'taptap-android' } }, { native: true },
+    { wechat: true, platformConfig: { channel: 'web' } }]) {
+    const h = bootstrapHarness(options), app = h.create(); await app.start();
+    assert.notEqual(app.ready, true); assert.equal(app.session, undefined); assert.equal(h.calls.worlds, 0);
+    assert.equal(h.calls.loginCodes, undefined); assert.ok(h.errors.length); app.onDestroy();
+  }
+});
+
 async function reachStartupPreparation(app) {
   for(let i=0;i<60&&!app.preparationReady&&!app.disposed;i++)await new Promise(setImmediate);
   assert.equal(app.preparationReady,true,'core dependencies permit the real update queue before gameplay readiness');
 }
 
-test('initialization constructs every unlocked panel through update frames before publishing gameplay',async()=>{
+test('startup automatically enters once every unlocked view is ready and all main panels open immediately',async()=>{
   let now=0;const h=bootstrapHarness({manualStartup:true,environment:'test'});h.context.Date={now:()=>now};const app=h.create();
   const started=app.start();await reachStartupPreparation(app);assert.equal(app.ready,false);
   assert.ok(app.startupInputBlock.getComponent(h.cc.BlockInputEvents));
   assert.equal(app.startupInputBlock.getSiblingIndex(),app.node.children.length-1,'the loading shield stays above prepared entry buttons');
   assert.equal(app.loading.parent,app.startupInputBlock,'loading text is rendered above its opaque cover');
-  const originalBind=app.bindPreparedHud.bind(app);let bindings=0;
-  app.bindPreparedHud=(name,hud)=>{assert.equal(app.resourceLoadingSnapshot().uiReady[name],false,'published readiness waits for binding');bindings++;originalBind(name,hud);};
+  assert.equal(app.startupInputBlock.getChildByName('StartGameButton'),undefined,'loading offers no extra start gesture');
+  const world=app.world,originalBind=app.bindPreparedHud.bind(app);let bindings=0,weapons;
+  app.bindPreparedHud=(name,hud)=>{assert.equal(app.resourceLoadingSnapshot().uiReady[name],false,'published readiness waits for binding');bindings++;if(name==='weapons')weapons=hud;originalBind(name,hud);};
   const getContent=app.session.getContentState.bind(app.session);
   app.session.getContentState=name=>({...getContent(name),unlocked:true,visible:true});
   const required=Array.from(app.startupModules);
@@ -665,10 +1481,21 @@ test('initialization constructs every unlocked panel through update frames befor
   const admissions=[],prepare=app.resourceModules.prepare.bind(app.resourceModules);
   app.resourceModules.prepare=(name,options)=>{if(!options?.foreground){assert.equal(admissions.every(prior=>app.resourceModules.isViewReady(prior)),true);admissions.push(name);}return prepare(name,options);};
   let overlap=false;
-  for(let frame=0;frame<2200&&!app.ready;frame++){now++;app.update(1/60);await new Promise(setImmediate);
+  for(let frame=0;frame<2200&&!app.ready;frame++){
+    assert.equal(app.world.simulationTime,0,'preparing required views never advances combat');
+    if(!required.every(name=>app.resourceModules.isViewReady(name)))assert.equal(app.ready,false);
+    now++;app.update(1/60);await new Promise(setImmediate);
     if(!app.resourceModules.isViewReady('weapons')&&h.calls.backgroundConfigs.includes('art/speedrun-system/config'))overlap=true;
   }
-  assert.equal(app.ready,true,'all unlocked panels should finish before the startup budget');await started;assert.equal(app.world.simulationTime,0,'the construction loop never advances combat');
+  assert.equal(app.ready,true,'the final required view automatically releases startup');
+  assert.notEqual(app.startupResourcesReadyAt,undefined);await started;
+  assert.equal(app.ready,true);assert.equal(app.world,world);assert.equal(app.weaponsHud,weapons);
+  assert.equal(h.calls.worlds,1);assert.equal(h.calls.weaponAssets,1);
+  const startup=app.resourceLoadingSnapshot().startup;
+  assert.equal(startup.entryMode,'automatic');assert.notEqual(startup.dataReadyMs,null);assert.notEqual(startup.total.dataReadyMs,null);
+  for(const field of ['startPageMs','startRequestedMs','remainingWaitMs'])assert.equal(startup[field],null,field);
+  assert.equal(startup.startRequested,false);assert.equal(startup.waitingForStart,false);
+  assert.equal(startup.total.startPageMs,null);assert.equal(startup.total.startRequestedMs,null);
   for(const name of app.startupModules)assert.equal(app.resourceModules.isViewReady(name),true,name);
   assert.ok(app.dailyCheckEntry);assert.equal(h.calls.dailyCheckEntryAssets,0,'startup reuses the full panel entry assets');
   assert.deepEqual(admissions,required);assert.equal(overlap,true,'next panel resources start before the current view is ready');
@@ -678,6 +1505,35 @@ test('initialization constructs every unlocked panel through update frames befor
   assert.ok(app.resourceLoadingSnapshot().trace.events.some(event=>event.phase==='initialBinding'));
   assert.ok(bindings>=app.startupModules.length);assert.equal(app.startupInputBlock,undefined);
   assert.equal(app.weaponsHud.collectionReady,undefined,'heavy collection is excluded from the initial barrier');
+  const opened=app.openFeature('weapons');assert.equal(app.weaponsHud.isOpen,true,'prepared panel opens in the input event');await opened;
+  app.onDestroy();
+});
+
+test('automatic startup waits for slow core and required panels, stays blocked while hidden and enters once after resume',async()=>{
+  const core=deferred(),panel=deferred();
+  const h=bootstrapHarness({manualStartup:true,artWait:core.promise,settingsLoad:()=>panel.promise});
+  const app=h.create(),started=app.start();
+  for(let frame=0;frame<80&&!app.startupEntryReady;frame++)await new Promise(setImmediate);
+  assert.equal(app.startupEntryReady,true);assert.equal(app.preparationReady,false);assert.equal(h.calls.worlds,0);
+  const cover=app.startupInputBlock;
+  assert.equal(cover.getChildByName('StartGameButton'),undefined);
+  for(const [width,height] of [[720,1280],[360,800],[428,951]]){
+    app.resizeStartupScreen(width,height);
+    assert.equal(cover.getChildByName('StartGameButton'),undefined);
+    assert.deepEqual(cover.getComponent(h.cc.UITransform).contentSize,{width,height});
+  }
+  cover.emit(h.cc.Node.EventType.TOUCH_END,{});cover.emit(h.cc.Node.EventType.TOUCH_END,{});
+  assert.equal(app.ready,false);assert.equal(h.calls.worlds,0,'touches cannot bypass slow core resources');
+  const session=app.session;core.resolve();await reachStartupPreparation(app);
+  for(let frame=0;frame<30;frame++){app.update(1/60);await new Promise(setImmediate);}
+  assert.equal(h.calls.settingsAssets,1);assert.equal(app.ready,false);assert.equal(app.resourceModules.isViewReady('settings'),false);
+  app.onHide();panel.resolve({});await new Promise(setImmediate);app.update(0);
+  assert.equal(app.ready,false,'completion while hidden cannot automatically enter the game');
+  app.onShow();
+  for(let frame=0;frame<200&&!app.ready;frame++){app.update(1/60);await new Promise(setImmediate);}
+  await started;assert.equal(app.ready,true);assert.equal(app.session,session);
+  assert.equal(h.calls.worlds,1);assert.equal(h.calls.settingsAssets,1);assert.equal(app.resourceModules.isViewReady('settings'),true);
+  assert.equal(cover.isValid,false);assert.equal(app.startupInputBlock,undefined);
   app.onDestroy();
 });
 
@@ -971,10 +1827,11 @@ test('Bootstrap disposed during the initial asset await ignores both late succes
     const started = app.start(), loading = app.loading;
     for (let i = 0; i < 12 && !h.calls.art; i++) await Promise.resolve();
     assert.ok(h.calls.art, 'dispose while the intended main asset promise is pending');
+    const mapsBeforeDispose=h.calls.maps;
     app.onDestroy();
     if (fail) pending.reject(new Error('late load error')); else pending.resolve();
     await started;
-    assert.equal(h.calls.worlds, 0); assert.equal(h.calls.maps, 0, 'dependent map load never starts after disposal');
+    assert.equal(h.calls.worlds, 0); assert.equal(h.calls.maps, mapsBeforeDispose, 'late base art cannot start new map work after disposal');
     assert.equal(h.calls.feedback, 1, 'independent groups start alongside base art'); assert.equal(h.errors.length, 0);
     assert.equal(loading.isValid, false); assert.equal(h.cc.game.listeners.length, 0); assert.equal(h.cc.view.listeners.length, 0);
     assert.equal(app.ready, false);
@@ -1246,7 +2103,7 @@ test('startup reports core asset progress followed by interface preparation', as
   h.calls.art.onAssetLoaded(22); assert.match(label.string, /资源已完成 22 项/);
   assert.match(label.string, /模块已完成 13\/14/, 'individual asset completions do not inflate module count');
   feedback.resolve({}); await started;
-  assert.match(label.string, /正在准备.*界面/);
+  assert.match(label.string, /准备就绪，正在进入游戏/);
   assert.equal(h.calls.art.onAssetLoaded, undefined);
   assert.equal(h.calls.settingsAssets, 1); assert.equal(app.ready, true);assert.equal(app.resourceModules.isViewReady('settings'),true);
   assert.equal(app.startupProgress, undefined);
@@ -1776,7 +2633,7 @@ test('tutorial and first challenge win reveal lightweight skin and rebirth entri
 test('Boss and Raid lightweight entries and loaded HUDs use the same tutorial gate', async () => {
   const saved=rebirthStorage(),data=JSON.parse(saved.data.get(saved.key));
   data.progress={stageIndex:39,waveIndex:0};data.weapons.stageValueMax=390;
-  data.content={challengeUnlocked:true,weaponsUnlocked:true,firstDrawGranted:true};data.tutorial={step:'gunOpen'};
+  data.content={challengeUnlocked:true,weaponsUnlocked:true,firstDrawGranted:true};data.tutorial={step:'gunOpen',drawCount:0};
   saved.data.set(saved.key,JSON.stringify(data));
   const h=bootstrapHarness({storage:saved.storage,deferHiddenHuds:true}),app=h.create();await app.start();
   await Promise.all(Array.from(app.entryRequests.values()));
@@ -1791,7 +2648,7 @@ test('Boss and Raid lightweight entries and loaded HUDs use the same tutorial ga
     await drainPreparation(app, app.loadDeferredHud(name));app.syncModalState();
     assert.equal(app.getFeature(name).entryVisible,true);assert.equal(app.featureEntries.get(name).node.active,false);
   }
-  app.session.tutorial.restore({step:'gunOpen'});app.syncModalState();
+  app.session.tutorial.restore({step:'gunOpen',drawCount:0});app.syncModalState();
   for(const name of ['boss','raid'])assert.equal(app.getFeature(name).entryVisible,false);
   assert.equal(app.session.startBoss().ok,false);assert.equal(app.session.openRaid().ok,false);
   app.onDestroy();
@@ -1800,11 +2657,11 @@ test('Boss and Raid lightweight entries and loaded HUDs use the same tutorial ga
 test('a Boss or Raid panel finishing its load rechecks tutorial access before opening', async () => {
   for(const name of ['boss','raid']) {
     const saved=rebirthStorage(),data=JSON.parse(saved.data.get(saved.key));
-    data.progress={stageIndex:39,waveIndex:0};data.weapons.stageValueMax=390;data.tutorial={step:'done'};
+    data.progress={stageIndex:39,waveIndex:0};data.weapons.stageValueMax=390;data.tutorial={step:'done',drawCount:0};
     saved.data.set(saved.key,JSON.stringify(data));
     const pending=deferred(),h=bootstrapHarness({storage:saved.storage,deferHiddenHuds:true,[name+'Load']:()=>pending.promise});
     const app=h.create();await app.start();const opened=app.openFeature(name);
-    app.session.tutorial.restore({step:'gunOpen'});pending.resolve({});await drainPreparation(app, opened);
+    app.session.tutorial.restore({step:'gunOpen',drawCount:0});pending.resolve({});await drainPreparation(app, opened);
     assert.equal(app.getFeature(name).isOpen,false);assert.equal(app.getFeature(name).entryVisible,false);
     assert.equal(app.openingFeature,undefined);assert.equal(app.hud.modalOpen,false);app.onDestroy();
   }
@@ -1947,8 +2804,11 @@ test('Bootstrap owns partial HUD nodes even when the GameHud constructor throws 
   assert.ok(hudRoot); assert.ok(hudRoot.children.length > 0, 'failure must leave a partially constructed HUD to clean up');
   const cover=app.startupInputBlock;
   assert.ok(cover?.isValid,'startup failure retains its opaque retry page');
-  const owned = h.nodes.filter(node => node !== app.node && node.name !== 'Camera' && node !== app.loading && node !== cover);
+  const belongsToCover=node=>node===cover||!!(node.parent&&belongsToCover(node.parent));
+  const owned = h.nodes.filter(node => node !== app.node && node.name !== 'Camera' && !belongsToCover(node));
   for (const node of owned) { assert.equal(node.isValid, false, node.name); assert.equal(node.destroyCalls, 1, node.name); }
+  assert.equal(cover.getChildByName('StartGameButton'),undefined,'failure retains only the retry page');
+  assert.equal(app.startupEntryReady,false);
   assert.equal(h.calls.battlefieldDestroyed, 1); assert.equal(h.calls.colorsDestroyed, 1);
   assert.equal(app.world.paused, true); assert.equal(app.world.provider, null);
   assert.match(app.loading.getComponent(h.cc.Label).string, /资源加载失败：创建战场\n.*HUD image failure\n点击这里重试/);
@@ -2419,8 +3279,15 @@ test('All ten map borders stay resident while the camera moves; mode and battlef
   const map = new OriginalMapView(art, definition, artModule.makeNode('World'));
   const borders = map.spriteItems.filter(item => item.asset !== 'ground');
   const strip = borders.map(item => item.node);
+  const appearances = new Map(borders.map(item => {
+    const sprite = item.node.getComponent(cc.Sprite);
+    return [item.node, { color: sprite.color, material: sprite.customMaterial }];
+  }));
   assert.equal(strip.length, 48); assert.equal(map.fillItems.length, 24);
+  assert.ok(borders.every(item => !item.node.getComponent(cc.Sprite).mapBorderMesh),
+    'the unchanged initial skin retains the ordinary sprite geometry');
   const nodeCount = nodes.length;
+  const meshes = new Set();
   let visibilityChanges = 0;
   for (const node of strip) {
     let active = node.active;
@@ -2440,8 +3307,25 @@ test('All ten map borders stay resident while the camera moves; mode and battlef
       }
     }
     for (const item of borders) {
-      assert.equal(item.node.getComponent(cc.Sprite).spriteFrame,
+      const sprite = item.node.getComponent(cc.Sprite), mesh = sprite.mapBorderMesh;
+      assert.equal(sprite.spriteFrame,
         art.frames.get(definition.skins[skinIndex].sprites[item.asset].path));
+      assert.equal(sprite.color, appearances.get(item.node).color, 'seam projection preserves the authored wall tint');
+      assert.equal(sprite.customMaterial, appearances.get(item.node).material, 'seam projection retains the shared wall material');
+      assert.equal(!!mesh, skinIndex > 0 && item.asset === 'borderUp',
+        `skin ${skinIndex}: only the upper wall needs a persistent seam mesh`);
+      if (mesh) {
+        meshes.add(mesh); assert.ok(mesh.updates > 0);
+        const spec = definition.skins[skinIndex].sprites[item.asset];
+        const bent = mesh.geometry.positions.some((point, index) =>
+          Math.abs(point[1] - (mesh.geometry.uv[index][1] - spec.anchor[1]) * spec.sizeUnits[1]) > 1e-8);
+        assert.equal(bent, [1, 6, 9].includes(skinIndex),
+          `skin ${skinIndex}: corrected and ordinary skins must replace the previous deformation`);
+      }
+      assert.deepEqual(item.node.position, { x: item.basis.position[0], y: item.basis.position[1], z: 0 },
+        'updating projected mesh data must restore the authored map position');
+      assert.ok(Math.abs(item.node.scale.x - Math.hypot(...item.basis.axisX)) < 1e-10);
+      assert.ok(Math.abs(item.node.scale.y - Math.hypot(...item.basis.axisY)) < 1e-10);
     }
     for (const upper of borders.filter(item => item.asset === 'borderUp')) {
       for (const lower of borders.filter(item => item.asset === 'borderDown')) {
@@ -2456,6 +3340,7 @@ test('All ten map borders stay resident while the camera moves; mode and battlef
     'resident borders use two contiguous texture groups');
   assert.equal(visibilityChanges, 0, 'camera movement and skin changes never recycle border render data');
   assert.equal(nodes.length, nodeCount, 'the same finite strip is reused across every stage');
+  assert.equal(meshes.size, 24, 'skin changes reuse one mesh for each upper wall');
   map.updateCamera({ x: 1e6, y: 1e6 }, 1, 1);
   assert.equal(map.spriteItems.find(item => item.asset === 'ground').node.active, false, 'ground still uses camera culling');
   assert.ok(map.fillItems.every(item => !item.graphics.node.active), 'offscreen fills still use camera culling');
@@ -2468,6 +3353,29 @@ test('All ten map borders stay resident while the camera moves; mode and battlef
   map.setBattlefield({ skinIndex: 6, mapLayout: 'main', mapOrigin: { x: 5, z: 10 } });
   map.updateCamera(camera, 22.5);
   assert.ok(strip.every(node => node.active), 'returning from challenge restores the whole strip');
+  const offset = core.projectWorld({ x: 5, z: 10 });
+  for (const item of borders) assert.deepEqual(item.node.position,
+    { x: item.basis.position[0] + offset.x, y: item.basis.position[1] + offset.y, z: 0 },
+    'corrected borders follow the map origin when returning from an arena');
+  for (const mode of ['raid', 'boss', 'hunt', 'mine']) {
+    const visuals = require(`../assets/resources/art/${mode}-system/visuals.json`);
+    art.catalog[mode] = visuals;
+    const texture = new cc.Texture2D(), frame = new cc.SpriteFrame();
+    [texture.width, texture.height] = visuals.ground.sizePx;
+    frame.texture = texture; frame.rotated = false;
+    frame.rect = { x: 0, y: 0, width: texture.width, height: texture.height };
+    art.frames.set(visuals.ground.path, frame);
+    map.setBattlefield({ skinIndex: 1, mapLayout: mode, mapOrigin: { x: -100, z: 0 } });
+    assert.ok(strip.every(node => !node.active), `${mode} hides corrected main-map walls`);
+    assert.equal(map.spriteItems[0].node.getComponent(cc.Sprite).spriteFrame, frame);
+    assert.equal(map.spriteItems[0].node.getComponent(cc.Sprite).mapBorderMesh, undefined,
+      `${mode} keeps the existing repeating ground renderer`);
+    map.setBattlefield({ skinIndex: 9, mapLayout: 'main' });
+    assert.ok(strip.every(node => node.active), `${mode} restores corrected main-map walls`);
+    for (const item of borders.filter(item => item.asset === 'borderUp')) {
+      assert.ok(meshes.has(item.node.getComponent(cc.Sprite).mapBorderMesh));
+    }
+  }
   map.setBattlefieldActive(false);
   map.setStage(7); map.updateCamera(camera, 18);
   assert.ok(map.visibleItems.every(item => !item.node.active), 'hidden battlefields stay hidden after skin/camera changes');
@@ -2588,9 +3496,9 @@ function rebirthStorage() {
   for (const slot of [1, 2]) { assert.equal(weapons.grantTestWeapon(slot).ok, true); assert.equal(weapons.equip(0, slot).ok, true); }
   weapons.configureTest({ stageValueMax: 100, starLevels: [1, 2, 3], diamonds: 1234, starGems: 567 });
   saved.weapons = weapons.serialize(); saved.progress = { stageIndex: 2, waveIndex: 0 };
-  saved.money = { digits: '1234575', exponent: -2 }; saved.levels = [2, 3, 4];
-  saved.rebirth = { ruby: { digits: '0', exponent: 0, precision: 1 }, levels: [1, 2, 3], count: 7, adUsedDate: '' };
-  saved.tutorial = { step: 'done' }; saved.speedRun.stage = 1;
+  saved.money = { digits: '1234575', exponent: -2, precision: 7 }; saved.levels = [2, 3, 4];
+  saved.rebirth = { ...saved.rebirth, ruby: { digits: '0', exponent: 0, precision: 1 }, levels: [1, 2, 3], count: 7, adUsedDate: '' };
+  saved.tutorial = { step: 'done', drawCount: 0 }; saved.speedRun.stage = 1;
   data.set(key, JSON.stringify(saved)); writes.length = 0;
   return { storage, data, writes, key, BattleSession };
 }
@@ -2915,14 +3823,19 @@ async function waitForOfflineRetry(app) {
   assert.equal(typeof app.cancelOfflineRetry, 'function', 'startup exposes the same-session persistence retry');
 }
 
-test('offline startup saves the final economy before loading or constructing the resumed world', async () => {
+test('offline startup prewarms fixed assets but saves the final economy before loading or constructing the resumed world', async () => {
   const saved = offlineBootStorage(), pending = deferred();
   const h = bootstrapHarness({ storage: saved.storage, sessionNow: () => OFFLINE_BOOT_NOW,
     deferHiddenHuds: true, feedbackWait: pending.promise }), app = h.create();
   const started = app.start(); await h.feedbackEntered;
+  // Fixed feedback now starts independently of offline settlement. The data
+  // barrier, rather than a resource callback, certifies the resumed snapshot.
+  for(let count=0;count<200&&!app.startupEntryReady;count++)await new Promise(resolve=>setTimeout(resolve,1));
+  assert.equal(app.startupEntryReady,true,'offline settlement reaches its durable data barrier');
   assert.equal(h.calls.worlds, 0); assert.equal(app.session.offlineInitializationPending, false);
   assert.ok(saved.writes.length > 0);
   const result = app.session.offlineResult, durable = JSON.parse(saved.data.get(saved.key));
+  assert.equal(h.calls.initialMapStage,result.stageIndex,'map selection uses the settled position');
   assert.deepEqual(durable.money, result.moneyFinal.toJSON());
   assert.deepEqual(durable.levels, result.levels);
   assert.deepEqual(durable.progress, { stageIndex: result.stageIndex, waveIndex: result.waveIndex });
@@ -2986,6 +3899,8 @@ test('offline persistence failure retries the existing session before world crea
     const h = bootstrapHarness({ storage: saved.storage, sessionNow: () => OFFLINE_BOOT_NOW, deferHiddenHuds: true }), app = h.create();
     const started = app.start(); await waitForOfflineRetry(app); const session = app.session;
     assert.equal(h.calls.worlds, 0); assert.equal(app.ready, false); assert.equal(saved.writes.length, 0);
+    assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);assert.equal(h.calls.maps,0);
+    assert.equal(app.resourceLoadingSnapshot().startup.timeline.phases.offline.failed,1);
     assert.match(app.loading.getComponent(h.cc.Label).string, /离线进度保存失败.*\n点击这里重试/);
     if (teardown) {
       app.onDestroy(); await started; assert.equal(h.calls.worlds, 0); assert.equal(app.cancelOfflineRetry, undefined);
@@ -2994,6 +3909,9 @@ test('offline persistence failure retries the existing session before world crea
       fail = false; app.loading.emit(h.cc.Node.EventType.TOUCH_END); await started; await drainPreparation(app, app.offlineHudRequest);
       assert.equal(app.session, session); assert.equal(h.cc.director.loads.length, 0);
       assert.equal(app.ready, true); assert.equal(h.calls.worlds, 1); assert.equal(app.offlineHud.isOpen, true);
+      const offlineTiming=app.resourceLoadingSnapshot().startup.timeline.phases.offline;
+      assert.equal(offlineTiming.attempts,2);assert.equal(offlineTiming.failed,1);assert.equal(offlineTiming.succeeded,1);
+      assert.equal(h.calls.artLoads,1);assert.equal(h.calls.feedback,1);
       assert.equal(h.errors.length, 0); app.onDestroy();
     }
   }
@@ -3136,7 +4054,7 @@ test('daily asset failure preserves launch intent, manual retry reuses one loade
     assert.equal(app.dailyCheckOpening, true); assert.equal(h.calls.dailyCheckAssets, 1);
     if (stop === 'background') app.onHide();
     else if (stop === 'mode') { app.session.setMode('Mine'); app.syncModalState(); }
-    else if (stop === 'tutorial') { app.session.tutorial.restore({ step: 'upgrade' }); app.syncModalState(); }
+    else if (stop === 'tutorial') { app.session.tutorial.restore({ step: 'upgrade', drawCount: 0 }); app.syncModalState(); }
     else app.onDestroy();
     pending.resolve({}); await new Promise(setImmediate);
     if (stop === 'background' || stop === 'mode') {
@@ -3195,13 +4113,13 @@ test('an initialized daily check opens synchronously without a pending state or 
 });
 
 
-test('startup overlaps independent groups while both font and base-art barriers still gate gameplay', async () => {
+test('startup starts the current map alongside independent groups while both font and base-art barriers still gate gameplay', async () => {
   const art = deferred(), font = deferred();
   const h = bootstrapHarness({ artWait: art.promise, startupFontWait: font.promise });
   const app = h.create(), started = app.start();
   await new Promise(setImmediate);
   assert.equal(h.calls.feedback, 1); assert.equal(h.calls.hudAssets, 1);
-  assert.deepEqual(h.calls.initialWeaponIds, [0]); assert.equal(h.calls.maps, 0);
+  assert.deepEqual(h.calls.initialWeaponIds, [0]); assert.equal(h.calls.maps, 1,'map preparation no longer waits for full base art');
   assert.equal(h.calls.worlds, 0); assert.equal(app.ready, false);
   art.resolve(); await new Promise(setImmediate);
   assert.equal(h.calls.maps, 1); assert.equal(h.calls.worlds, 0); assert.equal(app.ready, false);

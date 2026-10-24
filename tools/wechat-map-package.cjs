@@ -2,29 +2,86 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { collectNativeFiles } = require('./lib/bundle-native-files.cjs');
+const { collectNativeFiles, decodeUuid } = require('./lib/bundle-native-files.cjs');
+
+function compiledMapConfig(input, config, assetPath, matches) {
+  const item = Object.entries(config.paths).find(([, value]) => value[0] === assetPath && config.types[value[1]] === 'cc.JsonAsset');
+  if (!item) throw new Error('Missing compiled map config: ' + assetPath);
+  const pack = Object.entries(config.packs || {}).find(([, indices]) => indices.includes(Number(item[0])));
+  const uuid = pack ? pack[0] : decodeUuid(config.uuids[Number(item[0])]);
+  const directory = path.join(input, 'remote/resources/import', uuid.slice(0, 2));
+  const files = fs.readdirSync(directory).filter(name => name.startsWith(uuid + '.') && name.endsWith('.json'));
+  if (files.length !== 1) throw new Error('Ambiguous map config import: ' + assetPath);
+  const found = [];
+  const visit = value => {
+    if (!value || typeof value !== 'object') return;
+    if (matches(value)) found.push(value);
+    else Object.values(value).forEach(visit);
+  };
+  visit(JSON.parse(fs.readFileSync(path.join(directory, files[0]), 'utf8')));
+  if (found.length !== 1) throw new Error('Invalid compiled map config: ' + assetPath);
+  return found[0];
+}
 
 function packageMapResources(input, code, config, base, evidencePath) {
   const roots = Object.values(config.paths).filter(p => config.types[p[1]] === 'cc.SpriteFrame'
     && /^art\/(maps\/forest|stages)\//.test(p[0])).map(p => 'cc.SpriteFrame:' + p[0]);
   if (!roots.length) throw new Error('No map sprite frames found');
-  const groups = new Map([['common', []]]);
-  for (const root of roots) {
-    const map = /art\/stages\/maps\/(\d+)(?:\/|$)/.exec(root), tree = /art\/stages\/trees\/(\d+)(?:\/|$)/.exec(root);
-    const group = map ? map[1] : tree ? String(Math.floor(Number(tree[1]) / 4)) : 'common';
-    if (!groups.has(group)) groups.set(group, []);
-    groups.get(group).push(root);
+  const map = compiledMapConfig(input, config, 'art/maps/forest/map', value => value.version === 1
+    && value.sprites && value.ground && Array.isArray(value.borders));
+  const stages = compiledMapConfig(input, config, 'art/stages/config', value => value.version === 1
+    && Array.isArray(value.skins) && Array.isArray(value.treeSprites));
+  if (stages.skins.length !== 10 || stages.treeSprites.length !== 40 || !stages.normal?.healthBar || !stages.boss?.healthBar) {
+    throw new Error('Invalid original stage assets');
   }
+  const available = new Set(Object.values(config.paths).filter(value => config.types[value[1]] === 'cc.SpriteFrame')
+    .map(value => 'cc.SpriteFrame:' + value[0]));
+  const groups = new Map(), referenced = new Set();
+  const add = (name, frames) => {
+    const paths = frames.map(frame => {
+      const root = frame && 'cc.SpriteFrame:' + frame.path + '/spriteFrame';
+      if (!available.has(root)) throw new Error('Missing map asset: ' + root);
+      referenced.add(root); return root;
+    });
+    groups.set(name, paths);
+  };
+  // Follow OriginalMapView.stageFrames, not authoring folder names: a stage can
+  // replace its trees and theme while keeping older exports in resources.
+  add('common', [...Object.values(map.sprites), stages.normal.healthBar.background, stages.normal.healthBar.fill,
+    stages.boss.healthBar.background, stages.boss.healthBar.fill, ...(stages.boss.sparkles ? [stages.boss.sparkles.image] : [])]);
+  for (let stage = 0; stage < stages.skins.length; stage++) {
+    const skin = stages.skins[stage];
+    if (!skin?.sprites || Array.isArray(skin.sprites)) throw new Error('Invalid stage sprites: ' + stage);
+    add(String(stage), [...Object.values(skin.sprites), ...stages.treeSprites.slice(stage * 4, stage * 4 + 4)]);
+  }
+  // Keep retired themes separate from older flat exports: the old stage-zero
+  // ground is still used by hunt/mine, and must not pull an unused harvest theme.
+  const legacyGroups = new Map();
+  for (const root of roots.filter(root => !referenced.has(root))) {
+    const asset = root.slice('cc.SpriteFrame:'.length).replace(/\/spriteFrame$/, '');
+    const tree = /^art\/stages\/trees\/(\d+)$/.exec(asset);
+    const key = tree ? 'trees/' + Math.floor(Number(tree[1]) / 4) : asset.slice(0, asset.lastIndexOf('/'));
+    if (!legacyGroups.has(key)) legacyGroups.set(key, []);
+    legacyGroups.get(key).push(root);
+  }
+  Array.from(legacyGroups).sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([, paths], index) => groups.set('legacy-' + index, paths));
+  const mapFiles = new Set(collectNativeFiles(input, config, roots));
   // Creator can atlas frames from multiple stages into one texture. Such native
-  // dependencies belong in common, so any stage pulls them only once.
+  // dependencies belong in common. Keep this hook's existing map inventory;
+  // deduplicated HUD images outside it retain the feature resource hook.
   const owners = new Map();
   for (const [group, paths] of groups) for (const file of collectNativeFiles(input, config, paths)) {
+    if (!mapFiles.has(file)) continue;
     if (!owners.has(file)) owners.set(file, new Set());
     owners.get(file).add(group);
   }
   const grouped = new Map();
   for (const [file, uses] of owners) {
-    const group = uses.size > 1 || uses.has('common') ? 'common' : Array.from(uses)[0];
+    // An unused alias is not an active consumer of a shared native texture.
+    const active = Array.from(uses).filter(name => !name.startsWith('legacy-'));
+    const group = active.length ? active.length > 1 || active.includes('common') ? 'common' : active[0]
+      : uses.size > 1 ? 'legacy' : Array.from(uses)[0];
     if (!grouped.has(group)) grouped.set(group, []);
     grouped.get(group).push(file);
   }
@@ -32,7 +89,8 @@ function packageMapResources(input, code, config, base, evidencePath) {
   const index = { version: 1, base, files: {} }, packages = [];
   const limit = 3 * 1024 * 1024;
   const script = '// Original map images. Loaded through wx.loadSubpackage.\n';
-  for (const [group, groupFiles] of Array.from(grouped).sort(([a],[b]) => a === 'common' ? -1 : b === 'common' ? 1 : Number(a)-Number(b))) {
+  const order = name => name === 'common' ? -1 : name.startsWith('legacy') ? 10 : Number(name);
+  for (const [group, groupFiles] of Array.from(grouped).sort(([a],[b]) => order(a)-order(b) || a.localeCompare(b))) {
   let current, part = 0;
   for (const remote of groupFiles.sort()) {
     if (!/^remote\/resources\/native\/[0-9a-f]{2}\/[0-9a-f-]+\.[0-9a-f]+\.png$/.test(remote)) {
@@ -69,7 +127,7 @@ function packageMapResources(input, code, config, base, evidencePath) {
   const marker = "require('./startup-metadata').installStartupMetadata(cc);";
   if (entry.split(marker).length !== 2) throw new Error('Missing unique startup metadata hook');
   fs.writeFileSync(entryPath, entry.replace(marker, marker + "\n        require('./startup-maps').installMapResources(cc);"));
-  return { files: files.length, imageBytes: packages.reduce((sum, p) => sum + p.bytes - Buffer.byteLength(script), 0),
+  return { files: files.length, nativeFiles: files, imageBytes: packages.reduce((sum, p) => sum + p.bytes - Buffer.byteLength(script), 0),
     packages, indexSha256: crypto.createHash('sha256').update(JSON.stringify(index)).digest('hex'), remoteFilesUnchanged: true };
 }
 

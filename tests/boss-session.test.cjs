@@ -110,19 +110,22 @@ test('failure and voluntary exit give unlimited free retries and invalidate old 
   }
 });
 
-test('Boss preserves independent stage through rebirth and isolates legacy or damaged optional save blocks', () => {
+test('Boss preserves its stage through rebirth and prevents overwriting missing or damaged saves', () => {
   const f = fixture(); f.session.configureBossTest({ stage: 12 });
   f.session.configureProgressionTest({ stageIndex: 2, stageValueMax: 90 });
   assert.equal(f.session.requestRebirth('normal').ok, true); assert.equal(f.session.startBoss().reason, 'busy');
   f.session.advanceRebirth(2); assert.equal(f.session.getBossState().stage, 12);
   assert.equal(f.restore().getBossState().stage, 12);
-  const saved = JSON.parse(f.data.get(f.key)); saved.money = D.from(1234); saved.weapons.diamonds = 5678;
+  const saved = JSON.parse(f.data.get(f.key)); saved.money = { digits: '1234', exponent: 0, precision: 4 }; saved.weapons.diamonds = 5678;
   for (const boss of [undefined, null, { stage: -1 }, { stage: .5 }, { stage: Number.MAX_SAFE_INTEGER }, { stage: '2' }]) {
     f.data.set(f.key, JSON.stringify({ ...saved, boss })); const warning = console.warn; console.warn = () => {};
     let restored; try { restored = f.restore(); } finally { console.warn = warning; }
-    assert.equal(restored.getBossState().stage, 0); assert.equal(restored.moneyBalance.toNumber(), 1234);
-    assert.equal(restored.weapons.diamonds, 5678); assert.equal(restored.getRebirthState().count, 1);
-    assert.equal(restored.weapons.stageValueMax, 90);
+    const raw = f.data.get(f.key); assert.equal(restored.persistenceBlocked, true); assert.equal(restored.getBossState().stage, 0);
+    if (boss !== undefined) {
+      assert.equal(restored.moneyBalance.toNumber(), 1234); assert.equal(restored.weapons.diamonds, 5678);
+      assert.equal(restored.getRebirthState().count, 1); assert.equal(restored.weapons.stageValueMax, 90);
+    }
+    restored.save(); assert.equal(f.data.get(f.key), raw);
   }
 });
 

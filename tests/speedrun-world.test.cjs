@@ -192,7 +192,7 @@ test('arena map origin moves ground geometry once, keeps shadows absolute and re
   class Sprite {} class UITransform {}
   class Vec4 { constructor(...values) { this.values = values; } }
   const context = { exports: {}, require: id => id === 'cc' ? { Sprite, UITransform, Vec4 } :
-    id === '../core' ? core : id === './ArtLibrary' ? {} :
+    id === '../core' ? core : ['./ArtLibrary', './MapBorderGeometry', './OriginalParticleMesh'].includes(id) ? {} :
       id === './ResourceBatch' ? require('./support/resource-modules.cjs').resourceModules()('ResourceBatch') : require(id) };
   const source = fs.readFileSync(path.join(__dirname, '../assets/scripts/view/OriginalMapView.ts'), 'utf8');
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2018 } }).outputText, context);

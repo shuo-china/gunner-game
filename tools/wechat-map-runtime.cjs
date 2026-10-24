@@ -22,7 +22,7 @@ function installMapResources(cc) {
   for (const remote of Object.keys(index.files)) {
     const item = index.files[remote];
     if (!/^remote\/resources\/native\/[0-9a-f]{2}\/[0-9a-f-]+\.[0-9a-f]+\.png$/.test(remote)
-      || !item || !/^forest-map-(?:common|\d+)(?:-\d+)?$/.test(item.package)
+      || !item || !/^forest-map-(?:common|legacy(?:-\d+)?|\d+)(?:-\d+)?$/.test(item.package)
       || item.path !== 'subpackages/' + item.package + '/' + remote.slice('remote/resources/'.length)) return false;
     files[remote] = item;
   }

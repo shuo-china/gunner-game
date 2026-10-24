@@ -1,10 +1,11 @@
 import { Color, gfx, Node, Sprite } from 'cc';
-import { DecimalAmount, projectWorld, TreeState } from '../core';
-import { ArtLibrary, makeNode } from './ArtLibrary';
+import { DecimalAmount, projectWorld, TreeState, unprojectGround, Vec2 } from '../core';
+import { ArtLibrary, ImageSpec, makeNode } from './ArtLibrary';
 import { TreeAppearanceConfig } from './OriginalFeedbackAssets';
 import { originalBounceScale } from './OriginalFeedbackMath';
 import { OriginalTreeAmbient } from './OriginalTreeAmbient';
 import { CAMERA_BASIS } from '../core/projection';
+import { treeHitSurface } from './TreeHitSurface';
 
 /** Tree_0's original Bounce_Custom and SpriteFill, with no invented fall/fade/rotation. */
 export class TreeAppearance {
@@ -28,6 +29,7 @@ export class TreeAppearance {
   private readonly healthFollowsBounce: boolean;
   private readonly ambient?: OriginalTreeAmbient;
   private readonly boundsCenter: [number,number];
+  private readonly spriteSpec: ImageSpec;
 
   constructor(art: ArtLibrary, tree: TreeState, parent: Node, private readonly config: TreeAppearanceConfig, healthParent: Node = parent, healthFillParent: Node = healthParent) {
     const stages = art.catalog.stageTrees;
@@ -41,6 +43,7 @@ export class TreeAppearance {
     const appearance = stages ? {sprite: stages.treeSprites[(tree.stageIndex * 4 + tree.degree) % 40],
       displayScale: stages[tree.degree === 3 ? 'boss' : 'normal'].skinScale} : art.catalog.enemies[key];
     const spriteSpec=appearance.sprite ?? appearance;
+    this.spriteSpec=spriteSpec;
     const propScale = stages ? (spriteSpec.localScale ?? [1, 1]) : [1, 1];
     this.boundsCenter=[(.5-spriteSpec.anchor[0])*spriteSpec.sizeUnits[0],(.5-spriteSpec.anchor[1])*spriteSpec.sizeUnits[1]];
     this.sprite = art.image(key, spriteSpec, this.bounce);
@@ -90,6 +93,18 @@ export class TreeAppearance {
     const s=Math.sin(40*Math.PI/180),c=Math.cos(40*Math.PI/180);
     return (this.positionX+Math.SQRT1_2*(x-s*y))*CAMERA_BASIS.forwardX+
       c*y*CAMERA_BASIS.forwardY+(this.positionZ+Math.SQRT1_2*(x+s*y))*CAMERA_BASIS.forwardZ;
+  }
+
+  /** Match effects to the current painted silhouette, including its hit bounce. */
+  impactPosition(position: Vec2, height: number): Vec2 {
+    const origin = projectWorld({ x: this.positionX, z: this.positionZ });
+    const bx = this.bounce.scale.x, by = this.bounce.scale.y * this.config.projectionScaleY;
+    origin.x += this.sprite.position.x * bx; origin.y += this.sprite.position.y * by;
+    const angle = this.sprite.angle * Math.PI / 180, cs = Math.cos(angle), sn = Math.sin(angle);
+    const point = treeHitSurface(projectWorld(position, height), this.spriteSpec, origin,
+      { x: cs * this.sprite.scale.x * bx, y: sn * this.sprite.scale.x * by },
+      { x: -sn * this.sprite.scale.y * bx, y: cs * this.sprite.scale.y * by });
+    return unprojectGround({ x: point.x, y: point.y - CAMERA_BASIS.upY * height });
   }
 
   hit(): void {

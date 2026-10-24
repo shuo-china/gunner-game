@@ -35,7 +35,7 @@ export interface SettingsHudAssets extends WeaponHudAssets { config: SettingsUiC
 export interface SettingsHudCallbacks {
   getState(): SettingsState;
   toggleBgm(): void; toggleSound(): void;
-  redeemCode(code: string): RedeemCodeResult;
+  redeemCode(code: string): RedeemCodeResult | Promise<RedeemCodeResult>;
   onBeforeOpen?(): void; onVisibilityChanged?(visible: boolean): void;
   alert?(text: string): void; playSfx?(id: number): void;
 }
@@ -80,6 +80,7 @@ export class SettingsHud {
   private styledWebInput: HTMLInputElement | HTMLTextAreaElement | null = null;
   private webInputStyleKey = '';
   private destroyed = false;
+  private redeemPending = false;
 
   constructor(parent: Node, art: ArtLibrary, private readonly assets: SettingsHudAssets,
     private readonly callbacks: SettingsHudCallbacks, presentation?: SkinHudPresentation, prepare?: UiPreparation) {
@@ -159,17 +160,44 @@ export class SettingsHud {
     this.cancelInteractions(); this.roots.get('redeem')!.active = false; this.colors?.invalidate();
   }
   submitRedeem(): void {
-    if (!this.isRedeemOpen) return;
+    if (!this.isRedeemOpen || this.redeemPending) return;
     this.input.blur(); this.syncInput();
-    const result = this.callbacks.redeemCode(this.input.string), messages = this.assets.config.input;
+    const code = this.input.string;
+    this.setRedeemPending(true);
+    try {
+      const result = this.callbacks.redeemCode(code);
+      if ('then' in result) {
+        void result.then(value => this.finishRedeem(code, value), () => this.failRedeem());
+      } else this.finishRedeem(code, result);
+    } catch { this.failRedeem(); }
+  }
+  private setRedeemPending(value: boolean): void {
+    this.redeemPending = value;
+    if (this.destroyed) return;
+    for (const [node, tint] of this.tints) {
+      if (tint.spec.button?.some(action => action.method === 'Redeem')) this.setTint(node);
+    }
+    this.colors?.invalidate();
+  }
+  private failRedeem(): void {
+    this.setRedeemPending(false);
+    if (this.destroyed) return;
+    this.callbacks.alert?.('兑换核验失败，请检查网络后重试。');
+  }
+  private finishRedeem(code: string, result: RedeemCodeResult): void {
+    this.setRedeemPending(false);
+    if (this.destroyed) return;
+    const messages = this.assets.config.input;
     if (result.ok) {
       // Source Redeem_UI: shared reward alert, clear input, Purchase SFX; keep both panels open.
       this.callbacks.alert?.(messages.successMessage.replace(/\{0\}/g, String(result.diamonds)));
-      this.input.string = ''; this.syncInput(); this.colors?.invalidate();
+      // The user may have entered another code while server verification was pending.
+      if (this.input.string === code) { this.input.string = ''; this.syncInput(); this.colors?.invalidate(); }
       this.callbacks.playSfx?.(7);
     } else {
-      const message = { invalidCode: messages.invalidMessage, alreadyUsed: messages.alreadyUsedMessage,
-        saveFailed: messages.saveFailedMessage, walletLimit: messages.walletLimitMessage }[result.reason];
+      const failureMessages: Record<string, string> = { invalidCode: messages.invalidMessage, alreadyUsed: messages.alreadyUsedMessage,
+        saveFailed: messages.saveFailedMessage, walletLimit: messages.walletLimitMessage };
+      const message = result.message || failureMessages[result.reason] || '兑换核验失败，请检查网络后重试。';
       this.callbacks.alert?.(message);
     }
   }
@@ -331,7 +359,7 @@ export class SettingsHud {
       event.propagationStopped = true;
       if (this.touches.get(node) !== (event.getID() ?? -1)) return;
       this.touches.delete(node); this.feedback.release(node); this.setTint(node);
-      if (!click || !visibleInHierarchy(node) || !this.front(node) || !this.contains(node, event.getUILocation()) || spec.buttonColors?.interactable === false) return;
+      if (!click || !visibleInHierarchy(node) || !this.front(node) || !this.contains(node, event.getUILocation()) || !this.buttonEnabled(spec)) return;
       for (const action of spec.button!) this.invoke(action.method, action.target, action.arguments);
       if (spec.clickSound !== undefined) this.callbacks.playSfx?.(spec.clickSound);
       this.update(0);
@@ -339,7 +367,7 @@ export class SettingsHud {
     for (const graphic of graphics) {
       graphic.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
         event.propagationStopped = true;
-        if (!visibleInHierarchy(node) || !this.front(node) || this.touches.has(node) || !this.contains(node, event.getUILocation()) || spec.buttonColors?.interactable === false) return;
+        if (!visibleInHierarchy(node) || !this.front(node) || this.touches.has(node) || !this.contains(node, event.getUILocation()) || !this.buttonEnabled(spec)) return;
         this.touches.set(node, event.getID() ?? -1); this.selected = node; this.feedback.press(node, spec); this.setTint(node);
       });
       graphic.on(Node.EventType.TOUCH_END, (event: EventTouch) => finish(event, true));
@@ -363,11 +391,14 @@ export class SettingsHud {
   }
   private setTint(node: Node, immediate = false): void {
     const state = this.tints.get(node), colors = state?.spec.buttonColors; if (!state || !colors) return;
-    const to = colors.interactable === false ? colors.disabled : this.touches.has(node) ? colors.pressed : this.selected === node ? colors.selected : this.hovered.has(node) ? colors.highlighted : colors.normal;
+    const to = !this.buttonEnabled(state.spec) ? colors.disabled : this.touches.has(node) ? colors.pressed : this.selected === node ? colors.selected : this.hovered.has(node) ? colors.highlighted : colors.normal;
     if (!immediate && state.to.every((value, i) => value === to[i])) return;
     if (immediate && !state.duration && state.current.every((value, i) => value === to[i])) return;
     state.from = state.current.slice(); state.to = to.slice(); state.elapsed = 0; state.duration = immediate ? 0 : colors.fadeDuration;
     if (!state.duration) { state.current = state.to.slice(); this.renderTint(state); }
+  }
+  private buttonEnabled(spec: SettingsNode): boolean {
+    return spec.buttonColors?.interactable !== false && !(this.redeemPending && spec.button?.some(action => action.method === 'Redeem'));
   }
   private renderTint(state: ButtonTint): void {
     const colors = state.spec.buttonColors!, base = state.spec.image?.color ?? [255, 255, 255, 255];

@@ -19,7 +19,8 @@ function load(name, imports) {
     } });
   return module.exports;
 }
-const { OriginalMapView } = load('OriginalMapView', { cc: { resources: { load: (key, type, callback) => callback(null, {}) } }, '../core': {}, './ArtLibrary': {} });
+const { OriginalMapView } = load('OriginalMapView', { cc: { resources: { load: (key, type, callback) => callback(null, {}) } },
+  '../core': {}, './ArtLibrary': {}, './MapBorderGeometry': {}, './OriginalParticleMesh': {} });
 const { BattleAssetLoader } = load('BattleAssetLoader', { './ArtLibrary': {}, './OriginalMapView': { OriginalMapView } });
 async function fixture(index = 0) {
   const requests = [], configs = [];
@@ -30,16 +31,79 @@ async function fixture(index = 0) {
   return { art, map, requests, configs, loader: new BattleAssetLoader(art, map) };
 }
 
-test('map startup fetches the saved stage and four matching trees, then explicitly preloads the next stage', async () => {
-  const h = await fixture(7);
-  const mapPaths = h.requests.filter(name => name.startsWith('art/stages/maps/'));
-  assert.ok(mapPaths.length > 0); assert.ok(mapPaths.every(name => name.startsWith('art/stages/maps/7/')));
-  const treePaths = h.requests.filter(name => name.startsWith('art/stages/trees/'));
-  assert.equal(new Set(treePaths).size, 4);
-  assert.ok(treePaths.every(name => /^art\/stages\/trees\/(28|29|30|31)$/.test(name)));
-  assert.equal(h.loader.ready({ skinIndex: 7 }), true); assert.equal(h.loader.ready({ skinIndex: 8 }), false);
-  await h.loader.load({ skinIndex: 8 }); assert.equal(h.loader.ready({ skinIndex: 8 }), true);
-  assert.equal(h.requests.some(name => /^art\/(boss|raid)-system\//.test(name)), false);
+test('map startup fetches the reordered saved stage and matching targets before preloading the next stage', async () => {
+  const stages = json('art/stages/config');
+  for (const index of [0, 7]) {
+    const h = await fixture(index);
+    const paths = h.requests.filter(name => /^art\/stages\/(maps|trees)\//.test(name));
+    const expected = [...Object.values(stages.skins[index].sprites), ...stages.treeSprites.slice(index * 4, index * 4 + 4)].map(spec => spec.path);
+    assert.deepEqual([...new Set(paths)].sort(), [...new Set(expected)].sort());
+    assert.equal(h.loader.ready({ skinIndex: index }), true); assert.equal(h.loader.ready({ skinIndex: index + 1 }), false);
+    await h.loader.load({ skinIndex: index + 1 }); assert.equal(h.loader.ready({ skinIndex: index + 1 }), true);
+    assert.equal(h.requests.some(name => /^art\/(boss|raid)-system\//.test(name)), false);
+  }
+});
+
+test('map startup overlaps delayed base art without scanning other stages or mutating source catalogs', async () => {
+  const { ArtLibrary } = load('ArtLibrary', { cc: {}, './OriginalColorMath': {}, './GameResourceLoader': {} });
+  const sourceCatalog = json('art/catalog'), rigPath = sourceCatalog.characters.cat_basic.rig;
+  for (const blockedPath of ['art/catalog', rigPath]) {
+    let releaseBase, baseReady = false;
+    const blocked = new Promise(resolve => { releaseBase = resolve; });
+    const sources = new Map(), requests = [];
+    const art = new ArtLibrary({
+      loadJson: async name => {
+        if (name === blockedPath) await blocked;
+        if (!sources.has(name)) sources.set(name, json(name));
+        return sources.get(name);
+      },
+      load: async (name, kind) => { requests.push({ name, kind }); return { texture: {} }; },
+    });
+    const runtimeCatalog = art.catalog;
+    const base = art.load().then(() => { baseReady = true; });
+    const map = await OriginalMapView.load(art, 7);
+    assert.equal(baseReady, false, 'saved-stage images finish before delayed base art');
+    assert.equal(art.catalog, runtimeCatalog, 'map uses the stable runtime catalog');
+    assert.equal(art.catalog.stageTrees, sources.get('art/stages/config'));
+    releaseBase(); await base;
+    assert.equal(art.catalog, runtimeCatalog, 'base completion preserves the map catalog owner');
+    assert.equal(art.catalog.stageTrees, sources.get('art/stages/config'));
+    assert.deepEqual(sources.get('art/catalog'), sourceCatalog, 'feedback and stages never change cached base JSON');
+    assert.equal(art.catalog.feedback, sources.get('art/effects/original-feedback'));
+    const stagePaths = requests.filter(item => /^art\/stages\/(maps|trees)\//.test(item.name)).map(item => item.name);
+    const stages = json('art/stages/config');
+    const expected = [...Object.values(stages.skins[7].sprites), ...stages.treeSprites.slice(28, 32)].map(spec => spec.path + '/spriteFrame');
+    assert.deepEqual(stagePaths.sort(), expected.sort(), 'stage eight loads its swapped environment and unchanged ruins targets');
+    assert.ok(OriginalMapView.stageFrames(art, map, 7).every(spec => art.frames.has(spec.path)));
+  }
+});
+
+test('map shader overlaps frame loading and readiness waits for both', async () => {
+  let releaseFrames, releaseEffect, effectStarted = false, ready = false;
+  const frames = new Promise(resolve => { releaseFrames = resolve; });
+  const effect = new Promise(resolve => { releaseEffect = resolve; });
+  const requests = [];
+  const art = { catalog: {}, json: async name => json(name),
+    loadFrame: async name => { requests.push(name); await frames; },
+    resourceLoader: { load: () => { effectStarted = true; return effect; } } };
+  const pending = OriginalMapView.load(art, 3).then(map => { ready = true; return map; });
+  await new Promise(setImmediate);
+  assert.ok(requests.length > 0); assert.equal(effectStarted, true, 'shader starts while the image batch is blocked');
+  assert.equal(ready, false);
+  releaseFrames(); await new Promise(setImmediate); assert.equal(ready, false, 'images alone cannot publish the map');
+  releaseEffect({}); await pending; assert.equal(ready, true);
+});
+
+test('failed map shader rejects readiness and retry reuses downloaded stage frames', async () => {
+  const requests = [], frames = new Map(); let effectLoads = 0;
+  const art = { catalog: {}, json: async name => json(name),
+    loadFrame: async name => { if (!frames.has(name)) { requests.push(name); frames.set(name, {}); } },
+    resourceLoader: { load: async () => { if (++effectLoads === 1) throw Error('floor unavailable'); return {}; } } };
+  await assert.rejects(OriginalMapView.load(art, 7), /floor unavailable/);
+  await new Promise(setImmediate);
+  const firstRequests = requests.length;
+  await OriginalMapView.load(art, 7);
+  assert.equal(effectLoads, 2); assert.equal(requests.length, firstRequests);
 });
 
 test('boss and raid artwork load only when their corresponding encounter is requested', async () => {

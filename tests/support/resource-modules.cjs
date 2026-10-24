@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const { projectPath } = require('./paths.cjs');
 
-const supported = new Set(['ResourceLoadingPolicy', 'ResourceBatch', 'BackgroundPreparationScheduler', 'BackgroundResourceQueue', 'FeatureResourceManifest', 'GameResourceLoader', 'UiPreparationQueue', 'ResourceModuleManager', 'StartupPreparationBudget']);
+const supported = new Set(['ResourceLoadingPolicy', 'ResourceBatch', 'BackgroundPreparationScheduler', 'BackgroundResourceQueue', 'FeatureResourceManifest', 'GameResourceLoader', 'UiPreparationQueue', 'ResourceModuleManager', 'StartupPreparationBudget', 'StartupTimeline']);
 const compiled = new Map();
 
 function resourceModules(cc = {}, globals = {}) {

@@ -30,7 +30,7 @@ function fixture(group = 'weapons', localOnly = false) {
 const flush = () => new Promise(setImmediate);
 
 test('new per-feature and shared font groups and collection art use their own package', async () => {
-  for (const group of ['fonts-settings', 'fonts-daily-check', 'fonts-shared-a8d1b229', 'collection']) {
+  for (const group of ['fonts-settings', 'fonts-daily-check', 'fonts-shared-a8d1b229', 'collection', 'images-boss-system', 'images-atlas']) {
     const f = fixture(group, group.startsWith('fonts-')), waiting = f.load(png);
     assert.equal(f.packages[0].name, 'forest-ui-' + group + '-0');
     f.packages[0].success();

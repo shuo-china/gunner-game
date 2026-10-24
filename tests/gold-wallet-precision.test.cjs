@@ -49,17 +49,18 @@ test('higher-precision income promotes gold and low-precision income cannot add 
   assert.equal(f.saved().money.precision, 17);
 });
 
-test('legacy and damaged optional gold precision preserve the existing amount, levels and inventory', () => {
+test('missing and damaged gold precision blocks persistence without rewriting the original wallet', () => {
   const originalWarn = console.warn; console.warn = () => {};
   try {
     for (const precision of [undefined, 0, '5', 100001, 3]) {
-      const f = fixture({ digits: '123456789', exponent: -3, ...(precision === undefined ? {} : { precision }) }, [3, 2, 1]);
-      assert.equal(f.session.moneyBalance.toString(), '123456.789');
-      assert.equal(f.saved().money.precision, 9);
-      assert.deepEqual(f.saved().levels, [3, 2, 1]);
-      assert.equal(f.session.weapons.snapshot().equipment[0].weaponId, 0);
+      const money = { digits: '123456789', exponent: -3, ...(precision === undefined ? {} : { precision }) };
+      const f = fixture(money, [3, 2, 1]), source = f.storage.getItem(economyStorageKey('production'));
+      assert.equal(f.session.persistenceBlocked, true);
+      assert.deepEqual(f.saved().money, money); assert.deepEqual(f.saved().levels, [3, 2, 1]);
+      pay(f.session); f.session.save();
+      assert.equal(f.storage.getItem(economyStorageKey('production')), source);
       const reloaded = new BattleSession({ storage: f.storage });
-      assert.equal(reloaded.moneyBalance.toString(), '123456.789');
+      assert.equal(reloaded.persistenceBlocked, true); assert.deepEqual(f.saved().money, money);
     }
   } finally { console.warn = originalWarn; }
 });

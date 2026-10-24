@@ -55,13 +55,12 @@ export class TutorialManager {
   serialize(): TutorialSave { return { step: this.stepValue, drawCount: this.drawCountValue }; }
 
   restore(value: unknown): void {
-    if (value === undefined) return;
     const saved = value as { step?: unknown; drawCount?: unknown } | null;
     if (!saved || typeof saved !== 'object' || Array.isArray(saved) ||
         typeof saved.step !== 'string' || !STEPS.includes(saved.step as TutorialStep)) {
       throw new Error('Invalid tutorial save');
     }
-    const drawCount = saved.drawCount === undefined ? 0 : saved.drawCount;
+    const drawCount = saved.drawCount;
     if (typeof drawCount !== 'number' || !Number.isSafeInteger(drawCount) || drawCount < 0 || drawCount > WEAPON_TUTORIAL_RULES.drawCount) {
       throw new Error('Invalid tutorial save');
     }

@@ -151,12 +151,11 @@ export class RebirthSystem {
 
   serialize(): unknown { return { ruby: this.data.ruby.toJSON(), levels: this.data.levels.slice(), count: this.data.count, adUsedDate: this.data.adUsedDate, adUsedCount: this.data.adUsedCount }; }
   restore(value: unknown): void {
-    if (value === undefined) return;
     const saved = value as { ruby?: unknown; levels?: unknown; count?: unknown; adUsedDate?: unknown; adUsedCount?: unknown } | null;
     if (!saved || !Array.isArray(saved.levels) || saved.levels.length !== 3 || !saved.levels.every(isRebirthLevel) ||
         typeof saved.count !== 'number' || !Number.isSafeInteger(saved.count) || saved.count < 0 || !validDate(saved.adUsedDate)) throw new Error('Invalid rebirth save');
     const ruby = OriginalInfVal.fromSerialized(saved.ruby);
-    const adUsedCount = saved.adUsedCount ?? (saved.adUsedDate ? 1 : 0);
+    const adUsedCount = saved.adUsedCount;
     if (typeof adUsedCount !== 'number' || !Number.isSafeInteger(adUsedCount) || adUsedCount < 0) throw new Error('Invalid rebirth ad count');
     if (ruby.amount.isNegative || ruby.amount.digits.length > 100000) throw new Error('Invalid rebirth wallet');
     this.data = { ruby, levels: saved.levels.slice(), count: saved.count, adUsedDate: saved.adUsedDate, adUsedCount };

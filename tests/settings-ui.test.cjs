@@ -245,6 +245,56 @@ test('successful redemption shows the original reward text, clears input and pla
   h.click('redeemClose'); assert.equal(h.hud.isOpen, true); assert.equal(h.hud.isRedeemOpen, false);
 });
 
+test('server redemption waits for verification, prevents duplicate submissions and preserves newly typed codes', async () => {
+  let finish;
+  const h = harness({ redeemCode: () => new Promise(resolve => { finish = resolve; }) });
+  h.hud.open(); h.hud.openRedeem(); h.inputText('SERVERCODE');
+  h.click('redeemSubmit'); h.click('redeemSubmit'); h.hud.submitRedeem();
+  assert.deepEqual(h.records.redemptions, ['SERVERCODE']); assert.deepEqual(h.records.alerts, []);
+  assert.equal(h.input.string, 'SERVERCODE'); assert.deepEqual(h.records.sounds, [1]);
+  finish({ ok: true, diamonds: 2000 }); await Promise.resolve();
+  assert.deepEqual(h.records.alerts, ['获得2000颗钻石！']); assert.equal(h.input.string, '');
+  assert.deepEqual(h.records.sounds, [1, 7]); assert.equal(h.hud.isRedeemOpen, true);
+  h.inputText('SECOND'); h.click('redeemSubmit'); h.inputText('THIRD');
+  finish({ ok: true, diamonds: 2000 }); await Promise.resolve();
+  assert.equal(h.input.string, 'THIRD'); assert.deepEqual(h.records.redemptions, ['SERVERCODE', 'SECOND']);
+  h.hud.destroy();
+});
+
+test('redemption rejection and synchronous exceptions show Chinese feedback and release the submit button', async () => {
+  let redeem = () => Promise.reject(new Error('network unavailable'));
+  const h = harness({ redeemCode: () => redeem() });
+  h.hud.open(); h.hud.openRedeem(); h.inputText('SERVERCODE');
+  for (const fail of [() => Promise.reject(new Error('network unavailable')), () => { throw new Error('network unavailable'); }]) {
+    redeem = fail; h.click('redeemSubmit'); await Promise.resolve();
+    assert.equal(h.records.alerts.at(-1), '兑换核验失败，请检查网络后重试。');
+    assert.equal(h.input.string, 'SERVERCODE');
+  }
+  redeem = () => Promise.resolve({ ok: false, reason: 'notLoggedIn', message: '请先登录后再兑换。' });
+  h.click('redeemSubmit'); await Promise.resolve();
+  assert.equal(h.records.alerts.at(-1), '请先登录后再兑换。');
+  redeem = () => Promise.resolve({ ok: true, diamonds: 2000 });
+  h.click('redeemSubmit'); await Promise.resolve();
+  assert.equal(h.records.redemptions.length, 4); assert.equal(h.input.string, '');
+  assert.equal(h.records.sounds.filter(id => id === 7).length, 1);
+  h.hud.destroy();
+});
+
+test('server redemption completion cannot mutate a destroyed settings HUD', async () => {
+  for (const reject of [false, true]) {
+    let settle;
+    const h = harness({ redeemCode: () => new Promise((resolve, fail) => {
+      settle = reject ? () => fail(new Error('network unavailable')) : () => resolve({ ok: true, diamonds: 2000 });
+    }) });
+    h.hud.open(); h.hud.openRedeem(); h.inputText('SERVERCODE'); h.click('redeemSubmit'); h.hud.destroy();
+    const sounds = h.records.sounds.length, alerts = h.records.alerts.length;
+    h.hud.syncInput = () => assert.fail('destroyed input must not synchronize');
+    settle(); await Promise.resolve();
+    assert.equal(h.input.string, 'SERVERCODE');
+    assert.equal(h.records.sounds.length, sounds); assert.equal(h.records.alerts.length, alerts);
+  }
+});
+
 test('used codes and failed persistence preserve input and never emit success audio', () => {
   for (const [reason, message] of [['alreadyUsed', '兑换码已被使用。'],
     ['saveFailed', '保存失败，请重试'], ['walletLimit', '钻石数量已达上限']]) {

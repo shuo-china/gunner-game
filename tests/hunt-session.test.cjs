@@ -86,11 +86,13 @@ test('reentrant storage cannot settle a Hunt candidate that omits a concurrent w
   assert.equal(s.retryHuntSettlement().ok,true);assert.equal(f.make().weapons.diamonds,77);assert.equal(f.make().getPetState().coins,30);
 });
 
-test('optional hunt migration and rebirth preserve fish, pets, claims and unrelated v3 balances',()=>{
+test('invalid hunt saves block overwrites and current saves preserve fish and pets through rebirth',()=>{
   const warn=console.warn;console.warn=()=>{};
   try{for(const hunt of [undefined,null,{}, {wave:-1,level:0},{wave:0,level:9}]){
     const f=fixture(save=>{save.hunt=hunt;save.weapons.diamonds=731;save.pets.coins=97;save.fish.inventory=[3,3];});
-    assert.equal(f.session.weapons.diamonds,731);assert.equal(f.session.getPetState().coins,97);assert.deepEqual(f.session.getFishState().inventory,[3,3]);assert.equal(f.session.getHuntState().wave,0);
+    const raw=f.data.get(f.key);assert.equal(f.session.persistenceBlocked,true);
+    if(hunt!==undefined){assert.equal(f.session.weapons.diamonds,731);assert.equal(f.session.getPetState().coins,97);assert.deepEqual(f.session.getFishState().inventory,[3,3]);}
+    assert.equal(f.session.getHuntState().wave,0);f.session.save();assert.equal(f.data.get(f.key),raw);
   }}finally{console.warn=warn;}
   const f=fixture(save=>{save.hunt={wave:5,level:3};save.pets.coins=999;save.fish.inventory=[4];});
   const before=JSON.parse(f.data.get(f.key));assert.equal(f.session.requestRebirth('normal').ok,true);f.session.advanceRebirth(2);

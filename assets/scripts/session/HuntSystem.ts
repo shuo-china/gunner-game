@@ -54,7 +54,7 @@ export class HuntSystem {
   get adReward(): number { return this.earned * ECONOMY_CONFIG.hunt.adAdditionalMultiplier; }
   get firstClear(): boolean { return this.position.wave > 0 || this.position.level > 0; }
   serialize(): HuntSave { return { ...this.position }; }
-  restore(value: unknown): void { if (value !== undefined) this.position = validateHuntSave(value); }
+  restore(value: unknown): void { this.position = validateHuntSave(value); }
   configureTest(value: Partial<HuntSave>): boolean {
     if (this.state !== 'idle') return false;
     try { this.position = validateHuntSave({ ...this.position, ...value }); return true; } catch (_) { return false; }

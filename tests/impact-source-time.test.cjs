@@ -34,6 +34,19 @@ function feedback(world) {
   return { impact, damage };
 }
 
+for (const type of ['SINGLE', 'SHOTGUN', 'LASER', 'PIERCE', 'BLAST_SNIPER', 'EXPLOSIVE', 'MISSILE']) {
+  test(`${type}: accepted collision carries its bullet and target identities for visual contact only`, () => {
+    const { world, bullet } = fixture(type);
+    if (type === 'MISSILE') {
+      bullet.missileTarget = { x: 0, z: 5 }; bullet.missileDuration = .05; bullet.missileArcHeight = 0;
+    }
+    world.step(.075);
+    const { impact, damage } = feedback(world);
+    assert.equal(impact.bulletId, bullet.id); assert.equal(impact.treeId, damage.treeId);
+    assert.equal(impact.treeId, 1);
+  });
+}
+
 for (const advance of ['step', 'advanceEffects']) {
   test(`${advance}: collision impact and damage retain the fixed tick within a longer render frame`, () => {
     const { world } = fixture('SINGLE');

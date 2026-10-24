@@ -151,7 +151,7 @@ test('Battlefield runs procedural Update before Attack and post-Update animation
     world, aspect: 9 / 16, node: { setPosition: noop }, shadowOffset: { x: 0, y: 0 },
     impactTimeOffset: 0, lastImpactSourceTime: 0, impactFx: { beginFrame: noop, canSpawn: () => true },
     map: { cameraCenter: () => ({ x: 0, y: 0 }), updateCamera: noop },
-    trees: new Map([[1000, { update: noop, hit: noop }]]),
+    trees: new Map([[1000, { update: noop, hit: noop, impactPosition: point => point }]]),
     target: { update: noop }, projectiles: { update: noop, shot: noop, hit: noop }, numbers: { update: noop, spawn: noop },
     moneyBurst: { update: noop },
     art: {},

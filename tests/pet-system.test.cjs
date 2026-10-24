@@ -9,7 +9,7 @@ const {ContentUnlockManager} = require('./.build/session/session/ContentUnlockMa
 const {CombatWorld,PetFollowers,DecimalAmount:D} = require('./.build/core/index.js');
 const {PetAnimation,petTimelineValue} = require('./.build/character/PetAnimation.js');
 const owned = index => ({kind:'owned',index}), selected = index => ({kind:'selected',index});
-const save = (grades=[],equipped=[]) => ({owned:[...grades,...Array(16-grades.length).fill(-1)],selected:[...equipped,...Array(3-equipped.length).fill(-1)],collected:Array(10).fill(false),coins:0,autoEnabled:false,lastDailyAdDate:''});
+const save = (grades=[],equipped=[]) => ({owned:[...grades,...Array(16-grades.length).fill(-1)],selected:[...equipped,...Array(3-equipped.length).fill(-1)],collected:Array(10).fill(false),coins:0,autoEnabled:false,lastDailyAdDate:'',dailyAdCount:0});
 function fixture(environment='test',patch) {
   const data=new Map(),writes=[],key=economyStorageKey(environment);
   const storage={getItem:k=>data.get(k)??null,setItem(k,v){data.set(k,v);writes.push(v);}};
@@ -86,11 +86,13 @@ test('wallet and inventory publish only after a durable full-save commit; readba
     if(attempted)assert.equal(attempted.reason,'busy');
   }
 });
-test('optional corrupt/absent pets preserve valid v3 progress; rebirth and isolated test saves retain pets',()=>{
+test('corrupt/absent pets cannot overwrite current saves; rebirth and isolated test saves retain pets',()=>{
   const warn=console.warn;console.warn=()=>{};
   try{for(const block of [undefined,null,{},save([10]),{...save(),coins:-1},{...save(),autoEnabled:1}]){
     const f=fixture('production',s=>{s.pets=block;s.weapons.diamonds=731;s.levels=[7,8,9];});
-    assert.equal(f.session.weapons.diamonds,731);assert.deepEqual(f.session.getPetState().owned,Array(16).fill(-1));assert.deepEqual(JSON.parse(f.data.get(f.key)).levels,[7,8,9]);
+    const raw=f.data.get(f.key);assert.equal(f.session.persistenceBlocked,true);assert.deepEqual(f.session.getPetState().owned,Array(16).fill(-1));
+    assert.equal(JSON.parse(raw).weapons.diamonds,731);assert.deepEqual(JSON.parse(raw).levels,[7,8,9]);
+    f.make();assert.equal(f.data.get(f.key),raw);assert.equal(f.writes.length,0);
   }}finally{console.warn=warn;}
   const f=fixture('test',s=>{s.pets=save([5],[9,9]);});const before=f.session.getPetState();
   assert.equal(f.session.requestRebirth('normal').ok,true);assert.equal(f.session.drawPet('diamonds').reason,'busy');f.session.advanceRebirth(2);

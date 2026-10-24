@@ -9,59 +9,57 @@ const { resolveContentConfig } = require('./.build/session/session/ContentConfig
 const { WeaponInventory } = require('./.build/session/session/WeaponInventory.js');
 const { DecimalAmount } = require('./.build/session/core/DecimalAmount.js');
 const catalog = require('./.build/session/core/WeaponCatalog.js');
-// Legacy scenario identities are translated once at the test fixture boundary.
-const fixtureId = id => catalog.LEGACY_WEAPON_ID_MAP[id];
 
-function prepared(ids = [0, 5, 9, 15]) {
+function prepared(ids = [0, 2, 4, 9]) {
   let now = 1700000000000, samples = 0, writes = 0;
   const options = { environment: 'test', content: new ContentUnlockManager(resolveContentConfig('test', { adsEnabled: true })), now: () => now, rng: () => { samples++; return 0; }, onMutation: () => writes++ };
   const inventory = new WeaponInventory(options);
   inventory.configureTest({ autoEnabled: true, adGunEnabled: false });
-  for (const id of ids) inventory.grantTestWeapon(fixtureId(id));
+  for (const id of ids) inventory.grantTestWeapon(id);
   inventory.drainNotifications();
   return { inventory, options, advance: milliseconds => { now += milliseconds; },
     observed: () => ({ state: inventory.serialize(), revision: inventory.revision, samples, writes }) };
 }
-function pair(fromIndex, toIndex, fromWeaponId, toWeaponId) { return { fromIndex, toIndex, fromWeaponId: fixtureId(fromWeaponId), toWeaponId: fixtureId(toWeaponId) }; }
+function pair(fromIndex, toIndex, fromWeaponId, toWeaponId) { return { fromIndex, toIndex, fromWeaponId, toWeaponId }; }
 function commit(inventory, selected) {
   return inventory.autoMergePair(selected.fromIndex, selected.toIndex, selected.fromWeaponId, selected.toWeaponId);
 }
 
 test('auto policy selects lowest grade then earliest slots, returns detached identities and never transacts while queried', () => {
-  const h = prepared([5, 9, 0, 4, 2, 15]), w = h.inventory;
-  const before = h.observed(), expected = pair(3, 2, 4, 0);
+  const h = prepared([2, 4, 0, 1, 0, 9]), w = h.inventory;
+  const before = h.observed(), expected = pair(3, 2, 1, 0);
   const selected = w.findAutoMergePair();
   assert.deepEqual(selected, expected);
   assert.equal(w.isAutoMergePairValid(selected), true);
-  assert.deepEqual(w.findAutoMergePair([2]), pair(4, 3, 2, 4));
-  assert.deepEqual(w.findAutoMergePair([2, 3]), pair(1, 0, 9, 5));
+  assert.deepEqual(w.findAutoMergePair([2]), pair(4, 3, 0, 1));
+  assert.deepEqual(w.findAutoMergePair([2, 3]), pair(1, 0, 4, 2));
   selected.fromIndex = 15;
   assert.deepEqual(w.findAutoMergePair(), expected, 'a returned identity cannot alter inventory or later selection');
   assert.deepEqual(h.observed(), before);
   assert.deepEqual(w.drainNotifications(), []);
 
   w.toggleLock({ kind: 'backpack', index: 3 });
-  assert.deepEqual(w.findAutoMergePair(), pair(4, 2, 2, 0), 'protected materials are skipped');
+  assert.deepEqual(w.findAutoMergePair(), pair(4, 2, 0, 0), 'protected materials are skipped');
   w.setAutoMerge(false);
   assert.equal(w.findAutoMergePair(), null);
 });
 
 test('auto policy honors discovery, configured grade and SSS caps and excludes unclaimed ad guns', () => {
-  const w = prepared([0, 4]).inventory;
+  const w = prepared([0, 1]).inventory;
   assert.equal(w.findAutoMergePair(), null, 'D materials wait until C has been discovered');
   w.grantTestWeapon(2);
-  assert.deepEqual(w.findAutoMergePair(), pair(1, 0, 4, 0));
+  assert.deepEqual(w.findAutoMergePair(), pair(1, 0, 1, 0));
 
-  const high = prepared([35, 39, 30, 34, 64]).inventory;
-  assert.deepEqual(high.findAutoMergePair(), pair(3, 2, 34, 30), 'X materials are above the automatic SSS cap');
+  const high = prepared([29, 32, 24, 27, 57]).inventory;
+  assert.deepEqual(high.findAutoMergePair(), pair(3, 2, 27, 24), 'X materials are above the automatic SSS cap');
   high.configureTest({ autoMergeDegree: 5 });
   assert.equal(high.findAutoMergePair(), null);
 
-  const h = prepared([14, 10, 5, 9, 20]), state = h.inventory.serialize();
+  const h = prepared([8, 5, 2, 4, 14]), state = h.inventory.serialize();
   state.backpack[0] = { weaponId: 8, locked: false, pendingAd: true };
   state.adGunExpiresAt = h.inventory.now + 500;
   const pending = new WeaponInventory({ ...h.options, initialState: state });
-  assert.deepEqual(pending.findAutoMergePair(), pair(3, 2, 9, 5));
+  assert.deepEqual(pending.findAutoMergePair(), pair(3, 2, 4, 2));
   assert.equal(pending.findAutoMergePair([2]), null, 'unclaimed B gun cannot become an automatic material');
 });
 
@@ -79,12 +77,12 @@ test('elapsed offline time cannot expire Auto and policy queries remain read-onl
 
 test('auto query and command share rejection rules without changing established error precedence or sampling RNG', () => {
   const cases = [
-    { change: () => {}, selected: pair(-1, 1, 9, 5), reason: 'invalidSlot' },
-    { change: w => w.swapBackpack(2, 3), selected: pair(2, 1, 9, 5), reason: 'noPair' },
-    { change: w => w.configureTest({ autoMergeDegree: 0 }), selected: pair(2, 1, 9, 5), reason: 'noPair' },
-    { change: w => w.toggleLock({ kind: 'backpack', index: 1 }), selected: pair(2, 1, 9, 5), reason: 'protected' },
-    { change: () => {}, selected: pair(2, 0, 9, 0), reason: 'differentGrade' },
-    { change: w => w.setAutoMerge(false), selected: pair(-1, 1, 9, 5), reason: 'autoInactive' },
+    { change: () => {}, selected: pair(-1, 1, 4, 2), reason: 'invalidSlot' },
+    { change: w => w.swapBackpack(2, 3), selected: pair(2, 1, 4, 2), reason: 'noPair' },
+    { change: w => w.configureTest({ autoMergeDegree: 0 }), selected: pair(2, 1, 4, 2), reason: 'noPair' },
+    { change: w => w.toggleLock({ kind: 'backpack', index: 1 }), selected: pair(2, 1, 4, 2), reason: 'protected' },
+    { change: () => {}, selected: pair(2, 0, 4, 0), reason: 'differentGrade' },
+    { change: w => w.setAutoMerge(false), selected: pair(-1, 1, 4, 2), reason: 'autoInactive' },
   ];
   for (const { change, selected, reason } of cases) {
     const h = prepared(), w = h.inventory; change(w); w.drainNotifications();
@@ -94,10 +92,10 @@ test('auto query and command share rejection rules without changing established 
     assert.deepEqual(h.observed(), before, reason);
     assert.deepEqual(w.drainNotifications(), []);
   }
-  const h = prepared([14, 10, 20]), state = h.inventory.serialize();
+  const h = prepared([8, 5, 14]), state = h.inventory.serialize();
   state.backpack[0] = { weaponId: 8, locked: false, pendingAd: true };
   state.adGunExpiresAt = h.inventory.now + 500;
-  const pending = new WeaponInventory({ ...h.options, initialState: state }), selected = pair(0, 1, 14, 10);
+  const pending = new WeaponInventory({ ...h.options, initialState: state }), selected = pair(0, 1, 8, 5);
   const before = pending.serialize();
   assert.equal(pending.isAutoMergePairValid(selected), false);
   assert.equal(commit(pending, selected).reason, 'pendingAd');

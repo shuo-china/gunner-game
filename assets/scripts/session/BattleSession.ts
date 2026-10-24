@@ -34,11 +34,15 @@ import { SkinSystem } from './SkinSystem';
 import { PetSystem, PET_DRAW_PRICE } from './PetSystem';
 import { FishSystem, FISH_DRAW_PRICE } from './FishSystem';
 import { DailyCheckSystem, dailyCheckDay } from './DailyCheckSystem';
+import { DailyShareSystem, dailyShareDay, validDailyShareSnapshot } from './DailyShareSystem';
+import type { DailyShareSnapshot, DailyShareResult } from './DailyShareSystem';
+export type { DailyShareSnapshot, DailyShareResult } from './DailyShareSystem';
 import { AdventureSystem } from './AdventureSystem';
 import type { AdventureActionResult, AdventureSnapshot, CoreType } from './AdventureSystem';
 import { RelicSystem } from './RelicSystem';
 import type { RelicActionResult, RelicSnapshot } from './RelicSystem';
 import type { DailyCheckSnapshot, DailyCheckResult } from './DailyCheckSystem';
+import type { RewardReceipt } from './CloudSaveStorage';
 export type { DailyCheckSnapshot, DailyCheckResult } from './DailyCheckSystem';
 import type { FishSnapshot, FishActionResult, FishSave, FishDrawKind } from './FishSystem';
 import { HuntSystem } from './HuntSystem';
@@ -71,11 +75,16 @@ interface OfflineSaveOverride { gold: OriginalInfVal; levels: readonly number[];
 /** Source UI_type order. Raid（突袭）and Boss（独立 BOSS 玩法）are separate modes. */
 export const BATTLE_MODES = ['Main', 'SpeedRun', 'Mine', 'Boss', 'Monster', 'Raid'] as const;
 export type BattleMode = typeof BATTLE_MODES[number];
-export interface EconomyStorage { getItem(key: string): string | null; setItem(key: string, value: string): void; }
+export type SavePriority = 'routine' | 'critical';
+export interface EconomyStorage { getItem(key: string): string | null; setItem(key: string, value: string, priority?: SavePriority): void; }
 export type RedeemCodeResult = { ok: true; diamonds: number } |
-  { ok: false; reason: 'invalidCode' | 'alreadyUsed' | 'saveFailed' | 'walletLimit' };
+  { ok: false; reason: 'invalidCode' | 'alreadyUsed' | 'saveFailed' | 'walletLimit'; message?: string };
 export interface BattleSessionOptions {
   environment?: 'test' | 'production'; storage?: EconomyStorage;
+  /** Production bootstrap always selects server or unavailable; local is for isolated previews/tests. */
+  rewardAuthority?: 'local' | 'server' | 'unavailable';
+  rewardBackend?: { claim(kind: 'daily' | 'redeem' | 'share', payload: { day_index?: number; code?: string }): Promise<RewardReceipt>;
+    requireReload(message: string): void };
   contentConfig?: ResolvedContentConfig;
   now?: WeaponInventoryOptions['now']; rng?: WeaponInventoryOptions['rng']; onWeaponsChanged?: WeaponInventoryOptions['onMutation'];
   onStageCleared?: (round: Readonly<StageRound>) => void;
@@ -98,9 +107,6 @@ let fishSessionSerial = 0;
  * magnitude cap. The exponent may be any safe integer, including high-stage gold. */
 export const MAX_SAVED_DECIMAL_SPAN = 100000;
 export function economyStorageKey(environment: 'test' | 'production'): string { return `forest-gunner:economy:v3:${environment}`; }
-export function weaponCatalogBackupStorageKey(environment: 'test' | 'production', sourceVersion: 1 | 2 | 3 = 1): string {
-  return `${economyStorageKey(environment)}:weapon-catalog-v${sourceVersion}-backup`;
-}
 
 export interface BattleHudState {
   mode: BattleMode;
@@ -146,15 +152,19 @@ export class BattleSession {
   private readonly storage?: EconomyStorage;
   private readonly storageKey: string;
   private readonly environment: 'test' | 'production';
+  private readonly rewardAuthority: 'local' | 'server' | 'unavailable';
+  private readonly rewardBackend?: BattleSessionOptions['rewardBackend'];
+  private verifiedDailyCheck?: DailyCheckSnapshot;
+  private verifiedDailyShare?: DailyShareSnapshot;
   private readonly progression: StageProgression;
   private restoredPosition: StagePosition = { stageIndex: 0, waveIndex: 0 };
   private mutationDepth = 0;
   private pendingSave = false;
+  private pendingSavePriority: SavePriority = 'routine';
   private readonly onStageCleared?: BattleSessionOptions['onStageCleared'];
   private readonly onRebirthCompleted?: BattleSessionOptions['onRebirthCompleted'];
   private reportedStorageFailure = false;
-  /** Never let constructor autosave overwrite an unreadable save or an
-   * unbacked-up legacy catalog. Valid restored state can still run in memory. */
+  /** Never let constructor autosave overwrite an unreadable or unsupported save. */
   private storageWriteBlocked = false;
   private readonly clock: () => number;
   private restoredRaw: string | null = null;
@@ -174,6 +184,7 @@ export class BattleSession {
   private readonly pets = new PetSystem();
   private readonly fish = new FishSystem();
   private readonly dailyCheck = new DailyCheckSystem();
+  private readonly dailyShare = new DailyShareSystem();
   private readonly adventure: AdventureSystem;
   private readonly relics = new RelicSystem();
   private malformedAdventure: { value: unknown } | null = null;
@@ -211,6 +222,7 @@ export class BattleSession {
   constructor(options: BattleSessionOptions = {}) {
     const environment = options.environment === 'test' ? 'test' : 'production';
     this.environment = environment;
+    this.rewardAuthority = options.rewardAuthority ?? 'local'; this.rewardBackend = options.rewardBackend;
     this.clock = options.now ?? Date.now;
     this.checkpointUtcMs = this.checkpointTime();
     this.fishRandom = options.rng ?? Math.random;
@@ -251,7 +263,7 @@ export class BattleSession {
     this.progression = new StageProgression(this.restoredPosition, { ...options.progressionModifiers, rng: options.rng });
     this.refreshRelicEffects();
     this.progression.startRound(this.weapons.snapshot().stageValueMax);
-    const elapsed = this.restoredCheckpoint === null ? null : computeOfflineElapsed(this.restoredCheckpoint, this.clock(), this.relics.totals.offlineMinutes);
+    const elapsed = this.rewardAuthority !== 'local' || this.restoredCheckpoint === null ? null : computeOfflineElapsed(this.restoredCheckpoint, this.clock(), this.relics.totals.offlineMinutes);
     if (elapsed) {
       const inventory = this.weapons.serialize(), skins = this.skins.totals, fish = this.fish.totals;
       const levels: [number, number, number] = [this.levels[0], this.levels[1], this.levels[2]];
@@ -280,6 +292,8 @@ export class BattleSession {
   }
 
   get offlineInitializationPending(): boolean { return this.offlineInput !== null; }
+  get persistenceBlocked(): boolean { return this.storageWriteBlocked; }
+  get backendRewardPending(): boolean { return this.rewardAuthority === 'server' && this.redemptionInFlight; }
   get offlineBefore(): Readonly<OfflineProgressBefore> | null { return this.offlineBeforeValue; }
   get offlineResult(): OfflineProgressResult | null { return this.offlineResultValue; }
 
@@ -333,7 +347,7 @@ export class BattleSession {
   }
 
   /** Bootstrap invokes this every ten foreground seconds and immediately on foreground resume. */
-  checkpointForeground(): void { this.save(); }
+  checkpointForeground(): void { this.save('routine'); }
   private checkpointTime(): number {
     const now = this.clock();
     return Number.isSafeInteger(now) && now >= 0 ? now : this.checkpointUtcMs;
@@ -460,9 +474,71 @@ export class BattleSession {
     this.rebirth.configureModifiers({ rewardPercent: this.externalRebirthPercent ?? this.relics.totals.rebirthPercent });
     this.progression?.configure({ skipPercent: Math.min(100, this.externalSkipPercent + this.relics.totals.skipPercent) });
   }
-  getDailyCheckState(): DailyCheckSnapshot { return this.dailyCheck.snapshot(dailyCheckDay(this.weapons.now)); }
+  getDailyCheckState(): DailyCheckSnapshot {
+    if (this.rewardAuthority === 'local') return this.dailyCheck.snapshot(dailyCheckDay(this.weapons.now));
+    return this.verifiedDailyCheck ?? this.dailyCheck.snapshot('');
+  }
+  setVerifiedDailyCheck(state: DailyCheckSnapshot): void {
+    if (this.rewardAuthority !== 'server') return;
+    if (!state || !Array.isArray(state.days) || state.days.length !== 7 || typeof state.today !== 'string'
+      || typeof state.canClaim !== 'boolean' || (state.claimableIndex !== null && (!Number.isInteger(state.claimableIndex)
+        || state.claimableIndex < 0 || state.claimableIndex > 6))) throw new Error('签到状态响应无效');
+    this.verifiedDailyCheck = state;
+  }
+  setVerifiedOffline(reward: RewardReceipt['reward']): void {
+    if (this.rewardAuthority !== 'server' || reward.kind !== 'offline' || !reward.result || !reward.before) return;
+    const value = reward.result, before = reward.before;
+    this.offlineBeforeValue = { ...validateStagePosition(before), levels: before.levels, gold: OriginalInfVal.fromSerialized(before.gold) };
+    this.offlineResultValue = { ...value, moneyFinal: OriginalInfVal.fromSerialized(value.moneyFinal),
+      moneyGained: OriginalInfVal.fromSerialized(value.moneyGained), moneyAccumFinal: OriginalInfVal.fromSerialized(value.moneyAccumFinal) };
+  }
+  /** Undefined means this backend/platform has not enabled daily share rewards yet. */
+  getDailyShareState(): DailyShareSnapshot | undefined {
+    if (this.rewardAuthority === 'local') return this.dailyShare.snapshot(dailyShareDay(this.weapons.now));
+    return this.rewardAuthority === 'server' ? this.verifiedDailyShare : undefined;
+  }
+  setVerifiedDailyShare(state: DailyShareSnapshot | undefined): void {
+    if (this.rewardAuthority !== 'server') return;
+    if (state !== undefined && !validDailyShareSnapshot(state)) throw new Error('分享奖励状态响应无效');
+    this.verifiedDailyShare = state === undefined ? undefined : { ...state };
+  }
+  /** Called only after the platform share flow completes; the server owns the daily limit. */
+  claimDailyShare(): DailyShareResult | Promise<DailyShareResult> {
+    const state = this.getDailyShareState();
+    if (!state) return { ok: false, reason: 'unavailable' };
+    if (state.blocked) return { ok: false, reason: 'invalidSave' };
+    if (!state.canClaim) return { ok: false, reason: 'notClaimable' };
+    if (this.rewardAuthority !== 'local') return this.claimBackendReward('share', {});
+    const candidate = this.dailyShare.prepareClaim(dailyShareDay(this.weapons.now));
+    if (!candidate.ok) return candidate;
+    if (!this.storage || this.storageWriteBlocked || this.offlineInitializationPending || this.huntWrite
+      || this.redemptionInFlight || this.mineCommitInFlight || this.mutationDepth > 0) return { ok: false, reason: 'saveFailed' };
+    const weapons = this.weapons.serialize();
+    weapons.diamonds += candidate.diamonds;
+    if (!Number.isSafeInteger(weapons.diamonds)) return { ok: false, reason: 'walletLimit' };
+    this.redemptionInFlight = true;
+    try {
+      let saved: string;
+      try { saved = this.serializeSave(weapons, undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined, undefined, candidate.save); }
+      catch (error) { this.reportStorageFailure(error); return { ok: false, reason: 'saveFailed' }; }
+      try { this.storage.setItem(this.storageKey, saved); }
+      catch (error) { this.reportStorageFailure(error); }
+      try { if (this.storage.getItem(this.storageKey) !== saved) return { ok: false, reason: 'saveFailed' }; }
+      catch (error) {
+        this.storageWriteBlocked = true; this.reportStorageFailure(error);
+        return { ok: false, reason: 'saveFailed' };
+      }
+      this.dailyShare.commit(candidate.save);
+      this.weapons.grantDiamonds(candidate.diamonds);
+    } finally { this.redemptionInFlight = false; }
+    try { this.onWeaponsChanged?.(false); }
+    catch (error) { console.warn('Daily share notification failed after settlement.', error); }
+    return { ok: true, diamonds: candidate.diamonds };
+  }
   /** Seven-day progress and diamonds become visible only after one complete v3 write is confirmed. */
-  claimDailyCheck(dayIndex: number): DailyCheckResult {
+  claimDailyCheck(dayIndex: number): DailyCheckResult | Promise<DailyCheckResult> {
+    if (this.rewardAuthority !== 'local') return this.claimBackendReward('daily', { day_index: dayIndex });
     const candidate = this.dailyCheck.prepareClaim(dayIndex, dailyCheckDay(this.weapons.now));
     if (!candidate.ok) return candidate;
     if (!this.storage || this.storageWriteBlocked || this.offlineInitializationPending || this.huntWrite
@@ -492,8 +568,11 @@ export class BattleSession {
     return { ok: true, dayIndex: candidate.dayIndex, diamonds: candidate.diamonds };
   }
   /** Claim and reward share one durable v3 save; only a confirmed commit changes the live wallet. */
-  redeemCode(input: string): RedeemCodeResult {
-    const reward = typeof input === 'string' ? ECONOMY_CONFIG.redeemCodes.find(item => item.code === input.trim()) : undefined;
+  redeemCode(input: string): RedeemCodeResult | Promise<RedeemCodeResult> {
+    const code = typeof input === 'string' ? input.trim() : '';
+    if (!code) return { ok: false, reason: 'invalidCode' };
+    if (this.rewardAuthority !== 'local') return this.claimBackendReward('redeem', { code });
+    const reward = ECONOMY_CONFIG.redeemCodes.find(item => item.code === code);
     if (!reward) return { ok: false, reason: 'invalidCode' };
     const claimed = this.redeemedCodes;
     if (!Array.isArray(claimed) || !claimed.every(code => typeof code === 'string')) return { ok: false, reason: 'saveFailed' };
@@ -527,6 +606,55 @@ export class BattleSession {
     try { this.onWeaponsChanged?.(false); }
     catch (error) { console.warn('Redemption notification failed after settlement.', error); }
     return { ok: true, diamonds: reward.diamonds };
+  }
+
+  private claimBackendReward(kind: 'share', payload: { day_index?: number; code?: string }): Promise<DailyShareResult>;
+  private claimBackendReward(kind: 'daily' | 'redeem', payload: { day_index?: number; code?: string }):
+    Promise<{ ok: true; diamonds: number; dayIndex: number } | { ok: false; reason: 'saveFailed'; message: string }>;
+  private async claimBackendReward(kind: 'daily' | 'redeem' | 'share', payload: { day_index?: number; code?: string }):
+    Promise<{ ok: true; diamonds: number; dayIndex: number } | Extract<DailyShareResult, { ok: false }>> {
+    if (!this.rewardBackend || this.rewardAuthority !== 'server') return { ok: false, reason: 'saveFailed', message: '请登录后联网领取奖励' };
+    if (this.redemptionInFlight || this.storageWriteBlocked || this.offlineInitializationPending || this.huntWrite || this.mineCommitInFlight)
+      return { ok: false, reason: 'saveFailed', message: '正在处理进度，请稍候重试' };
+    this.save(); this.redemptionInFlight = true;
+    let committed = false;
+    try {
+      const receipt = await this.rewardBackend.claim(kind, payload); committed = true;
+      const data = JSON.parse(receipt.save!), reward = receipt.reward;
+      if (receipt.revision !== receipt.awarded_revision || reward.kind !== kind || !Number.isSafeInteger(reward.diamonds) || reward.diamonds! < 0
+        || data.weapons.diamonds !== this.weapons.diamonds + reward.diamonds!
+        || (kind === 'daily' && reward.dayIndex !== payload.day_index)
+        || (kind === 'redeem' && reward.code !== payload.code)) throw new Error('云端奖励已结算，请重新进入恢复最新进度');
+      if (kind === 'share' && (!receipt.daily_share || !data.dailyShare
+        || data.dailyShare.lastClaimDay !== receipt.daily_share.lastClaimDay)) throw new Error('云端分享奖励已结算，请重新进入恢复最新进度');
+      this.dailyCheck.restore(data.dailyCheck); this.dailyShare.restore(data.dailyShare); this.redeemedCodes = data.redeemedCodes;
+      if (receipt.daily_check) this.setVerifiedDailyCheck(receipt.daily_check);
+      this.setVerifiedDailyShare(receipt.daily_share);
+      this.weapons.grantDiamonds(reward.diamonds!);
+      try { this.onWeaponsChanged?.(false); } catch (error) { console.warn('Reward presentation failed after settlement.', error); }
+      return { ok: true, diamonds: reward.diamonds!, dayIndex: reward.dayIndex ?? 0 };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '奖励核验失败，请检查网络后重试';
+      if (committed) { this.storageWriteBlocked = true; this.rewardBackend.requireReload(message); }
+      if (kind === 'share' && !committed) {
+        const code = (error as any)?.code, status = (error as any)?.status;
+        // A definitive refusal must not retain a completed share and silently consume
+        // tomorrow's allowance. Only uncertain transport/server failures are retryable.
+        if (status >= 400 && status < 500 && ![408, 429].includes(status)) {
+          if (code === 'SHARE_NOT_CLAIMABLE') {
+            if (this.verifiedDailyShare) this.verifiedDailyShare = { ...this.verifiedDailyShare, canClaim: false };
+            return { ok: false, reason: 'notClaimable', message };
+          }
+          if (code === 'REWARD_WALLET_LIMIT') return { ok: false, reason: 'walletLimit', message };
+          if (['SAVE_INVALID', 'SAVE_TOO_LARGE', 'SAVE_CONFLICT', 'REWARD_STATE_INVALID', 'REWARD_STATE_CONFLICT', 'REQUEST_ID_CONFLICT'].includes(code))
+            return { ok: false, reason: 'invalidSave', message };
+          return { ok: false, reason: 'unavailable', message };
+        }
+        if (['ACCOUNT_CHANGED', 'ACCOUNT_DISABLED', 'SESSION_INVALID', 'DISPOSED'].includes(code))
+          return { ok: false, reason: 'unavailable', message };
+      }
+      return { ok: false, reason: 'saveFailed', message };
+    } finally { this.redemptionInFlight = false; }
   }
   private get fishDay(): string {
     const date = new Date(this.weapons.now);
@@ -839,7 +967,7 @@ export class BattleSession {
       || this.rebirth.adPending || this.speedRun.phase === 'adPending' || this.boss.phase === 'adPending'
       || this.hunt.phase === 'adPending' || this.raid.adPending || !!this.weapons.snapshot().pendingAd)) return;
     if (this.attackSpeedBuff.seconds === 0) this.onWeaponsChanged?.(true);
-    if (Math.ceil(before) !== Math.ceil(this.attackSpeedBuff.seconds)) this.save();
+    if (Math.ceil(before) !== Math.ceil(this.attackSpeedBuff.seconds)) this.save('routine');
   }
   private get mineActionBusy(): boolean {
     return !!this.adventureAd || !!this.fishAd || !!this.petAd || this.raid.phase !== 'idle' || this.getRebirthState().phase !== 'idle'
@@ -893,6 +1021,7 @@ export class BattleSession {
   }
   exitMine(): MineActionResult {
     if (this.mode !== 'Mine') return { ok: false, reason: 'mode' };
+    this.mine.prepareExitSettlement();
     if (this.mine.settlementPending) { const result = this.retryMineSettlement(); if (!result.ok) return result; }
     const result = this.mine.exit(); this.weapons.tick(); return result;
   }
@@ -1458,7 +1587,7 @@ export class BattleSession {
         if (maximum !== null) { this.weapons.recordStageValue(maximum); this.save(); cleared = round; }
       }
     }
-    if (rewards.length) this.save();
+    if (rewards.length) this.save('routine');
     } finally { this.finishMutation(); }
     if (cleared && this.onStageCleared) {
       try { this.onStageCleared(cleared); }
@@ -1490,22 +1619,23 @@ export class BattleSession {
   }
 
   /** App hide may flush too; purchases and reward batches already persist immediately. */
-  save(): void {
+  save(priority: SavePriority = 'critical'): void {
     if (this.offlineInitializationPending) return;
     if (this.redemptionInFlight || this.huntWrite || this.mineCommitInFlight) return;
-    if (this.mutationDepth > 0) { this.pendingSave = true; return; }
+    if (this.mutationDepth > 0) { this.pendingSave = true; if (priority === 'critical') this.pendingSavePriority = 'critical'; return; }
     if (!this.storage || this.storageWriteBlocked) return;
     this.checkpointUtcMs = this.checkpointTime();
-    try { this.storage.setItem(this.storageKey, this.serializeSave()); }
+    try { this.storage.setItem(this.storageKey, this.serializeSave(), priority); }
     catch (error) { this.reportStorageFailure(error); }
   }
 
   private serializeSave(weapons = this.weapons.serialize(), redeemedCodes: unknown = this.redeemedCodes, pets: PetSave = this.pets.serialize(), fish: FishSave = this.fish.serialize(), hunt: HuntSave = this.hunt.serialize(), mine: MineSave = this.mine.serialize(), buffs: AttackSpeedBuffSave = this.attackSpeedBuff.serialize(), offline?: OfflineSaveOverride, dailyCheck: unknown = this.dailyCheck.serialize(),
     adventure: unknown = this.malformedAdventure ? this.malformedAdventure.value : this.adventure.serialize(),
-    relics: unknown = this.malformedRelics ? this.malformedRelics.value : this.relics.serialize()): string {
+    relics: unknown = this.malformedRelics ? this.malformedRelics.value : this.relics.serialize(),
+    dailyShare: unknown = this.dailyShare.serialize()): string {
     return JSON.stringify({ version: ECONOMY_SAVE_VERSION, money: offline?.gold ?? this.gold, levels: offline?.levels ?? this.levels,
       weapons, skins: this.skins.serialize(), pets, fish, hunt, mine, buffs, progress: offline?.progress ?? this.progression.serialize(), rebirth: this.rebirth.serialize(), speedRun: this.speedRun.serialize(), boss: this.boss.serialize(), raid: this.raid.serialize(), content: this.contentProgress, tutorial: this.tutorial.serialize(), redeemedCodes,
-      dailyCheck, adventure, relics, offline: { lastSavedAtMs: offline?.lastSavedUtcMs ?? this.checkpointUtcMs } });
+      dailyCheck, dailyShare, adventure, relics, offline: { lastSavedAtMs: offline?.lastSavedUtcMs ?? this.checkpointUtcMs } });
   }
 
   private restore(): unknown {
@@ -1513,75 +1643,55 @@ export class BattleSession {
     try {
       const raw = this.storage.getItem(this.storageKey);
       if (raw === null || raw === '') return;
-      const data = JSON.parse(raw) as { version?: unknown; money?: unknown; levels?: unknown; weapons?: unknown; skins?: unknown; pets?: unknown; fish?: unknown; hunt?: unknown; mine?: unknown; buffs?: unknown; progress?: unknown; rebirth?: unknown; speedRun?: unknown; boss?: unknown; raid?: unknown; content?: unknown; tutorial?: unknown; redeemedCodes?: unknown; offline?: unknown; dailyCheck?: unknown; adventure?: unknown; relics?: unknown };
+      const data = JSON.parse(raw) as { version?: unknown; money?: unknown; levels?: unknown; weapons?: unknown; skins?: unknown; pets?: unknown; fish?: unknown; hunt?: unknown; mine?: unknown; buffs?: unknown; progress?: unknown; rebirth?: unknown; speedRun?: unknown; boss?: unknown; raid?: unknown; content?: unknown; tutorial?: unknown; redeemedCodes?: unknown; offline?: unknown; dailyCheck?: unknown; dailyShare?: unknown; adventure?: unknown; relics?: unknown };
       if (!data || data.version !== ECONOMY_SAVE_VERSION || !Array.isArray(data.levels) || data.levels.length !== 3 || !data.levels.every(isUpgradeLevel)) throw new Error('Invalid economy save');
+      for (const key of ['money', 'weapons', 'skins', 'pets', 'fish', 'hunt', 'mine', 'buffs', 'progress', 'rebirth', 'speedRun', 'boss', 'raid',
+        'content', 'tutorial', 'redeemedCodes', 'offline', 'dailyCheck', 'dailyShare', 'adventure', 'relics'] as const) {
+        if (data[key] === undefined) throw new Error(`Missing economy save ${key}`);
+      }
       const serialized = data.money as { digits?: unknown; exponent?: unknown; precision?: unknown } | undefined;
       if (!serialized || typeof serialized.digits !== 'string' || typeof serialized.exponent !== 'number') throw new Error('Invalid saved wallet');
       const digitCount = serialized.digits.length - (serialized.digits[0] === '-' ? 1 : 0);
       if (!Number.isSafeInteger(serialized.exponent) || digitCount > MAX_SAVED_DECIMAL_SPAN) throw new Error('Saved wallet representation exceeds resource budget');
       const money = DecimalAmount.from({ digits: serialized.digits, exponent: serialized.exponent });
       if (money.isNegative) throw new Error('Invalid saved wallet');
-      // Existing v3 saves have no precision field. Keep their complete balance
-      // without inventing trailing integer zeroes from an enormous exponent.
-      let gold = OriginalInfVal.fromAmount(money, Math.max(1, digitCount));
-      if (serialized.precision !== undefined) {
-        try { gold = OriginalInfVal.fromSerialized(serialized); }
-        catch (error) { this.reportStorageFailure(error); }
-      }
+      const gold = OriginalInfVal.fromSerialized(serialized);
       const weapons = WeaponInventory.validate(data.weapons);
       const position = validateStagePosition(data.progress);
-      const sourceCatalogVersion = (data.weapons as { catalogVersion?: number }).catalogVersion;
-      if (sourceCatalogVersion === undefined || sourceCatalogVersion === 2 || sourceCatalogVersion === 3) {
-        // Preserve the exact complete save, including optional systems, before
-        // the constructor's first version-4 catalog write. Existing backups are immutable.
-        try {
-          const backupKey = weaponCatalogBackupStorageKey(this.environment, sourceCatalogVersion ?? 1);
-          const previous = this.storage.getItem(backupKey);
-          if (previous !== null && previous !== raw) throw new Error('A different legacy weapon backup already exists');
-          if (previous === null) this.storage.setItem(backupKey, raw);
-          if (this.storage.getItem(backupKey) !== raw) throw new Error('Legacy weapon backup could not be verified');
-        } catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
-      }
+      const savedContent = data.content as typeof this.contentProgress;
+      if (!savedContent || !['challengeUnlocked', 'weaponsUnlocked', 'firstDrawGranted'].every(key =>
+        typeof (savedContent as unknown as Record<string, unknown>)[key] === 'boolean')) throw new Error('Invalid content progress');
+      this.tutorial.restore(data.tutorial);
       this.gold = gold; data.levels.forEach((level: number, index: number) => { this.levels[index] = level; });
       this.restoredPosition = position;
-      this.redeemedCodes = data.redeemedCodes === undefined ? [] : data.redeemedCodes;
+      this.redeemedCodes = data.redeemedCodes;
       this.dailyCheck.restore(data.dailyCheck);
-      // New optional save blocks are isolated: damaged rebirth data cannot
-      // discard a previously valid v3 wallet, weapon inventory or progression.
+      this.dailyShare.restore(data.dailyShare);
+      // Preserve readable gameplay state in memory, but never persist a partial
+      // restore over a damaged current save.
       try { this.rebirth.restore(data.rebirth); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.speedRun.restore(data.speedRun); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.boss.restore(data.boss); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.raid.restore(data.raid); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.pets.restore(data.pets); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.hunt.restore(data.hunt); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.mine.restore(data.mine); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.attackSpeedBuff.restore(data.buffs); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.fish.restore(data.fish); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try { this.skins.restore(data.skins); }
-      catch (error) { this.reportStorageFailure(error); }
+      catch (error) { this.storageWriteBlocked = true; this.reportStorageFailure(error); }
       try {
         const candidate = new AdventureSystem(this.adventureNow);
-        // Validate structure before repairing the known legacy slot-lock defect.
-        // Unknown/malformed formats still use the existing isolated-save path.
-        candidate.restore(data.adventure, undefined, this.adventureNow);
-        if (candidate.recoverUnavailablePets(this.pets.serialize(), this.adventureNow)) {
-          const backupKey = `${this.storageKey}:adventure-pet-lock-backup`;
-          try {
-            if (this.storage.getItem(backupKey) === null) {
-              this.storage.setItem(backupKey, raw);
-              if (this.storage.getItem(backupKey) !== raw) throw new Error('Adventure recovery backup could not be verified');
-            }
-          } catch (error) { this.storageWriteBlocked = true; throw error; }
-        }
+        candidate.restore(data.adventure, this.pets.serialize(), this.adventureNow);
         this.adventure.restore(candidate.serialize(), this.pets.serialize(), this.adventureNow);
         this.pets.setLocks(this.adventure.locks());
       } catch (error) { this.malformedAdventure = { value: data.adventure }; this.reportStorageFailure(error); }
@@ -1589,25 +1699,9 @@ export class BattleSession {
         const candidate = new RelicSystem(); candidate.restore(data.relics);
         this.relics.restore(candidate.serialize());
       } catch (error) { this.malformedRelics = { value: data.relics }; this.reportStorageFailure(error); }
-      // Earlier v3 versions exposed both entries from the start. Keep them open
-      // for those saves; do not retroactively issue another onboarding grant.
-      const savedContent = data.content as Partial<typeof this.contentProgress> | null;
-      if (savedContent && ['challengeUnlocked', 'weaponsUnlocked', 'firstDrawGranted'].every(key =>
-        typeof (savedContent as Record<string, unknown>)[key] === 'boolean')) {
-        this.contentProgress = { challengeUnlocked: savedContent.challengeUnlocked!, weaponsUnlocked: savedContent.weaponsUnlocked!, firstDrawGranted: savedContent.firstDrawGranted! };
-      } else {
-        this.contentProgress = { challengeUnlocked: true, weaponsUnlocked: true, firstDrawGranted: true };
-      }
-      // Existing v3 players are not forced through newly added teaching. A
-      // damaged optional tutorial block must not discard their actual progress.
-      if (data.tutorial === undefined) this.tutorial.complete();
-      else {
-        try { this.tutorial.restore(data.tutorial); }
-        catch (error) { this.tutorial.complete(); this.reportStorageFailure(error); }
-      }
+      this.contentProgress = { challengeUnlocked: savedContent.challengeUnlocked, weaponsUnlocked: savedContent.weaponsUnlocked, firstDrawGranted: savedContent.firstDrawGranted };
       this.restoredRaw = raw;
-      // Optional metadata cannot invalidate a valid legacy v3 economy. An absent,
-      // damaged or future checkpoint grants no retroactive income.
+      // A damaged or future checkpoint grants no retroactive income.
       const checkpoint = (data.offline as { lastSavedAtMs?: unknown } | null)?.lastSavedAtMs;
       if (typeof checkpoint === 'number' && Number.isSafeInteger(checkpoint) && checkpoint >= 0 && checkpoint <= this.clock()) {
         this.restoredCheckpoint = checkpoint;
@@ -1618,7 +1712,10 @@ export class BattleSession {
 
   private finishMutation(): void {
     this.mutationDepth--;
-    if (this.mutationDepth === 0 && this.pendingSave) { this.pendingSave = false; this.save(); }
+    if (this.mutationDepth === 0 && this.pendingSave) {
+      const priority = this.pendingSavePriority;
+      this.pendingSave = false; this.pendingSavePriority = 'routine'; this.save(priority);
+    }
   }
 
   private reportStorageFailure(error: unknown): void {

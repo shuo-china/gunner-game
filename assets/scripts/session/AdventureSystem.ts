@@ -83,7 +83,6 @@ export class AdventureSystem {
   }
   restore(value: unknown, pets?: PetSave, nowMs?: number): void {
     if (nowMs !== undefined) time(nowMs);
-    if (value === undefined) return;
     const d = value as AdventureSave, fail = (): never => { throw new Error('Invalid adventure save'); };
     if (!d || d.version !== 1 || !integer(d.level, 0, config.maxLevel) || !integer(d.exp) || (d.level === config.maxLevel ? d.exp !== 0 : d.exp >= adventureRequiredExp(d.level))
       || !integer(d.tickets) || !integer(d.lastTicketChargeAt) || !Number.isFinite(new Date(d.lastTicketChargeAt).getTime())
@@ -106,19 +105,6 @@ export class AdventureSystem {
     this.data = { ...d, cores: [...d.cores], maps: d.maps.map(copyMap) }; this.revision++;
   }
   locks(): PetSlotRef[] { const refs: PetSlotRef[] = []; for (const map of this.data.maps) for (const { kind, index } of map.pets) refs.push({ kind, index }); return refs; }
-  /** Repair only structurally valid legacy trips whose pet slots changed while
-   * release-build locks were broken. Cancel the affected whole trip and return
-   * its spent tickets once; keep valid trips, pets, cores and experience intact. */
-  recoverUnavailablePets(pets: PetSave, nowMs: number): number {
-    const invalid = this.data.maps.filter(map => map.pets.some(ref => gradeAt(pets, ref) !== ref.grade));
-    if (!invalid.length) return 0;
-    const refunded = invalid.reduce((total, map) => total + map.pets.length, 0);
-    const ticket = this.ticketState(nowMs);
-    if (!integer(ticket.tickets + refunded)) throw new Error('Adventure ticket refund exceeds wallet limit');
-    Object.assign(this.data, ticket); this.data.tickets += refunded;
-    for (const map of invalid) { map.startedAt = null; map.runId = 0; map.pets = []; }
-    this.revision++; return invalid.length;
-  }
   get cores(): readonly number[] { return [...this.data.cores]; }
   coreCount(type: number): number { return integer(type, 0, 3) ? this.data.cores[type] : 0; }
   get openPetSlots(): number { return rules.petSlotUnlockLevels.filter(level => level <= this.data.level).length; }

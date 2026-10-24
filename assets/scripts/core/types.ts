@@ -148,7 +148,7 @@ export type CombatEvent =
   | ({ type: 'shot'; position: Vec2; bulletId: number; direction: Vec2; volleyId: number; pelletIndex: number } & WeaponEventMetadata)
   | ({ type: 'hit'; position: Vec2; height?: number; sourceTime: number; treeId: number; damage: DecimalAmount; health: DecimalAmount; maxHealth: DecimalAmount } & WeaponEventMetadata)
   | ({ type: 'damageText'; position: Vec2; height?: number; sourceTime: number; damage: DecimalAmount } & WeaponEventMetadata)
-  | ({ type: 'impact'; position: Vec2; radius: number; height: number; sourceTime: number } & WeaponEventMetadata)
+  | ({ type: 'impact'; position: Vec2; radius: number; height: number; sourceTime: number; bulletId?: number; treeId?: number } & WeaponEventMetadata)
   | { type: 'treeDied'; position: Vec2; treeId: number; sourceTime: number }
   | { type: 'oreDied'; position: Vec2; oreId: number; score: number; sourceTime: number }
   | { type: 'bossDied'; position: Vec2; treeId: number; sourceTime: number }

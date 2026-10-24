@@ -2,7 +2,7 @@ import { DecimalAmount } from '../core/DecimalAmount';
 import { OriginalInfVal } from '../core/OriginalInfVal';
 import { ECONOMY_CONFIG } from '../core/EconomyConfig';
 import { AD_WEAPON_ID, DRAW_PRICE, getWeapon, getWeaponGrade, getWeaponIdsForGrade, isWeaponId,
-  LEGACY_WEAPON_COUNT, LEGACY_WEAPON_ID_MAP, PREVIOUS_WEAPON_COUNT, VERSION_2_WEAPON_COUNT, WEAPON_CATALOG_VERSION, WEAPON_COUNT, WEAPON_GRADES } from '../core/WeaponCatalog';
+  WEAPON_CATALOG_VERSION, WEAPON_COUNT, WEAPON_GRADES } from '../core/WeaponCatalog';
 import { resolveContentConfig, WEAPON_TUTORIAL_RULES } from './ContentConfig';
 import { ContentUnlockManager } from './ContentUnlockManager';
 import type { ContentId } from './ContentUnlockManager';
@@ -60,7 +60,7 @@ export interface SerializedWeaponInventory {
   diamonds: number; starGems: number; stageValueMax: number;
   starLevels: number[]; starFailures: number[];
   autoEnabled: boolean; autoMergeDegree: number;
-  dailyAdDate: string; dailyAdCount?: number; adGunExpiresAt: number; adGunOffered: boolean; adGunEnabled: boolean;
+  dailyAdDate: string; dailyAdCount: number; adGunExpiresAt: number; adGunOffered: boolean; adGunEnabled: boolean;
   firstMerge: boolean; nextAdId: number;
   testTimeOffsetMs: number;
 }
@@ -157,19 +157,14 @@ export class WeaponInventory {
   /** Strict validation finishes before replacing state, so corrupt saves cannot partly apply a transaction. */
   static validate(value: unknown): SerializedWeaponInventory {
     if (!value || typeof value !== 'object') throw new Error('Invalid weapon save');
-    const candidate = value as Omit<SerializedWeaponInventory, 'catalogVersion'> & { catalogVersion?: number };
-    const legacy = candidate.catalogVersion === undefined;
-    const previous = candidate.catalogVersion === 2 || candidate.catalogVersion === 3;
-    if (!legacy && !previous && candidate.catalogVersion !== WEAPON_CATALOG_VERSION) throw new Error('Unsupported weapon catalog version');
-    const sourceCount = legacy ? LEGACY_WEAPON_COUNT : candidate.catalogVersion === 2 ? VERSION_2_WEAPON_COUNT :
-      candidate.catalogVersion === 3 ? PREVIOUS_WEAPON_COUNT : WEAPON_COUNT;
-    const validId = (id: unknown): id is number => integer(id, 0, sourceCount - 1);
+    const candidate = value as SerializedWeaponInventory;
+    if (candidate.catalogVersion !== WEAPON_CATALOG_VERSION) throw new Error('Unsupported weapon catalog version');
     const items = (list: unknown, length: number, allowPending: boolean): (WeaponItem | null)[] => {
       if (!Array.isArray(list) || list.length !== length) throw new Error('Invalid weapon slots');
       return list.map(item => {
         if (item === null) return null;
-        if (!item || !validId(item.weaponId) || typeof item.locked !== 'boolean' || typeof item.pendingAd !== 'boolean' ||
-          (item.pendingAd && (!allowPending || (legacy && item.weaponId !== 14) || item.locked))) throw new Error('Invalid weapon item');
+        if (!item || !isWeaponId(item.weaponId) || typeof item.locked !== 'boolean' || typeof item.pendingAd !== 'boolean' ||
+          (item.pendingAd && (!allowPending || item.locked))) throw new Error('Invalid weapon item');
         return { weaponId: item.weaponId, locked: item.locked, pendingAd: item.pendingAd };
       });
     };
@@ -184,30 +179,22 @@ export class WeaponInventory {
       // Source StarUpgrade save restoration clamps levels and negative failure counts.
       return list.map(item => Math.max(0, Math.min(max, item)));
     };
-    const collection = bools(candidate.collection, sourceCount);
+    const collection = bools(candidate.collection, WEAPON_COUNT);
     for (const item of [...backpack, ...equipment]) if (item && !item.pendingAd && !collection[item.weaponId]) throw new Error('Owned weapon missing from collection');
     for (const field of ['diamonds', 'starGems', 'stageValueMax', 'adGunExpiresAt', 'nextAdId', 'testTimeOffsetMs'] as const) {
       if (!integer(candidate[field], 0, Number.MAX_SAFE_INTEGER)) throw new Error(`Invalid weapon save ${field}`);
     }
     if (!integer(candidate.autoMergeDegree, 0, 6) || typeof candidate.dailyAdDate !== 'string' ||
       !/^(?:|\d{4}-\d{2}-\d{2})$/.test(candidate.dailyAdDate)) throw new Error('Invalid weapon time state');
-    if (candidate.dailyAdCount !== undefined && !integer(candidate.dailyAdCount)) throw new Error('Invalid daily weapon count');
+    if (!integer(candidate.dailyAdCount)) throw new Error('Invalid daily weapon count');
     for (const field of ['autoEnabled', 'adGunOffered', 'adGunEnabled', 'firstMerge'] as const) if (typeof candidate[field] !== 'boolean') throw new Error('Invalid weapon flag');
     const pending = backpack.some(item => item && item.pendingAd);
     if (pending !== (candidate.adGunExpiresAt > 0)) throw new Error('Invalid pending weapon expiration');
-    // Validate the original ownership before OR-merging discoveries: otherwise
-    // a discovered alias could hide a corrupt old item's missing collection bit.
-    const mappedCollection = legacy ? new Array<boolean>(WEAPON_COUNT).fill(false) :
-      previous ? collection.concat(new Array<boolean>(WEAPON_COUNT - sourceCount).fill(false)) : collection;
-    if (legacy) collection.forEach((owned, id) => { if (owned) mappedCollection[LEGACY_WEAPON_ID_MAP[id]] = true; });
-    const migrateItem = (item: WeaponItem | null): WeaponItem | null => item && legacy
-      ? { ...item, weaponId: LEGACY_WEAPON_ID_MAP[item.weaponId] } : item;
-    // Copy supported fields explicitly so retired activity data in older saves is discarded.
-    return { catalogVersion: WEAPON_CATALOG_VERSION, backpack: backpack.map(migrateItem), equipment: equipment.map(migrateItem), collection: mappedCollection,
+    return { catalogVersion: WEAPON_CATALOG_VERSION, backpack, equipment, collection,
       diamonds: candidate.diamonds, starGems: candidate.starGems, stageValueMax: candidate.stageValueMax,
       starLevels: numbers(candidate.starLevels, MAX_STAR_LEVEL), starFailures: numbers(candidate.starFailures, Number.MAX_SAFE_INTEGER),
       autoEnabled: candidate.autoEnabled, autoMergeDegree: candidate.autoMergeDegree,
-      dailyAdDate: candidate.dailyAdDate, dailyAdCount: candidate.dailyAdCount ?? (candidate.dailyAdDate ? 1 : 0), adGunExpiresAt: candidate.adGunExpiresAt,
+      dailyAdDate: candidate.dailyAdDate, dailyAdCount: candidate.dailyAdCount, adGunExpiresAt: candidate.adGunExpiresAt,
       adGunOffered: candidate.adGunOffered, adGunEnabled: candidate.adGunEnabled,
       firstMerge: candidate.firstMerge, nextAdId: candidate.nextAdId, testTimeOffsetMs: candidate.testTimeOffsetMs };
   }
@@ -246,7 +233,7 @@ export class WeaponInventory {
   private lockUnlocked(): boolean { return this.policy('weaponLock').unlocked; }
   private starUnlocked(): boolean { return this.policy('weaponStar').unlocked; }
   private dailyAdUnlocked(): boolean { return this.policy('dailyAdWeapon').unlocked; }
-  private dailyAdUsed(): number { return this.state.dailyAdDate === dateKey(this.now) ? (this.state.dailyAdCount ?? 1) : 0; }
+  private dailyAdUsed(): number { return this.state.dailyAdDate === dateKey(this.now) ? this.state.dailyAdCount : 0; }
   private autoUnlocked(): boolean { return this.unlocked() && this.policy('autoMerge').unlocked; }
   private highestGrade(): number {
     // Appended models retain stable IDs; a larger ID does not imply a higher grade.

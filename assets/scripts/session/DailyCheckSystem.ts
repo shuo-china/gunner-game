@@ -7,7 +7,7 @@ export interface DailyCheckSnapshot extends DailyCheckSave {
   days: readonly { dayIndex: number; diamonds: number; status: DailyCheckStatus }[];
 }
 export type DailyCheckResult = { ok: true; dayIndex: number; diamonds: number } |
-  { ok: false; reason: 'invalidDay' | 'notClaimable' | 'saveFailed' | 'walletLimit' | 'invalidSave' | 'counterLimit' };
+  { ok: false; reason: 'invalidDay' | 'notClaimable' | 'saveFailed' | 'walletLimit' | 'invalidSave' | 'counterLimit'; message?: string };
 export type DailyCheckCandidate = { ok: true; dayIndex: number; diamonds: number; save: DailyCheckSave } |
   Extract<DailyCheckResult, { ok: false }>;
 
@@ -39,7 +39,7 @@ export class DailyCheckSystem {
   private data: DailyCheckSave | null = initialSave();
 
   restore(value: unknown): void {
-    this.raw = value === undefined ? initialSave() : value;
+    this.raw = value;
     this.data = validSave(this.raw) ? { ...this.raw } : null;
   }
   /** A malformed optional ledger remains verbatim in future full saves and cannot grant rewards. */

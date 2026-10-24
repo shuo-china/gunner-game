@@ -21,7 +21,7 @@ function fixture(config = {}) {
   const tasks = [], reads = [], requires = [], registrations = [], originalCalls = [];
   const module = { exports: {} };
   const timing=createTiming(config.scope);
-  const metadata = config.metadata ?? { version: 1, base: BASE, files: {
+  const metadata = config.metadata ?? { version: 2, routes: {}, groups: {}, base: BASE, files: {
     [PATH]: JSON.stringify({ message: '正在走进森林… 🎮', nested: { health: 100 }, padding: 'a'.repeat(20000) }),
   } };
   const buffer = config.buffer ?? new Uint8Array([1, 2, 3]).buffer;
@@ -123,7 +123,7 @@ test('every hit reparses JSON after a previous consumer mutates the result', () 
 
 test('new bundle config is delivered locally even before its CDN version exists', () => {
   const configPath = 'remote/resources/config.abc123.json';
-  const f = fixture({ metadata: { version: 1, base: BASE, files: { [configPath]: '{"name":"resources","paths":{}}' } } });
+  const f = fixture({ metadata: { version: 2, routes: {}, groups: {}, base: BASE, files: { [configPath]: '{"name":"resources","paths":{}}' } } });
   f.install(f.cc); let value;
   f.downloader.handlers['.json'](BASE + configPath, {}, (error, data) => { assert.equal(error, null); value = data; });
   assert.equal(value, undefined); f.flush();
@@ -152,7 +152,7 @@ test('unknown URLs preserve original URL, options, callback, and adapter receive
 
 test('one corrupt entry falls back while other metadata remains usable', () => {
   for (const damaged of ['{broken', { objectInsteadOfRawJson: true }]) {
-    const f = fixture({ metadata: { version: 1, base: BASE, files: {
+    const f = fixture({ metadata: { version: 2, routes: {}, groups: {}, base: BASE, files: {
       [PATH]: damaged, [OTHER_PATH]: '{"healthy":true}',
     } } }), stats = f.install(f.cc), completed = [];
     const options = { request: 'keep me' };
@@ -181,7 +181,7 @@ test('a throwing hit callback is invoked once without remote fallback', () => {
 
 test('a throwing callback on corrupt-entry fallback is never retried by the hook', () => {
   const failure = new Error('remote consumer failure');
-  const f = fixture({ metadata: { version: 1, base: BASE, files: { [PATH]: '{broken' } } });
+  const f = fixture({ metadata: { version: 2, routes: {}, groups: {}, base: BASE, files: { [PATH]: '{broken' } } });
   f.install(f.cc);
   let count = 0;
   assert.throws(() => f.downloader.handlers['.json'](URL, {}, () => { count++; throw failure; }), error => error === failure);
@@ -212,8 +212,9 @@ test('unreadable, missing, malformed, or unsupported binary metadata preserves n
     { inflateError: new Error('corrupt deflate') }, { bytes: new Uint8Array([123, 0]) },
     { bytes: new Uint8Array([233]) },
     { metadata: { version: 2, base: BASE, files: {} } },
-    { metadata: { version: 1, base: 'https://other.example/', files: {} } },
-    { metadata: { version: 1, base: BASE, files: [] } },
+    { metadata: { version: 1, routes: {}, groups: {}, base: BASE, files: {} } },
+    { metadata: { version: 2, routes: {}, groups: {}, base: 'https://other.example/', files: {} } },
+    { metadata: { version: 2, routes: {}, groups: {}, base: BASE, files: [] } },
   ]) {
     const f = fixture(config), stats = f.install(f.cc);
     assert.equal(stats.installed, false);
@@ -262,7 +263,7 @@ test('the shipped inflater decodes real packaged zlib bytes with Chinese and emo
   vm.runInContext(fs.readFileSync(projectPath('tools/vendor/startup-inflate.cjs'), 'utf8'), vendorContext);
 
   const expected = { message: '正在走进森林… 🎮', emoji: '🐱🏹', nested: { text: '武器' }, padding: '数据'.repeat(10000) };
-  const metadata = { version: 1, base: BASE, files: { [PATH]: JSON.stringify(expected) } };
+  const metadata = { version: 2, routes: {}, groups: {}, base: BASE, files: { [PATH]: JSON.stringify(expected) } };
   const compressed = zlib.deflateSync(asciiBytes(metadata), { level: 9 });
   const buffer = compressed.buffer.slice(compressed.byteOffset, compressed.byteOffset + compressed.byteLength);
   const f = fixture({ buffer, inflater: vendorModule.exports });

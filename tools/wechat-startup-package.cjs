@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const zlib = require('node:zlib');
-const { STARTUP_METADATA_PACKAGE } = require('./wechat-startup-runtime.cjs');
+const { STARTUP_METADATA_PATH } = require('./wechat-startup-runtime.cjs');
 const { decodeUuid } = require('./lib/bundle-native-files.cjs');
 const { battleResourceGroups } = require('./lib/battle-resource-groups.cjs');
 const { metadataGroupForPath, metadataResourceGroups } = require('./lib/metadata-resource-groups.cjs');
@@ -201,12 +201,8 @@ function packageStartupMetadata(input, code, base) {
     pending.splice(i + 1, 1); corePackagesMerged++; i--;
   }
   const compressed = encodeMetadata(metadata);
-  const subpackage = { name: STARTUP_METADATA_PACKAGE.name, root: STARTUP_METADATA_PACKAGE.root,
-    bytes: compressed.length + Buffer.byteLength(script), files: 1 };
-  if (subpackage.bytes > 4 * 1024 * 1024) throw new Error(`Startup metadata subpackage exceeds 4 MiB: ${subpackage.bytes}`);
-  fs.mkdirSync(path.join(code, subpackage.root), { recursive: true });
-  fs.writeFileSync(path.join(code, subpackage.root, 'game.js'), script);
-  fs.writeFileSync(path.join(code, STARTUP_METADATA_PACKAGE.path), compressed);
+  if (compressed.length > 4 * 1024 * 1024) throw new Error(`Startup metadata exceeds main package 4 MiB limit: ${compressed.length}`);
+  fs.writeFileSync(path.join(code, STARTUP_METADATA_PATH), compressed);
   for (const { packageInfo, data } of pending) {
     fs.mkdirSync(path.join(code, packageInfo.root), { recursive: true });
     fs.writeFileSync(path.join(code, packageInfo.root, 'game.js'), script);
@@ -224,16 +220,14 @@ function packageStartupMetadata(input, code, base) {
     || entry.split(initialization).length !== 2 || entry.indexOf(adapterLoads[0]) > entry.indexOf(initialization)) {
     throw new Error('Unexpected Creator game entry; refusing ambiguous metadata hook');
   }
-  // Start the official index download before parsing/initializing the engine;
-  // installation still waits for the adapter and the completed index request.
-  fs.writeFileSync(entryPath, "const __forestGunnerMetadataReady = require('./startup-metadata').prepareStartupMetadata();\n" + entry.replace(initialization,
-    "return __forestGunnerMetadataReady.then(() => {\n"
-    + "          require('./startup-metadata').installStartupMetadata(cc);\n"
-    + "          return application.init(cc);\n        });"));
+  // The required index ships in the main package, so engine initialization
+  // needs no platform download or readiness promise. Keep early diagnostics.
+  fs.writeFileSync(entryPath, "require('./wechat-resource-timing.js').publishEarlySnapshot();\n" + entry.replace(initialization,
+    "require('./startup-metadata').installStartupMetadata(cc);\n    return application.init(cc);"));
   return { files: Object.keys(files).length, sourceBytes, compressedBytes: compressed.length,
     sha256: crypto.createHash('sha256').update(compressed).digest('hex'),
-    path: STARTUP_METADATA_PACKAGE.path, package: subpackage,
-    packages: [subpackage, ...pending.map(item => item.packageInfo)],
+    path: STARTUP_METADATA_PATH, location: 'main-package', mainPackageBytes: compressed.length,
+    packages: pending.map(item => item.packageInfo),
     startupSourceBytes: Buffer.byteLength(files[configPath]),
     totalCompressedBytes: compressed.length + pending.reduce((sum, item) => sum + item.data.length, 0),
     corePackagesMerged,

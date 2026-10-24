@@ -14,6 +14,7 @@ interface Emitter {
   history: ProjectileSample[]; samples: ProjectileSample[];
   body: MeshView; ghost?: MeshView; air?: MeshView; outer?: MeshView; core?: MeshView;
   outerPoints: RibbonPoint[]; corePoints: RibbonPoint[];
+  contact?: { x: number; z: number; height: number; remaining: number };
 }
 const sample = (): ProjectileSample => ({ x: 0, z: 0, height: 0, age: 0, traveled: 0 });
 
@@ -40,6 +41,14 @@ export class CustomProjectiles {
 
   shot(id: number): void { const emitter = this.emitters.get(id); if (emitter) this.clear(emitter); }
   clearEmitter(id: number): void { this.shot(id); }
+  contact(id: number, position: { x: number; z: number }, height: number): void {
+    // Only an accepted collision can produce this final arrow pose. A timeout
+    // must still disappear normally, and spinning/penetrating bodies keep moving.
+    if (this.profile.anchor !== 'tip' || this.profile.spinSpeed !== 0) return;
+    let emitter = this.emitters.get(id);
+    if (!emitter) { emitter = this.createEmitter(id); this.emitters.set(id, emitter); }
+    emitter.contact = { ...position, height, remaining: .05 };
+  }
   update(dt: number, bullets: readonly BulletState[]): void {
     dt = Number.isFinite(dt) ? Math.max(0, dt) : 0;
     for (const emitter of this.emitters.values()) emitter.seen = false;
@@ -51,6 +60,7 @@ export class CustomProjectiles {
       if (!emitter) { emitter = this.createEmitter(bullet.id); this.emitters.set(bullet.id, emitter); }
       emitter.seen = true;
       if (bullet.damaging) {
+        emitter.contact = undefined;
         if (!emitter.active || bullet.age < emitter.last.age || bullet.traveled < emitter.last.traveled) this.clear(emitter);
         const head = emitter.last;
         head.x = bullet.position.x; head.z = bullet.position.z; head.height = bullet.height;
@@ -58,6 +68,11 @@ export class CustomProjectiles {
         emitter.active = true; emitter.stoppedFor = 0;
         if (this.profile.cometTrail) this.record(emitter);
         this.render(emitter, true);
+      } else if (emitter.contact && emitter.contact.remaining > 0) {
+        const head = emitter.last, contact = emitter.contact;
+        head.x = contact.x; head.z = contact.z; head.height = contact.height;
+        head.age = bullet.age; head.traveled = bullet.traveled; head.dx = bullet.direction.x; head.dz = bullet.direction.z; head.speed = bullet.speed;
+        emitter.active = true; this.render(emitter, false, true); contact.remaining -= dt;
       } else if (emitter.active) {
         // The collision point is newer than the final damaging render frame.
         const head = emitter.last;
@@ -121,12 +136,12 @@ export class CustomProjectiles {
     while (history.length > 2 && history[1].age < cutoff) emitter.samples.push(history.shift()!);
     while (history.length > 128) emitter.samples.push(history.shift()!);
   }
-  private render(emitter: Emitter, damaging: boolean): void {
+  private render(emitter: Emitter, damaging: boolean, contact = false): void {
     const p = this.profile, head = emitter.last;
-    emitter.body.node.active = damaging;
+    emitter.body.node.active = damaging || contact;
     if (emitter.ghost) emitter.ghost.node.active = damaging;
     if (emitter.air) emitter.air.node.active = damaging;
-    if (damaging) {
+    if (damaging || contact) {
       const pose = projectileBodyPose(p, head);
       fillProjectileBody(emitter.body.geometry, p, pose); emitter.body.mesh.updateProjected();
       if (emitter.ghost && p.afterimage) {
@@ -134,7 +149,7 @@ export class CustomProjectiles {
         fillProjectileBody(emitter.ghost.geometry, p, pose, p.afterimage.alpha * (.35 + .65 * growth),
           pose.angle + p.afterimage.angleLag * (.45 + .55 * growth)); emitter.ghost.mesh.updateProjected();
       }
-      if (emitter.air) { fillPressureFront(emitter.air.geometry, p, head, pose); emitter.air.mesh.updateProjected(); }
+      if (emitter.air && damaging) { fillPressureFront(emitter.air.geometry, p, head, pose); emitter.air.mesh.updateProjected(); }
     }
     if (p.cometTrail && emitter.outer && emitter.core) {
       const count = sampleRibbon(p, head, emitter.history, emitter.stoppedFor, emitter.outerPoints, emitter.corePoints, this.scratch);
@@ -144,9 +159,10 @@ export class CustomProjectiles {
         fillRibbon(emitter.core.geometry, emitter.corePoints, count, p.cometTrail.innerColor); emitter.core.mesh.updateProjected();
       }
     }
-    if (!damaging && (!p.cometTrail || emitter.stoppedFor >= p.cometTrail.lifetime)) this.clear(emitter);
+    if (!damaging && !contact && (!p.cometTrail || emitter.stoppedFor >= p.cometTrail.lifetime)) this.clear(emitter);
   }
   private clear(emitter: Emitter): void {
+    emitter.contact = undefined;
     emitter.active = false; emitter.stoppedFor = 0;
     emitter.samples.push(...emitter.history); emitter.history.length = 0;
     for (const view of this.views(emitter)) view.node.active = false;
